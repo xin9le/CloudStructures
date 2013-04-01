@@ -129,7 +129,7 @@ namespace CloudStructures.Redis
 
         public virtual async Task<T> GetValue(bool queueJump = false)
         {
-            var data = await Command.GetAll(settings.Db, Key, queueJump);
+            var data = await Command.GetAll(settings.Db, Key, queueJump).ConfigureAwait(false);
             if (data == null)
             {
                 if (valueFactory != null)
@@ -139,7 +139,7 @@ namespace CloudStructures.Redis
                     {
                         var a = SetValue(value);
                         var b = SetExpire(expirySeconds.Value, queueJump);
-                        await Task.WhenAll(a, b);
+                        await Task.WhenAll(a, b).ConfigureAwait(false);
                     }
                     return value;
                 }
@@ -212,12 +212,12 @@ namespace CloudStructures.Redis
                     resultTask[i] = tx.Hashes.Increment(settings.Db, Key, field.Item1, field.Item2, queueJump);
                 }
 
-                await tx.Execute(queueJump);
+                await tx.Execute(queueJump).ConfigureAwait(false);
 
                 var result = new long[fields.Length];
                 for (int i = 0; i < fields.Length; i++)
                 {
-                    result[i] = await resultTask[i];
+                    result[i] = await resultTask[i].ConfigureAwait(false);
                 }
 
                 return result;
@@ -235,12 +235,12 @@ namespace CloudStructures.Redis
                     resultTask[i] = tx.Hashes.Increment(settings.Db, Key, field.Item1, field.Item2, queueJump);
                 }
 
-                await tx.Execute(queueJump);
+                await tx.Execute(queueJump).ConfigureAwait(false);
 
                 var result = new double[fields.Length];
                 for (int i = 0; i < fields.Length; i++)
                 {
-                    result[i] = await resultTask[i];
+                    result[i] = await resultTask[i].ConfigureAwait(false);
                 }
 
                 return result;
@@ -275,14 +275,14 @@ namespace CloudStructures.Redis
         {
             if (cache != null) return cache;
 
-            var value = await base.GetValue(queueJump);
+            var value = await base.GetValue(queueJump).ConfigureAwait(false);
             cache = value;
             return value;
         }
 
         public override async Task SetValue(T value, bool queueJump = false)
         {
-            await base.SetValue(value, queueJump);
+            await base.SetValue(value, queueJump).ConfigureAwait(false);
             if (cache != null)
             {
                 cache = value;
@@ -291,7 +291,7 @@ namespace CloudStructures.Redis
 
         public override async Task<bool> SetField(string field, object value, bool queueJump = false)
         {
-            var result = await base.SetField(field, value, queueJump);
+            var result = await base.SetField(field, value, queueJump).ConfigureAwait(false);
             if (cache != null)
             {
                 FastMember.ObjectAccessor.Create(cache)[field] = value;
@@ -301,7 +301,7 @@ namespace CloudStructures.Redis
 
         public override async Task SetFields(Tuple<string, object>[] fields, bool queueJump = false)
         {
-            await base.SetFields(fields, queueJump);
+            await base.SetFields(fields, queueJump).ConfigureAwait(false);
             if (cache != null)
             {
                 var accessor = FastMember.TypeAccessor.Create(typeof(T), allowNonPublicAccessors: false);
@@ -314,7 +314,7 @@ namespace CloudStructures.Redis
 
         public override async Task<long> Increment(string field, int value = 1, bool queueJump = false)
         {
-            var v = await base.Increment(field, value, queueJump);
+            var v = await base.Increment(field, value, queueJump).ConfigureAwait(false);
             if (cache != null)
             {
                 FastMember.ObjectAccessor.Create(cache)[field] = v;
@@ -324,7 +324,7 @@ namespace CloudStructures.Redis
 
         public override async Task<double> Increment(string field, double value = 1, bool queueJump = false)
         {
-            var v = await base.Increment(field, value, queueJump);
+            var v = await base.Increment(field, value, queueJump).ConfigureAwait(false);
             if (cache != null)
             {
                 FastMember.ObjectAccessor.Create(cache)[field] = v;
@@ -334,7 +334,7 @@ namespace CloudStructures.Redis
 
         public override async Task<long[]> Increments(Tuple<string, int>[] fields, bool queueJump = false)
         {
-            var v = await base.Increments(fields, queueJump);
+            var v = await base.Increments(fields, queueJump).ConfigureAwait(false);
             if (cache != null)
             {
                 var accessor = FastMember.TypeAccessor.Create(typeof(T));
@@ -348,7 +348,7 @@ namespace CloudStructures.Redis
 
         public override async Task<double[]> Increments(Tuple<string, double>[] fields, bool queueJump = false)
         {
-            var v = await base.Increments(fields, queueJump);
+            var v = await base.Increments(fields, queueJump).ConfigureAwait(false);
             if (cache != null)
             {
                 var accessor = FastMember.TypeAccessor.Create(typeof(T));

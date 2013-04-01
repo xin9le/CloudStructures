@@ -65,7 +65,7 @@ namespace CloudStructures.Redis
         /// </summary>
         public virtual async Task<Tuple<bool, T>> TryGet(int index, bool queueJump = false)
         {
-            var value = await Command.Get(settings.Db, Key, index, queueJump);
+            var value = await Command.Get(settings.Db, Key, index, queueJump).ConfigureAwait(false);
             return (value == null)
                 ? Tuple.Create(false, default(T))
                 : Tuple.Create(true, settings.ValueConverter.Deserialize<T>(value));
@@ -84,7 +84,7 @@ namespace CloudStructures.Redis
         /// </summary>
         public virtual async Task<T[]> Range(int start, int stop, bool queueJump = false)
         {
-            var results = await Command.Range(settings.Db, Key, start, stop, queueJump);
+            var results = await Command.Range(settings.Db, Key, start, stop, queueJump).ConfigureAwait(false);
             return results.Select(settings.ValueConverter.Deserialize<T>).ToArray();
         }
 
@@ -102,7 +102,7 @@ namespace CloudStructures.Redis
         /// </summary>
         public virtual async Task<T> RemoveFirst(bool queueJump = false)
         {
-            var result = await Command.RemoveFirst(settings.Db, Key, queueJump);
+            var result = await Command.RemoveFirst(settings.Db, Key, queueJump).ConfigureAwait(false);
             return settings.ValueConverter.Deserialize<T>(result);
         }
 
@@ -111,7 +111,7 @@ namespace CloudStructures.Redis
         /// </summary>
         public virtual async Task<T> RemoveLast(bool queueJump = false)
         {
-            var result = await Command.RemoveLast(settings.Db, Key, queueJump);
+            var result = await Command.RemoveLast(settings.Db, Key, queueJump).ConfigureAwait(false);
             return settings.ValueConverter.Deserialize<T>(result);
         }
 
@@ -150,8 +150,8 @@ namespace CloudStructures.Redis
                 var addResult = tx.Lists.AddFirst(settings.Db, Key, v, createIfMissing: true, queueJump: queueJump);
                 var trimResult = tx.Lists.Trim(settings.Db, Key, fixLength - 1, queueJump);
 
-                await tx.Execute(queueJump);
-                return await addResult;
+                await tx.Execute(queueJump).ConfigureAwait(false);
+                return await addResult.ConfigureAwait(false);
             }
         }
 
@@ -171,7 +171,7 @@ namespace CloudStructures.Redis
             {
                 try
                 {
-                    var length = await GetLength();
+                    var length = await GetLength().ConfigureAwait(false);
                     var start = 0;
                     var stop = enumerateThreshold;
 
@@ -179,7 +179,7 @@ namespace CloudStructures.Redis
                     {
                         if (ct.IsCancellationRequested) break;
 
-                        var values = await Range(start, stop);
+                        var values = await Range(start, stop).ConfigureAwait(false);
                         if (values.Length == 0) break;
                         foreach (var item in values)
                         {
@@ -212,7 +212,7 @@ namespace CloudStructures.Redis
         /// </summary>
         public static async Task<T> GetOrDefault<T>(this RedisList<T> redis, int index, T defaultValue = default(T), bool queueJump = false)
         {
-            var result = await redis.TryGet(index, queueJump);
+            var result = await redis.TryGet(index, queueJump).ConfigureAwait(false);
             return result.Item1 ? result.Item2 : defaultValue;
         }
     }

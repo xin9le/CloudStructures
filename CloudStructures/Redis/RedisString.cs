@@ -45,13 +45,13 @@ namespace CloudStructures.Redis
 
         public virtual async Task<Tuple<bool, T>> TryGet(bool queueJump = false)
         {
-            var value = await Command.Get(settings.Db, Key, queueJump);
+            var value = await Command.Get(settings.Db, Key, queueJump).ConfigureAwait(false);
             if (value == null)
             {
                 if (valueFactory != null)
                 {
                     var v = valueFactory();
-                    await Set(v, expirySeconds, queueJump);
+                    await Set(v, expirySeconds, queueJump).ConfigureAwait(false);
                     return Tuple.Create(true, v);
                 }
                 else
@@ -105,7 +105,7 @@ namespace CloudStructures.Redis
         public override async Task<Tuple<bool, T>> TryGet(bool queueJump = false)
         {
             if (isCached) return Tuple.Create(true, cacheItem);
-            var value = await base.TryGet(queueJump);
+            var value = await base.TryGet(queueJump).ConfigureAwait(false);
             if (value.Item1)
             {
                 isCached = true;
@@ -116,7 +116,7 @@ namespace CloudStructures.Redis
 
         public override async Task Set(T value, long? expirySeconds = null, bool queueJump = false)
         {
-            await base.Set(value, expirySeconds, queueJump);
+            await base.Set(value, expirySeconds, queueJump).ConfigureAwait(false);
             isCached = false;
             cacheItem = default(T);
         }
@@ -126,7 +126,7 @@ namespace CloudStructures.Redis
     {
         public static async Task<T> GetValueOrDefault<T>(this RedisString<T> redis, T defaultValue = default(T), bool queueJump = false)
         {
-            var result = await redis.TryGet(queueJump);
+            var result = await redis.TryGet(queueJump).ConfigureAwait(false);
             return result.Item1 ? result.Item2 : defaultValue;
         }
     }
