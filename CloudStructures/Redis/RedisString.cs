@@ -11,12 +11,17 @@ namespace CloudStructures.Redis
     {
         public string Key { get; private set; }
         readonly RedisSettings settings;
+        readonly RedisTransaction transaction;
+        readonly IRedisValueConverter valueConverter;
+        readonly int db;
         readonly Func<T> valueFactory;
         readonly int? expirySeconds;
 
         public RedisString(RedisSettings settings, string stringKey, Func<T> valueFactoryIfNotExists = null, int? expirySeconds = null)
         {
             this.settings = settings;
+            this.db = settings.Db;
+            this.valueConverter = settings.ValueConverter;
             this.Key = stringKey;
             this.valueFactory = valueFactoryIfNotExists;
             this.expirySeconds = expirySeconds;
@@ -27,11 +32,21 @@ namespace CloudStructures.Redis
         {
         }
 
+        public RedisString(RedisTransaction transaction, int db, IRedisValueConverter valueConverter, string stringKey, Func<T> valueFactoryIfNotExists = null, int? expirySeconds = null)
+        {
+            this.transaction = transaction;
+            this.db = db;
+            this.valueConverter = valueConverter;
+            this.Key = stringKey;
+            this.valueFactory = valueFactoryIfNotExists;
+            this.expirySeconds = expirySeconds;
+        }
+
         protected RedisConnection Connection
         {
             get
             {
-                return settings.GetConnection();
+                return (transaction == null) ? settings.GetConnection() : transaction;
             }
         }
 
@@ -45,7 +60,7 @@ namespace CloudStructures.Redis
 
         public virtual async Task<Tuple<bool, T>> TryGet(bool queueJump = false)
         {
-            var value = await Command.Get(settings.Db, Key, queueJump).ConfigureAwait(false);
+            var value = await Command.Get(db, Key, queueJump).ConfigureAwait(false);
             if (value == null)
             {
                 if (valueFactory != null)
@@ -60,30 +75,30 @@ namespace CloudStructures.Redis
                 }
             }
 
-            return Tuple.Create(true, settings.ValueConverter.Deserialize<T>(value));
+            return Tuple.Create(true, valueConverter.Deserialize<T>(value));
         }
 
         public virtual Task Set(T value, long? expirySeconds = null, bool queueJump = false)
         {
-            var v = settings.ValueConverter.Serialize(value);
+            var v = valueConverter.Serialize(value);
             if (expirySeconds == null)
             {
-                return Command.Set(settings.Db, Key, v, queueJump: queueJump);
+                return Command.Set(db, Key, v, queueJump: queueJump);
             }
             else
             {
-                return Command.Set(settings.Db, Key, v, expirySeconds.Value, queueJump: queueJump);
+                return Command.Set(db, Key, v, expirySeconds.Value, queueJump: queueJump);
             }
         }
 
         public virtual Task<long> Increment(long value = 1, bool queueJump = false)
         {
-            return Command.Increment(settings.Db, Key, value, queueJump);
+            return Command.Increment(db, Key, value, queueJump);
         }
 
         public virtual Task<long> Decrement(long value = 1, bool queueJump = false)
         {
-            return Command.Decrement(settings.Db, Key, value, queueJump);
+            return Command.Decrement(db, Key, value, queueJump);
         }
     }
 
