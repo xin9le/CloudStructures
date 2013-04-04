@@ -10,13 +10,16 @@ namespace CloudStructures.Redis
     public class RedisDictionary<T>
     {
         public string Key { get; private set; }
-        // TODO:db
+        public int Db { get; private set; }
         readonly RedisSettings settings;
+        readonly RedisTransaction transaction;
+        readonly IRedisValueConverter valueConverter;
 
-        // TODO:transaction
         public RedisDictionary(RedisSettings settings, string hashKey)
         {
             this.settings = settings;
+            this.Db = settings.Db;
+            this.valueConverter = settings.ValueConverter;
             this.Key = hashKey;
         }
 
@@ -25,11 +28,19 @@ namespace CloudStructures.Redis
         {
         }
 
+        public RedisDictionary(RedisTransaction transaction, int db, IRedisValueConverter valueConverter, string hashKey)
+        {
+            this.transaction = transaction;
+            this.Db = db;
+            this.valueConverter = valueConverter;
+            this.Key = hashKey;
+        }
+
         protected RedisConnection Connection
         {
             get
             {
-                return settings.GetConnection();
+                return (transaction == null) ? settings.GetConnection() : transaction;
             }
         }
 
@@ -41,27 +52,136 @@ namespace CloudStructures.Redis
             }
         }
 
-        // TODO:Implemente all methods
-
-        // ToDictionary, AsObservable
-
-
-        public IDisposable Subscribe(IObserver<KeyValuePair<string, T>> observer)
+        /// <summary>
+        /// HEXISTS http://redis.io/commands/hexists
+        /// </summary>
+        public virtual Task<bool> Exists(string field, bool queueJump = false)
         {
-            throw new NotImplementedException();
+            return Command.Exists(Db, Key, field, queueJump);
+        }
+
+        /// <summary>
+        /// HGET http://redis.io/commands/hget
+        /// </summary>
+        public virtual async Task<T> Get(string field, bool queueJump = false)
+        {
+            var v = await Command.Get(Db, Key, field, queueJump).ConfigureAwait(false);
+            return valueConverter.Deserialize<T>(v);
+        }
+
+        /// <summary>
+        /// HMGET http://redis.io/commands/hmget
+        /// </summary>
+        public virtual async Task<T[]> Get(string[] fields, bool queueJump = false)
+        {
+            var v = await Command.Get(Db, Key, fields, queueJump).ConfigureAwait(false);
+            return v.Select(valueConverter.Deserialize<T>).ToArray();
+        }
+
+        /// <summary>
+        /// HGETALL http://redis.io/commands/hgetall
+        /// </summary>
+        public virtual async Task<Dictionary<string, T>> GetAll(bool queueJump = false)
+        {
+            var v = await Command.GetAll(Db, Key, queueJump).ConfigureAwait(false);
+            return v.ToDictionary(x => x.Key, x => valueConverter.Deserialize<T>(x.Value));
+        }
+
+        /// <summary>
+        /// HKEYS http://redis.io/commands/hkeys
+        /// </summary>
+        public virtual Task<string[]> GetKeys(bool queueJump = false)
+        {
+            return Command.GetKeys(Db, Key, queueJump);
+        }
+
+        /// <summary>
+        /// HLEN http://redis.io/commands/hlen
+        /// </summary>
+        public virtual Task<long> GetLength(bool queueJump = false)
+        {
+            return Command.GetLength(Db, Key, queueJump);
+        }
+
+        /// <summary>
+        /// HVALS http://redis.io/commands/hvals
+        /// </summary>
+        public virtual async Task<T[]> GetValues(bool queueJump = false)
+        {
+            var v = await Command.GetValues(Db, Key, queueJump).ConfigureAwait(false);
+            return v.Select(valueConverter.Deserialize<T>).ToArray();
+        }
+
+        /// <summary>
+        /// HINCRBY http://redis.io/commands/hincrby
+        /// </summary>
+        public virtual Task<long> Increment(string field, int value = 1, bool queueJump = false)
+        {
+            return Command.Increment(Db, Key, field, value, queueJump);
+        }
+
+        /// <summary>
+        /// HINCRBY http://redis.io/commands/hincrby
+        /// </summary>
+        public virtual Task<double> Increment(string field, double value, bool queueJump = false)
+        {
+            return Command.Increment(Db, Key, field, value, queueJump);
+        }
+
+        /// <summary>
+        /// HDEL http://redis.io/commands/hdel
+        /// </summary>
+        public virtual Task<bool> Remove(string field, bool queueJump = false)
+        {
+            return Command.Remove(Db, Key, field, queueJump);
+        }
+        /// <summary>
+        /// HDEL http://redis.io/commands/hdel
+        /// </summary>
+        public virtual Task<long> Remove(string[] fields, bool queueJump = false)
+        {
+            return Command.Remove(Db, Key, fields, queueJump);
+        }
+
+        /// <summary>
+        /// HMSET http://redis.io/commands/hmset
+        /// </summary>
+        public virtual Task Set(Dictionary<string, T> values, bool queueJump = false)
+        {
+            var v = values.ToDictionary(x => x.Key, x => valueConverter.Serialize(x.Value));
+            return Command.Set(Db, Key, v, queueJump);
+        }
+
+        /// <summary>
+        /// HSET http://redis.io/commands/hset
+        /// </summary>
+        public virtual Task<bool> Set(string field, T value, bool queueJump = false)
+        {
+            return Command.Set(Db, Key, field, valueConverter.Serialize(value), queueJump);
+        }
+
+        /// <summary>
+        /// HSETNX http://redis.io/commands/hsetnx
+        /// </summary>
+        public virtual Task<bool> SetIfNotExists(string field, T value, bool queueJump = false)
+        {
+            return Command.SetIfNotExists(Db, Key, field, valueConverter.Serialize(value), queueJump);
         }
     }
 
-    /*
-    // : RedisDictionary<object> ?
-    public class RedisHash : IObservable<KeyValuePair<string, object>>
+    public class RedisHash
     {
         public string Key { get; private set; }
+        public int Db { get; private set; }
         readonly RedisSettings settings;
+        readonly RedisTransaction transaction;
+        readonly IRedisValueConverter valueConverter;
 
         public RedisHash(RedisSettings settings, string hashKey)
         {
             this.settings = settings;
+            this.Db = settings.Db;
+            this.valueConverter = settings.ValueConverter;
             this.Key = hashKey;
         }
 
@@ -70,11 +190,19 @@ namespace CloudStructures.Redis
         {
         }
 
+        public RedisHash(RedisTransaction transaction, int db, IRedisValueConverter valueConverter, string hashKey)
+        {
+            this.transaction = transaction;
+            this.Db = db;
+            this.valueConverter = valueConverter;
+            this.Key = hashKey;
+        }
+
         protected RedisConnection Connection
         {
             get
             {
-                return settings.GetConnection();
+                return (transaction == null) ? settings.GetConnection() : transaction;
             }
         }
 
@@ -86,14 +214,123 @@ namespace CloudStructures.Redis
             }
         }
 
-        // TODO:Implemente all methods
-
-        public IDisposable Subscribe(IObserver<KeyValuePair<string, object>> observer)
+        /// <summary>
+        /// HEXISTS http://redis.io/commands/hexists
+        /// </summary>
+        public virtual Task<bool> Exists(string field, bool queueJump = false)
         {
-            throw new NotImplementedException();
+            return Command.Exists(Db, Key, field, queueJump);
+        }
+
+        /// <summary>
+        /// HGET http://redis.io/commands/hget
+        /// </summary>
+        public virtual async Task<T> Get<T>(string field, bool queueJump = false)
+        {
+            var v = await Command.Get(Db, Key, field, queueJump).ConfigureAwait(false);
+            return valueConverter.Deserialize<T>(v);
+        }
+
+        /// <summary>
+        /// HMGET http://redis.io/commands/hmget
+        /// </summary>
+        public virtual async Task<T[]> Get<T>(string[] fields, bool queueJump = false)
+        {
+            var v = await Command.Get(Db, Key, fields, queueJump).ConfigureAwait(false);
+            return v.Select(valueConverter.Deserialize<T>).ToArray();
+        }
+
+        /// <summary>
+        /// HGETALL http://redis.io/commands/hgetall
+        /// </summary>
+        public virtual async Task<Dictionary<string, T>> GetAll<T>(bool queueJump = false)
+        {
+            var v = await Command.GetAll(Db, Key, queueJump).ConfigureAwait(false);
+            return v.ToDictionary(x => x.Key, x => valueConverter.Deserialize<T>(x.Value));
+        }
+
+        /// <summary>
+        /// HKEYS http://redis.io/commands/hkeys
+        /// </summary>
+        public virtual Task<string[]> GetKeys(bool queueJump = false)
+        {
+            return Command.GetKeys(Db, Key, queueJump);
+        }
+
+        /// <summary>
+        /// HLEN http://redis.io/commands/hlen
+        /// </summary>
+        public virtual Task<long> GetLength(bool queueJump = false)
+        {
+            return Command.GetLength(Db, Key, queueJump);
+        }
+
+        /// <summary>
+        /// HVALS http://redis.io/commands/hvals
+        /// </summary>
+        public virtual async Task<T[]> GetValues<T>(bool queueJump = false)
+        {
+            var v = await Command.GetValues(Db, Key, queueJump).ConfigureAwait(false);
+            return v.Select(valueConverter.Deserialize<T>).ToArray();
+        }
+
+        /// <summary>
+        /// HINCRBY http://redis.io/commands/hincrby
+        /// </summary>
+        public virtual Task<long> Increment(string field, int value = 1, bool queueJump = false)
+        {
+            return Command.Increment(Db, Key, field, value, queueJump);
+        }
+
+        /// <summary>
+        /// HINCRBY http://redis.io/commands/hincrby
+        /// </summary>
+        public virtual Task<double> Increment(string field, double value, bool queueJump = false)
+        {
+            return Command.Increment(Db, Key, field, value, queueJump);
+        }
+
+        /// <summary>
+        /// HDEL http://redis.io/commands/hdel
+        /// </summary>
+        public virtual Task<bool> Remove(string field, bool queueJump = false)
+        {
+            return Command.Remove(Db, Key, field, queueJump);
+        }
+        /// <summary>
+        /// HDEL http://redis.io/commands/hdel
+        /// </summary>
+        public virtual Task<long> Remove(string[] fields, bool queueJump = false)
+        {
+            return Command.Remove(Db, Key, fields, queueJump);
+        }
+
+        /// <summary>
+        /// HMSET http://redis.io/commands/hmset
+        /// </summary>
+        public virtual Task Set(Dictionary<string, object> values, bool queueJump = false)
+        {
+            var v = values.ToDictionary(x => x.Key, x => valueConverter.Serialize(x.Value));
+            return Command.Set(Db, Key, v, queueJump);
+        }
+
+        /// <summary>
+        /// HSET http://redis.io/commands/hset
+        /// </summary>
+        public virtual Task<bool> Set(string field, object value, bool queueJump = false)
+        {
+            return Command.Set(Db, Key, field, valueConverter.Serialize(value), queueJump);
+        }
+
+        /// <summary>
+        /// HSETNX http://redis.io/commands/hsetnx
+        /// </summary>
+        public virtual Task<bool> SetIfNotExists(string field, object value, bool queueJump = false)
+        {
+            return Command.SetIfNotExists(Db, Key, field, valueConverter.Serialize(value), queueJump);
         }
     }
-    */
+
 
     /// <summary>
     /// Class mapped RedisHash

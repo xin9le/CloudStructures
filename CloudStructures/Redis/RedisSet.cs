@@ -52,7 +52,7 @@ namespace CloudStructures.Redis
         /// <summary>
         /// SADD http://redis.io/commands/sadd
         /// </summary>
-        Task<bool> Add(T value, bool queueJump = false)
+        public virtual Task<bool> Add(T value, bool queueJump = false)
         {
             return Command.Add(Db, Key, valueConverter.Serialize(value), queueJump);
         }
@@ -60,7 +60,7 @@ namespace CloudStructures.Redis
         /// <summary>
         /// SADD http://redis.io/commands/sadd
         /// </summary>
-        Task<long> Add(T[] values, bool queueJump = false)
+        public virtual Task<long> Add(T[] values, bool queueJump = false)
         {
             var v = values.Select(x => valueConverter.Serialize(x)).ToArray();
             return Command.Add(Db, Key, v, queueJump);
@@ -69,7 +69,7 @@ namespace CloudStructures.Redis
         /// <summary>
         /// SISMEMBER http://redis.io/commands/sismember
         /// </summary>
-        Task<bool> Contains(T value, bool queueJump = false)
+        public virtual Task<bool> Contains(T value, bool queueJump = false)
         {
             return Command.Contains(Db, Key, valueConverter.Serialize(value), queueJump);
         }
@@ -78,7 +78,7 @@ namespace CloudStructures.Redis
         /// <summary>
         /// SMEMBERS http://redis.io/commands/smembers
         /// </summary>
-        async Task<T[]> GetAll(bool queueJump = false)
+        public virtual async Task<T[]> GetAll(bool queueJump = false)
         {
             var v = await Command.GetAll(Db, Key, queueJump).ConfigureAwait(false);
             return v.Select(valueConverter.Deserialize<T>).ToArray();
@@ -87,7 +87,7 @@ namespace CloudStructures.Redis
         /// <summary>
         /// SCARD http://redis.io/commands/scard
         /// </summary>
-        Task<long> GetLength(bool queueJump = false)
+        public virtual Task<long> GetLength(bool queueJump = false)
         {
             return Command.GetLength(Db, Key, queueJump);
         }
@@ -95,7 +95,7 @@ namespace CloudStructures.Redis
         /// <summary>
         /// SRANDMEMBER http://redis.io/commands/srandmember
         /// </summary>
-        async Task<T> GetRandom(bool queueJump = false)
+        public virtual async Task<T> GetRandom(bool queueJump = false)
         {
             var v = await Command.GetRandom(Db, Key, queueJump).ConfigureAwait(false);
             return valueConverter.Deserialize<T>(v);
@@ -104,7 +104,7 @@ namespace CloudStructures.Redis
         /// <summary>
         /// SRANDMEMBER http://redis.io/commands/srandmember
         /// </summary>
-        async Task<T[]> GetRandom(int count, bool queueJump = false)
+        public virtual async Task<T[]> GetRandom(int count, bool queueJump = false)
         {
             var v = await Command.GetRandom(Db, Key, count, queueJump).ConfigureAwait(false);
             return v.Select(valueConverter.Deserialize<T>).ToArray();
@@ -113,7 +113,7 @@ namespace CloudStructures.Redis
         /// <summary>
         /// SREM http://redis.io/commands/srem
         /// </summary>
-        Task<bool> Remove(T member, bool queueJump = false)
+        public virtual Task<bool> Remove(T member, bool queueJump = false)
         {
             return Command.Remove(Db, Key, valueConverter.Serialize(member), queueJump);
         }
@@ -121,7 +121,7 @@ namespace CloudStructures.Redis
         /// <summary>
         /// SREM http://redis.io/commands/srem
         /// </summary>
-        Task<long> Remove(T[] members, bool queueJump = false)
+        public virtual Task<long> Remove(T[] members, bool queueJump = false)
         {
             var v = members.Select(x => valueConverter.Serialize(x)).ToArray();
             return Command.Remove(Db, Key, v, queueJump);
@@ -130,7 +130,7 @@ namespace CloudStructures.Redis
         /// <summary>
         /// SPOP http://redis.io/commands/spop
         /// </summary>
-        async Task<T> RemoveRandom(bool queueJump = false)
+        public virtual async Task<T> RemoveRandom(bool queueJump = false)
         {
             var v = await Command.RemoveRandom(Db, Key, queueJump).ConfigureAwait(false);
             return valueConverter.Deserialize<T>(v);
