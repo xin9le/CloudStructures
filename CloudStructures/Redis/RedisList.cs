@@ -154,15 +154,25 @@ namespace CloudStructures.Redis
 
         public virtual async Task<long> AddFirstAndFixLength(T value, int fixLength, bool queueJump = false)
         {
-            if (settings == null) throw new InvalidOperationException("AddFirstAndFixeLength does not supports passed by IListCommands");
-
-            var v = valueConverter.Serialize(value);
-            using (var tx = settings.GetConnection().CreateTransaction())
+            if (transaction == null)
             {
-                var addResult = tx.Lists.AddFirst(Db, Key, v, createIfMissing: true, queueJump: queueJump);
-                var trimResult = tx.Lists.Trim(Db, Key, fixLength - 1, queueJump);
+                var v = valueConverter.Serialize(value);
+                using (var tx = settings.GetConnection().CreateTransaction())
+                {
+                    var addResult = tx.Lists.AddFirst(Db, Key, v, createIfMissing: true, queueJump: queueJump);
+                    var trimResult = tx.Lists.Trim(Db, Key, fixLength - 1, queueJump);
 
-                await tx.Execute(queueJump).ConfigureAwait(false);
+                    await tx.Execute(queueJump).ConfigureAwait(false);
+                    return await addResult.ConfigureAwait(false);
+                }
+            }
+            else
+            {
+                var command = transaction.Lists;
+                var v = valueConverter.Serialize(value);
+                var addResult = command.AddFirst(Db, Key, v, createIfMissing: true, queueJump: queueJump);
+                var trimResult = command.Trim(Db, Key, fixLength - 1, queueJump);
+
                 return await addResult.ConfigureAwait(false);
             }
         }

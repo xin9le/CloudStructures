@@ -5,6 +5,15 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CloudStructures", "CloudStr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CloudStructures.Tests", "CloudStructures.Tests\CloudStructures.Tests.csproj", "{15EAAF2A-8976-4A8C-89C6-9403D2DC0FD5}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{CC9007A7-F1A7-4623-A21E-C4F25F41AA6D}"
+	ProjectSection(SolutionItems) = preProject
+		Docs\CloudStructures.nuspec = Docs\CloudStructures.nuspec
+		Docs\NuGet.exe = Docs\NuGet.exe
+		Docs\pack.bat = Docs\pack.bat
+		Docs\push.bat = Docs\push.bat
+		README.md = README.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

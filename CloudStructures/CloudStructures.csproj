@@ -32,8 +32,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="BookSleeve">
-      <HintPath>..\packages\BookSleeve.1.3.9\lib\BookSleeve.dll</HintPath>
+    <Reference Include="BookSleeve, Version=1.3.17.0, Culture=neutral, PublicKeyToken=9056fda458ff61cf, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\BookSleeve.1.3.17\lib\BookSleeve.dll</HintPath>
     </Reference>
     <Reference Include="FastMember">
       <HintPath>..\packages\FastMember.1.0.0.9\lib\net40\FastMember.dll</HintPath>

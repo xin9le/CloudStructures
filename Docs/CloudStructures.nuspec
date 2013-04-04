@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+    <metadata>
+        <id>CloudStructures</id>
+        <version>0.1.0-beta</version>
+        <title>CloudStructures</title>
+        <authors>neuecc</authors>
+        <owners>neuecc</owners>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>Distributed Collections based on Redis and BookSleeve.</description>
+        <language>en-US</language>
+        <licenseUrl>http://opensource.org/licenses/MIT</licenseUrl>
+        <projectUrl>https://github.com/neuecc/CloudStructures</projectUrl>
+        <tags>Redis</tags>
+        <dependencies>
+            <dependency id="BookSleeve" version="1.3.17" />
+            <dependency id="FastMember" version="1.0.0.9" />
+            <dependency id="Newtonsoft.Json" version="4.5.11" />
+            <dependency id="protobuf-net" version="2.0.0.621" />
+        </dependencies>
+    </metadata>
+    <files>
+        <file src="..\CloudStructures\bin\Release\CloudStructures.dll" target="lib" />
+    </files>
+</package>
