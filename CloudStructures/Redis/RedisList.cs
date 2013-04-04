@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reactive.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -182,43 +181,6 @@ namespace CloudStructures.Redis
         {
             var length = await GetLength().ConfigureAwait(false);
             return await Range(0, (int)length, queueJump).ConfigureAwait(false);
-        }
-
-        public virtual IObservable<T> AsObservable(int enumerateThreshold = 100)
-        {
-            return Observable.Create<T>(async (o, ct) =>
-            {
-                try
-                {
-                    var length = await GetLength().ConfigureAwait(false);
-                    var start = 0;
-                    var stop = enumerateThreshold;
-
-                    while (true)
-                    {
-                        if (ct.IsCancellationRequested) break;
-
-                        var values = await Range(start, stop).ConfigureAwait(false);
-                        if (values.Length == 0) break;
-                        foreach (var item in values)
-                        {
-                            o.OnNext(item);
-                        }
-                        if (start + values.Length == length) break;
-                        start = stop + 1;
-                        stop += stop;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    o.OnError(ex);
-                    return;
-                }
-                if (!ct.IsCancellationRequested)
-                {
-                    o.OnCompleted();
-                }
-            });
         }
     }
 

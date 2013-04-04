@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace CloudStructures.Redis
 {
-    public class RedisDictionary<T> : IObservable<KeyValuePair<string, T>>
+    public class RedisDictionary<T>
     {
         public string Key { get; private set; }
         // TODO:db
