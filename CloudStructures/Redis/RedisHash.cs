@@ -101,8 +101,8 @@ namespace CloudStructures.Redis
     public class RedisClass<T> where T : class, new()
     {
         public string Key { get; private set; }
+        public int Db { get; private set; }
         readonly RedisSettings settings;
-        readonly int db;
         readonly RedisTransaction transaction;
         readonly IRedisValueConverter valueConverter;
         readonly Func<T> valueFactory;
@@ -111,7 +111,7 @@ namespace CloudStructures.Redis
         public RedisClass(RedisSettings settings, string hashKey, Func<T> valueFactoryIfNotExists = null, int? expirySeconds = null)
         {
             this.settings = settings;
-            this.db = settings.Db;
+            this.Db = settings.Db;
             this.valueConverter = settings.ValueConverter;
             this.Key = hashKey;
             this.valueFactory = valueFactoryIfNotExists;
@@ -126,7 +126,7 @@ namespace CloudStructures.Redis
         public RedisClass(RedisTransaction transaction, int db, IRedisValueConverter valueConverter, string hashKey, Func<T> valueFactoryIfNotExists = null, int? expirySeconds = null)
         {
             this.transaction = transaction;
-            this.db = db;
+            this.Db = db;
             this.valueConverter = valueConverter;
             this.Key = hashKey;
             this.valueFactory = valueFactoryIfNotExists;
@@ -151,7 +151,7 @@ namespace CloudStructures.Redis
 
         public virtual async Task<T> GetValue(bool queueJump = false)
         {
-            var data = await Command.GetAll(db, Key, queueJump).ConfigureAwait(false);
+            var data = await Command.GetAll(Db, Key, queueJump).ConfigureAwait(false);
             if (data == null)
             {
                 if (valueFactory != null)
@@ -193,12 +193,12 @@ namespace CloudStructures.Redis
                 values.Add(member.Name, valueConverter.Serialize(accessor[value, member.Name]));
             }
 
-            return Command.Set(db, Key, values, queueJump);
+            return Command.Set(Db, Key, values, queueJump);
         }
 
         public virtual Task<bool> SetField(string field, object value, bool queueJump = false)
         {
-            return Command.Set(db, Key, field, valueConverter.Serialize(value), queueJump);
+            return Command.Set(Db, Key, field, valueConverter.Serialize(value), queueJump);
         }
 
         public virtual Task SetFields(Tuple<string, object>[] fields, bool queueJump = false)
@@ -210,17 +210,17 @@ namespace CloudStructures.Redis
                 values.Add(field.Item1, valueConverter.Serialize(accessor[field.Item2, field.Item1]));
             }
 
-            return Command.Set(db, Key, values, queueJump);
+            return Command.Set(Db, Key, values, queueJump);
         }
 
         public virtual Task<long> Increment(string field, int value = 1, bool queueJump = false)
         {
-            return Command.Increment(db, Key, field, value, queueJump);
+            return Command.Increment(Db, Key, field, value, queueJump);
         }
 
         public virtual Task<double> Increment(string field, double value = 1, bool queueJump = false)
         {
-            return Command.Increment(db, Key, field, value, queueJump);
+            return Command.Increment(Db, Key, field, value, queueJump);
         }
 
         public virtual async Task<long[]> Increments(Tuple<string, int>[] fields, bool queueJump = false)
@@ -231,7 +231,7 @@ namespace CloudStructures.Redis
                 for (int i = 0; i < fields.Length; i++)
                 {
                     var field = fields[i];
-                    resultTask[i] = tx.Hashes.Increment(db, Key, field.Item1, field.Item2, queueJump);
+                    resultTask[i] = tx.Hashes.Increment(Db, Key, field.Item1, field.Item2, queueJump);
                 }
 
                 await tx.Execute(queueJump).ConfigureAwait(false);
@@ -254,7 +254,7 @@ namespace CloudStructures.Redis
                 for (int i = 0; i < fields.Length; i++)
                 {
                     var field = fields[i];
-                    resultTask[i] = tx.Hashes.Increment(db, Key, field.Item1, field.Item2, queueJump);
+                    resultTask[i] = tx.Hashes.Increment(Db, Key, field.Item1, field.Item2, queueJump);
                 }
 
                 await tx.Execute(queueJump).ConfigureAwait(false);
@@ -271,7 +271,7 @@ namespace CloudStructures.Redis
 
         public virtual Task<bool> SetExpire(int seconds, bool queueJump = false)
         {
-            return Connection.Keys.Expire(db, Key, seconds, queueJump);
+            return Connection.Keys.Expire(Db, Key, seconds, queueJump);
         }
     }
 
