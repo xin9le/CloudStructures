@@ -24,7 +24,7 @@ namespace CloudStructures.Redis
         {
             this.Host = host;
             this.Port = port;
-            this.IoTimeout = IoTimeout;
+            this.IoTimeout = ioTimeout;
             this.Password = password;
             this.MaxUnsent = maxUnsent;
             this.AllowAdmin = allowAdmin;
