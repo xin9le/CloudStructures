@@ -46,6 +46,7 @@
       <HintPath>..\packages\protobuf-net.2.0.0.621\lib\net40\protobuf-net.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -54,6 +55,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Redis\RedisGroupConfigurationSection.cs" />
     <Compile Include="Redis\RedisHash.cs" />
     <Compile Include="Redis\RedisList.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
