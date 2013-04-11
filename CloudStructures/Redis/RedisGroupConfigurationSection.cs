@@ -96,13 +96,13 @@ namespace CloudStructures.Redis
         {
             var settings = this.Select(x => new RedisSettings(
                 x.Host,
-                x.Port ?? 6379,
-                x.IoTimeout ?? -1,
-                string.IsNullOrEmpty(x.Password) ? null : x.Password,
-                x.MaxUnsent ?? 2147483647,
-                x.AllowAdmin ?? false,
-                x.SyncTimeout ?? 10000,
-                x.Db ?? 0,
+                x.Port,
+                x.IoTimeout,
+                x.Password,
+                x.MaxUnsent,
+                x.AllowAdmin,
+                x.SyncTimeout,
+                x.Db,
                 x.ValueConverter));
             return new RedisGroup(Name, settings.ToArray(), ServerSelector);
         }
@@ -113,26 +113,26 @@ namespace CloudStructures.Redis
         [ConfigurationProperty("host", IsRequired = true, IsKey = true)]
         public string Host { get { return (string)base["host"]; } }
 
-        [ConfigurationProperty("port")]
-        public int? Port { get { return (int?)base["port"]; } }
+        [ConfigurationProperty("port", DefaultValue = 6379)]
+        public int Port { get { return (int)base["port"]; } }
 
-        [ConfigurationProperty("ioTimeout")]
-        public int? IoTimeout { get { return (int?)base["ioTimeout"]; } }
+        [ConfigurationProperty("ioTimeout", DefaultValue = -1)]
+        public int IoTimeout { get { return (int)base["ioTimeout"]; } }
 
-        [ConfigurationProperty("password")]
+        [ConfigurationProperty("password", DefaultValue = null)]
         public string Password { get { return (string)base["password"]; } }
 
-        [ConfigurationProperty("maxUnsent")]
-        public int? MaxUnsent { get { return (int?)base["maxUnsent"]; } }
+        [ConfigurationProperty("maxUnsent", DefaultValue = 2147483647)]
+        public int MaxUnsent { get { return (int)base["maxUnsent"]; } }
 
-        [ConfigurationProperty("allowAdmin")]
-        public bool? AllowAdmin { get { return (bool?)base["allowAdmin"]; } }
+        [ConfigurationProperty("allowAdmin", DefaultValue = false)]
+        public bool AllowAdmin { get { return (bool)base["allowAdmin"]; } }
 
-        [ConfigurationProperty("syncTimeout")]
-        public int? SyncTimeout { get { return (int?)base["syncTimeout"]; } }
+        [ConfigurationProperty("syncTimeout", DefaultValue = 10000)]
+        public int SyncTimeout { get { return (int)base["syncTimeout"]; } }
 
-        [ConfigurationProperty("db")]
-        public int? Db { get { return (int?)base["db"]; } }
+        [ConfigurationProperty("db", DefaultValue = 0)]
+        public int Db { get { return (int)base["db"]; } }
 
         [ConfigurationProperty("valueConverter"), TypeConverter(typeof(TypeNameConverter))]
         public IRedisValueConverter ValueConverter
