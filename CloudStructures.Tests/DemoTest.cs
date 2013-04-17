@@ -32,7 +32,7 @@ namespace CloudStructures.Tests
         }
 
         [TestMethod]
-        public async Task Demo()
+        public void Demo()
         {
 
 

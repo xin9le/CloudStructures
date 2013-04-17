@@ -40,9 +40,9 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="BookSleeve, Version=1.3.17.0, Culture=neutral, PublicKeyToken=9056fda458ff61cf, processorArchitecture=MSIL">
+    <Reference Include="BookSleeve, Version=1.3.27.0, Culture=neutral, PublicKeyToken=9056fda458ff61cf, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\BookSleeve.1.3.17\lib\BookSleeve.dll</HintPath>
+      <HintPath>..\packages\BookSleeve.1.3.27\lib\BookSleeve.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System" />

@@ -11,7 +11,7 @@ namespace CloudStructures.Tests
     public class RedisStringTest
     {
         [TestMethod]
-        public async Task Add()
+        public void Add()
         {
       
         }
