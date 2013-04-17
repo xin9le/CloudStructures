@@ -51,7 +51,7 @@ namespace CloudStructures.Redis
                     || (connection.State != RedisConnectionBase.ConnectionState.Opening))
                     {
                         connection = new RedisConnection(Host, Port, IoTimeout, Password, MaxUnsent, AllowAdmin, SyncTimeout);
-                        connection.Open();
+                        connection.Open().Wait(); // wait open
                     }
                 }
             }
