@@ -87,7 +87,7 @@ namespace CloudStructures.Redis
                     case NotificationKind.OnNext:
                         using (var restMemory = new MemoryStream())
                         {
-                            restMemory.CopyTo(stream);
+                            stream.CopyTo(restMemory);
                             value.Value = converter.Deserialize<T>(restMemory.ToArray());
                         }
                         break;
