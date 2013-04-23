@@ -400,6 +400,10 @@ namespace CloudStructures.Redis
                         var b = SetExpire(expirySeconds.Value, queueJump);
                         await Task.WhenAll(a, b).ConfigureAwait(false);
                     }
+                    else
+                    {
+                        await SetValue(value);
+                    }
                     return value;
                 }
                 return null;
