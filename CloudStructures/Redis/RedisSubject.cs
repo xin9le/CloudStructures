@@ -218,7 +218,7 @@ namespace CloudStructures.Redis
                 }
             });
 
-            var subsribeAction = (Action<string, byte[]>)((_, xs) =>
+            var subscribeAction = (Action<string, byte[]>)((_, xs) =>
             {
                 using (var ms = new MemoryStream(xs))
                 {
@@ -234,11 +234,11 @@ namespace CloudStructures.Redis
             // when error, shutdown, close, reconnect? handling?
             if (keyType == PubSubKeyType.Normal)
             {
-                Connection.GetOpenSubscriberChannel().Subscribe(Key, subsribeAction).Wait();
+                Connection.GetOpenSubscriberChannel().Subscribe(Key, subscribeAction).Wait();
             }
             else
             {
-                Connection.GetOpenSubscriberChannel().PatternSubscribe(Key, subsribeAction).Wait();
+                Connection.GetOpenSubscriberChannel().PatternSubscribe(Key, subscribeAction).Wait();
             }
 
             return disposable;
