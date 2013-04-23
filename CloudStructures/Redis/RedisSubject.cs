@@ -16,6 +16,11 @@ namespace CloudStructures.Redis
         }
     }
 
+    public enum PubSubKeyType
+    {
+        Normal, Pattern
+    }
+
     internal class RemotableNotification<T>
     {
         public NotificationKind Kind { get; private set; }
@@ -127,17 +132,19 @@ namespace CloudStructures.Redis
         public int Db { get; private set; }
         readonly RedisSettings settings;
         readonly IRedisValueConverter valueConverter;
+        readonly PubSubKeyType keyType;
 
-        public RedisSubject(RedisSettings settings, string key)
+        public RedisSubject(RedisSettings settings, string key, PubSubKeyType keyType = PubSubKeyType.Normal)
         {
             this.settings = settings;
             this.Db = settings.Db;
             this.valueConverter = settings.ValueConverter;
             this.Key = key;
+            this.keyType = keyType;
         }
 
-        public RedisSubject(RedisGroup connectionGroup, string key)
-            : this(connectionGroup.GetSettings(key), key)
+        public RedisSubject(RedisGroup connectionGroup, string key, PubSubKeyType keyType = PubSubKeyType.Normal)
+            : this(connectionGroup.GetSettings(key), key, keyType)
         {
         }
 
@@ -156,6 +163,8 @@ namespace CloudStructures.Redis
 
         public void OnNext(T value, bool queueJump)
         {
+            if (keyType != PubSubKeyType.Normal) throw new InvalidOperationException("OnNext is supported only PubSubKeyType.Normal");
+
             using (var ms = new MemoryStream())
             {
                 RemotableNotification<T>.OnNext(value).WriteTo(ms, valueConverter);
@@ -170,6 +179,8 @@ namespace CloudStructures.Redis
 
         public void OnError(string errorMessage, bool queueJump = false)
         {
+            if (keyType != PubSubKeyType.Normal) throw new InvalidOperationException("OnError is supported only PubSubKeyType.Normal");
+
             using (var ms = new MemoryStream())
             {
                 RemotableNotification<T>.OnError(errorMessage).WriteTo(ms, valueConverter);
@@ -184,6 +195,8 @@ namespace CloudStructures.Redis
 
         public void OnCompleted(bool queueJump)
         {
+            if (keyType != PubSubKeyType.Normal) throw new InvalidOperationException("OnCompleted is supported only PubSubKeyType.Normal");
+
             using (var ms = new MemoryStream())
             {
                 RemotableNotification<T>.OnCompleted().WriteTo(ms, valueConverter);
@@ -195,10 +208,17 @@ namespace CloudStructures.Redis
         {
             var disposable = System.Reactive.Disposables.Disposable.Create(() =>
             {
-                Connection.GetOpenSubscriberChannel().Unsubscribe(Key).Wait();
+                if (keyType == PubSubKeyType.Normal)
+                {
+                    Connection.GetOpenSubscriberChannel().Unsubscribe(Key).Wait();
+                }
+                else
+                {
+                    Connection.GetOpenSubscriberChannel().PatternUnsubscribe(Key).Wait();
+                }
             });
 
-            Connection.GetOpenSubscriberChannel().Subscribe(Key, (_, xs) =>
+            var subsribeAction = (Action<string, byte[]>)((_, xs) =>
             {
                 using (var ms = new MemoryStream(xs))
                 {
@@ -209,7 +229,17 @@ namespace CloudStructures.Redis
                         disposable.Dispose();
                     }
                 }
-            }).Wait();
+            });
+
+            // when error, shutdown, close, reconnect? handling?
+            if (keyType == PubSubKeyType.Normal)
+            {
+                Connection.GetOpenSubscriberChannel().Subscribe(Key, subsribeAction).Wait();
+            }
+            else
+            {
+                Connection.GetOpenSubscriberChannel().PatternSubscribe(Key, subsribeAction).Wait();
+            }
 
             return disposable;
         }
