@@ -110,7 +110,7 @@ namespace CloudStructures.Redis
 
     public class RedisSettingsElement : ConfigurationElement
     {
-        [ConfigurationProperty("host", IsRequired = true, IsKey = true)]
+        [ConfigurationProperty("host", IsRequired = true)]
         public string Host { get { return (string)base["host"]; } }
 
         [ConfigurationProperty("port", DefaultValue = 6379)]

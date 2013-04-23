@@ -66,3 +66,33 @@ var conn = group.GetSettings("hogehoge-100").GetConnection();
 new RedisSettings("127.0.0.1", converter: new JsonRedisValueConverter());
 new RedisSettings("127.0.0.1", converter: new ProtoBufRedisValueConverter());
 ```
+
+Configuration
+---
+load configuration from web.config or app.config
+
+```xml
+<configSections>
+    <section name="cloudStructures" type="CloudStructures.Redis.CloudStructuresConfigurationSection, CloudStructures" />
+</configSections>
+
+<cloudStructures>
+    <redis>
+        <group name="cache">
+            <add host="127.0.0.1" />
+            <add host="127.0.0.2" port="1000" />
+        </group>
+        <group name="session">
+            <add host="127.0.0.1" db="2" valueConverter="CloudStructures.Redis.ProtoBufRedisValueConverter, CloudStructures" />
+        </group>
+    </redis>
+</cloudStructures>
+```
+
+```csharp
+// load configuration from .config
+var groups = CloudStructuresConfigurationSection.GetSection().ToRedisGroups();
+```
+
+group attributes are "host, port, ioTimeout, password, maxUnsent, allowAdmin, syncTimeout, db, valueConverter".
+It is same as RedisSettings.
