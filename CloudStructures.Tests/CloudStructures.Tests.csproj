@@ -40,6 +40,10 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="BookSleeve, Version=1.3.34.0, Culture=neutral, PublicKeyToken=9056fda458ff61cf, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>$(SolutionDir)\packages\BookSleeve.1.3.34\lib\BookSleeve.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System" />
     <Reference Include="System.Core">
@@ -70,7 +74,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\CloudStructures\CloudStructures.csproj">
+    <ProjectReference Include="$(SolutionDir)\CloudStructures\CloudStructures.csproj">
       <Project>{80104d24-1ebc-4970-a8ae-3be1c6336a44}</Project>
       <Name>CloudStructures</Name>
     </ProjectReference>
