@@ -193,15 +193,12 @@ namespace CloudStructures.Redis
 
         public IDisposable Subscribe(IObserver<T> observer)
         {
-            var channnel = Connection.GetOpenSubscriberChannel();
-
-            // Error += OnError? reconnect?
             var disposable = System.Reactive.Disposables.Disposable.Create(() =>
             {
-                channnel.Unsubscribe(Key);
+                Connection.GetOpenSubscriberChannel().Unsubscribe(Key).Wait();
             });
 
-            channnel.Subscribe(Key, (_, xs) =>
+            Connection.GetOpenSubscriberChannel().Subscribe(Key, (_, xs) =>
             {
                 using (var ms = new MemoryStream(xs))
                 {
@@ -212,7 +209,7 @@ namespace CloudStructures.Redis
                         disposable.Dispose();
                     }
                 }
-            });
+            }).Wait();
 
             return disposable;
         }
