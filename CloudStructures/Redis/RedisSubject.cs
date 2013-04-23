@@ -4,6 +4,7 @@ using System.IO;
 using System.Reactive;
 using System.Reactive.Subjects;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace CloudStructures.Redis
 {
@@ -158,49 +159,49 @@ namespace CloudStructures.Redis
 
         public void OnNext(T value)
         {
-            OnNext(value, queueJump: false);
+            OnNext(value, queueJump: false).Wait();
         }
 
-        public void OnNext(T value, bool queueJump)
+        public Task<long> OnNext(T value, bool queueJump)
         {
             if (keyType != PubSubKeyType.Normal) throw new InvalidOperationException("OnNext is supported only PubSubKeyType.Normal");
 
             using (var ms = new MemoryStream())
             {
                 RemotableNotification<T>.OnNext(value).WriteTo(ms, valueConverter);
-                Connection.Publish(Key, ms.ToArray(), queueJump);
+                return Connection.Publish(Key, ms.ToArray(), queueJump);
             }
         }
 
         public void OnError(Exception error)
         {
-            OnError(error.ToString());
+            OnError(error.ToString()).Wait();
         }
 
-        public void OnError(string errorMessage, bool queueJump = false)
+        public Task<long> OnError(string errorMessage, bool queueJump = false)
         {
             if (keyType != PubSubKeyType.Normal) throw new InvalidOperationException("OnError is supported only PubSubKeyType.Normal");
 
             using (var ms = new MemoryStream())
             {
                 RemotableNotification<T>.OnError(errorMessage).WriteTo(ms, valueConverter);
-                Connection.Publish(Key, ms.ToArray(), queueJump);
+                return Connection.Publish(Key, ms.ToArray(), queueJump);
             }
         }
 
         public void OnCompleted()
         {
-            OnCompleted(queueJump: false);
+            OnCompleted(queueJump: false).Wait();
         }
 
-        public void OnCompleted(bool queueJump)
+        public Task<long> OnCompleted(bool queueJump)
         {
             if (keyType != PubSubKeyType.Normal) throw new InvalidOperationException("OnCompleted is supported only PubSubKeyType.Normal");
 
             using (var ms = new MemoryStream())
             {
                 RemotableNotification<T>.OnCompleted().WriteTo(ms, valueConverter);
-                Connection.Publish(Key, ms.ToArray(), queueJump);
+                return Connection.Publish(Key, ms.ToArray(), queueJump);
             }
         }
 
