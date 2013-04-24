@@ -67,6 +67,34 @@ new RedisSettings("127.0.0.1", converter: new JsonRedisValueConverter());
 new RedisSettings("127.0.0.1", converter: new ProtoBufRedisValueConverter());
 ```
 
+PubSub -> Observable
+---
+CloudStructures with Reactive Extensions. RedisSubject is ISubject = IObservable and IObserver. Observer publish message to Redis PubSub Channnel. Observable subscribe to Redis PubSub Channel.
+
+```csharp
+// RedisSubject as ISubject<T>
+var subject = new RedisSubject<string>(RedisServer.Default, "PubSubTest");
+
+// subject as IObservable<T> and Subscribe to Redis PubSub Channel
+var a = subject
+    .Select(x => DateTime.Now.Ticks + " " + x)
+    .Subscribe(x => Console.WriteLine(x));
+
+var b = subject
+    .Where(x => !x.StartsWith("A"))
+    .Subscribe(x => Console.WriteLine(x), () => Console.WriteLine("completed!"));
+
+// subject as IObserver and OnNext/OnError/OnCompleted publish to Redis PubSub Channel
+subject.OnNext("ABCDEFGHIJKLM");
+subject.OnNext("hello");
+subject.OnNext("world");
+
+Thread.Sleep(200);
+
+a.Dispose(); // Unsubscribe is Dispose
+subject.OnCompleted(); // if receive OnError/OnCompleted then subscriber is unsubscribed
+```
+
 Configuration
 ---
 load configuration from web.config or app.config
