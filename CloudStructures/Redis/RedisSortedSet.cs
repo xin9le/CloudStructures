@@ -1,4 +1,5 @@
 ﻿using BookSleeve;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -156,6 +157,11 @@ namespace CloudStructures.Redis
         public Task<double?> Score(T member, bool queueJump = false)
         {
             return Command.Score(Db, Key, valueConverter.Serialize(member), queueJump);
+        }
+
+        public Task<bool> SetExpire(TimeSpan expire, bool queueJump = false)
+        {
+            return SetExpire((int)expire.TotalSeconds, queueJump);
         }
 
         public Task<bool> SetExpire(int seconds, bool queueJump = false)

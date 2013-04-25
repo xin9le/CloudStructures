@@ -509,6 +509,11 @@ return tostring(x)";
             return result;
         }
 
+        public Task<T> GetValueOrSet(Func<T> valueFactory, TimeSpan expire, bool queueJump = false)
+        {
+            return GetValueOrSet(valueFactory, (int)expire.TotalSeconds, queueJump);
+        }
+
         public async Task<T> GetValueOrSet(Func<T> valueFactory, int? expirySeconds = null, bool queueJump = false)
         {
             var value = await GetValue(queueJump).ConfigureAwait(false);
@@ -600,6 +605,11 @@ return tostring(x)";
             var v = Connection.Scripting.Eval(Db, HashScript.IncrementFloatLimitByMin, new[] { Key, field }, new object[] { value, min }, useCache: true, inferStrings: true, queueJump: queueJump);
 
             return v.ContinueWith(x => double.Parse((string)x.Result));
+        }
+
+        public Task<bool> SetExpire(TimeSpan expire, bool queueJump = false)
+        {
+            return SetExpire((int)expire.TotalSeconds, queueJump);
         }
 
         public Task<bool> SetExpire(int seconds, bool queueJump = false)

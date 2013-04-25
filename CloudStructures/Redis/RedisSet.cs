@@ -1,4 +1,5 @@
 ﻿using BookSleeve;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -134,6 +135,11 @@ namespace CloudStructures.Redis
         {
             var v = await Command.RemoveRandom(Db, Key, queueJump).ConfigureAwait(false);
             return valueConverter.Deserialize<T>(v);
+        }
+
+        public Task<bool> SetExpire(TimeSpan expire, bool queueJump = false)
+        {
+            return SetExpire((int)expire.TotalSeconds, queueJump);
         }
 
         public Task<bool> SetExpire(int seconds, bool queueJump = false)

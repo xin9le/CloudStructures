@@ -57,6 +57,11 @@ namespace CloudStructures.Redis
                 : Tuple.Create(true, valueConverter.Deserialize<T>(value));
         }
 
+        public Task<T> GetOrAdd(Func<T> valueFactory, TimeSpan expire, bool queueJump = false)
+        {
+            return GetOrAdd(valueFactory, (int)expire.TotalSeconds, queueJump);
+        }
+
         public async Task<T> GetOrAdd(Func<T> valueFactory, int? expirySeconds = null, bool queueJump = false)
         {
             var value = await TryGet(queueJump).ConfigureAwait(false);
@@ -70,6 +75,11 @@ namespace CloudStructures.Redis
                 await Set(v, expirySeconds, queueJump).ConfigureAwait(false);
                 return v;
             }
+        }
+
+        public Task Set(T value, TimeSpan expire, bool queueJump = false)
+        {
+            return Set(value, (int)expire.TotalSeconds, queueJump);
         }
 
         public Task Set(T value, long? expirySeconds = null, bool queueJump = false)
