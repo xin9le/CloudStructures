@@ -96,44 +96,70 @@ namespace CloudStructures.Redis
             return Command.Increment(Db, Key, value, queueJump);
         }
 
+        public virtual Task<double> Increment(double value, bool queueJump = false)
+        {
+            return Command.Increment(Db, Key, value, queueJump);
+        }
+
         public virtual Task<long> Decrement(long value = 1, bool queueJump = false)
         {
             return Command.Decrement(Db, Key, value, queueJump);
         }
-    }
 
-    public class MemoizedRedisString<T> : RedisString<T>
-    {
-        bool isCached;
-        T cacheItem;
-
-        public MemoizedRedisString(RedisSettings settings, string stringKey, Func<T> valueFactoryIfNotExists = null, int? expirySeconds = null)
-            : base(settings, stringKey, valueFactoryIfNotExists, expirySeconds)
+        public virtual Task<long> IncrementLimitByMax(long value, long max, bool queueJump = false)
         {
+            var v = Connection.Scripting.Eval(Db, @"
+local inc = tonumber(ARGV[1])
+local max = tonumber(ARGV[2])
+local x = redis.call('incrby', KEYS[1], inc)
+if(x > max) then
+    redis.call('set', KEYS[1], max)
+    x = max
+end
+return x", new[] { Key }, new object[] { value, max }, useCache: true, inferStrings: true, queueJump: queueJump);
+            return v.ContinueWith(x => (long)x.Result);
         }
 
-        public MemoizedRedisString(RedisGroup connectionGroup, string stringKey, Func<T> valueFactoryIfNotExists = null, int? expirySeconds = null)
-            : base(connectionGroup, stringKey, valueFactoryIfNotExists, expirySeconds)
+        public virtual Task<long> IncrementLimitByMin(long value, long min, bool queueJump = false)
         {
+            var v = Connection.Scripting.Eval(Db, @"
+local inc = tonumber(ARGV[1])
+local min = tonumber(ARGV[2])
+local x = redis.call('incrby', KEYS[1], inc)
+if(x < min) then
+    redis.call('set', KEYS[1], min)
+    x = min
+end
+return x", new[] { Key }, new object[] { value, min }, useCache: true, inferStrings: true, queueJump: queueJump);
+            return v.ContinueWith(x => (long)x.Result);
         }
 
-        public override async Task<Tuple<bool, T>> TryGet(bool queueJump = false)
+        public virtual Task<double> IncrementLimitByMax(double value, double max, bool queueJump = false)
         {
-            if (isCached) return Tuple.Create(true, cacheItem);
-            var value = await base.TryGet(queueJump).ConfigureAwait(false);
-            if (value.Item1)
-            {
-                isCached = true;
-                cacheItem = value.Item2;
-            }
-            return value;
+            var v = Connection.Scripting.Eval(Db, @"
+local inc = tonumber(ARGV[1])
+local max = tonumber(ARGV[2])
+local x = tonumber(redis.call('incrbyfloat', KEYS[1], inc))
+if(x > max) then
+    redis.call('set', KEYS[1], max)
+    x = max
+end
+return tostring(x)", new[] { Key }, new object[] { value, max }, useCache: true, inferStrings: true, queueJump: queueJump);
+            return v.ContinueWith(x => double.Parse((string)x.Result));
         }
 
-        public override async Task Set(T value, long? expirySeconds = null, bool queueJump = false)
+        public virtual Task<double> IncrementLimitByMin(double value, double min, bool queueJump = false)
         {
-            await base.Set(value, expirySeconds, queueJump).ConfigureAwait(false);
-            isCached = false;
-            cacheItem = default(T);
+            var v = Connection.Scripting.Eval(Db, @"
+local inc = tonumber(ARGV[1])
+local min = tonumber(ARGV[2])
+local x = tonumber(redis.call('incrbyfloat', KEYS[1], inc))
+if(x < min) then
+    redis.call('set', KEYS[1], min)
+    x = min
+end
+return tostring(x)", new[] { Key }, new object[] { value, min }, useCache: true, inferStrings: true, queueJump: queueJump);
+            return v.ContinueWith(x => double.Parse((string)x.Result));
         }
     }
 

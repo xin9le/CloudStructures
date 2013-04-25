@@ -69,6 +69,7 @@
     <Compile Include="Config.cs" />
     <Compile Include="RedisStringTest.cs" />
     <Compile Include="DemoTest.cs" />
+    <Compile Include="Scripting.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

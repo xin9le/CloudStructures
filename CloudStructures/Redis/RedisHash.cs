@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+// RedisDictionary/Hash/Class
 namespace CloudStructures.Redis
 {
     public class RedisDictionary<T>
@@ -120,12 +121,70 @@ namespace CloudStructures.Redis
             return Command.Increment(Db, Key, field, value, queueJump);
         }
 
+        public virtual Task<long> IncrementLimitByMax(string field, int value, int max, bool queueJump = false)
+        {
+            var v = Connection.Scripting.Eval(Db, @"
+local inc = tonumber(ARGV[1])
+local max = tonumber(ARGV[2])
+local x = redis.call('hincrby', KEYS[1], KEYS[2], inc)
+if(x > max) then
+    redis.call('hset', KEYS[1], KEYS[2], max)
+    x = max
+end
+return x", new[] { Key, field }, new object[] { value, max }, useCache: true, inferStrings: true, queueJump: queueJump);
+            return v.ContinueWith(x => (long)x.Result);
+        }
+
         /// <summary>
-        /// HINCRBY http://redis.io/commands/hincrby
+        /// HINCRBYFLOAT http://redis.io/commands/hincrbyfloat
         /// </summary>
         public virtual Task<double> Increment(string field, double value, bool queueJump = false)
         {
             return Command.Increment(Db, Key, field, value, queueJump);
+        }
+
+        public virtual Task<double> IncrementLimitByMax(string field, double value, double max, bool queueJump = false)
+        {
+            var v = Connection.Scripting.Eval(Db, @"
+local inc = tonumber(ARGV[1])
+local max = tonumber(ARGV[2])
+local x = tonumber(redis.call('hincrbyfloat', KEYS[1], KEYS[2], inc))
+if(x > max) then
+    redis.call('hset', KEYS[1], KEYS[2], max)
+    x = max
+end
+return tostring(x)", new[] { Key, field }, new object[] { value, max }, useCache: true, inferStrings: true, queueJump: queueJump);
+
+            return v.ContinueWith(x => double.Parse((string)x.Result));
+        }
+
+        public virtual Task<long> IncrementLimitByMin(string field, int value, int min, bool queueJump = false)
+        {
+            var v = Connection.Scripting.Eval(Db, @"
+local inc = tonumber(ARGV[1])
+local min = tonumber(ARGV[2])
+local x = redis.call('hincrby', KEYS[1], KEYS[2], inc)
+if(x < min) then
+    redis.call('hset', KEYS[1], KEYS[2], min)
+    x = min
+end
+return x", new[] { Key, field }, new object[] { value, min }, useCache: true, inferStrings: true, queueJump: queueJump);
+            return v.ContinueWith(x => (long)x.Result);
+        }
+
+        public virtual Task<double> IncrementLimitByMin(string field, double value, double min, bool queueJump = false)
+        {
+            var v = Connection.Scripting.Eval(Db, @"
+local inc = tonumber(ARGV[1])
+local min = tonumber(ARGV[2])
+local x = tonumber(redis.call('hincrbyfloat', KEYS[1], KEYS[2], inc))
+if(x < min) then
+    redis.call('hset', KEYS[1], KEYS[2], min)
+    x = min
+end
+return tostring(x)", new[] { Key, field }, new object[] { value, min }, useCache: true, inferStrings: true, queueJump: queueJump);
+
+            return v.ContinueWith(x => double.Parse((string)x.Result));
         }
 
         /// <summary>
@@ -283,11 +342,69 @@ namespace CloudStructures.Redis
         }
 
         /// <summary>
-        /// HINCRBY http://redis.io/commands/hincrby
+        /// HINCRBYFLOAT http://redis.io/commands/hincrbyfloat
         /// </summary>
         public virtual Task<double> Increment(string field, double value, bool queueJump = false)
         {
             return Command.Increment(Db, Key, field, value, queueJump);
+        }
+
+        public virtual Task<long> IncrementLimitByMax(string field, int value, int max, bool queueJump = false)
+        {
+            var v = Connection.Scripting.Eval(Db, @"
+local inc = tonumber(ARGV[1])
+local max = tonumber(ARGV[2])
+local x = redis.call('hincrby', KEYS[1], KEYS[2], inc)
+if(x > max) then
+    redis.call('hset', KEYS[1], KEYS[2], max)
+    x = max
+end
+return x", new[] { Key, field }, new object[] { value, max }, useCache: true, inferStrings: true, queueJump: queueJump);
+            return v.ContinueWith(x => (long)x.Result);
+        }
+
+        public virtual Task<double> IncrementLimitByMax(string field, double value, double max, bool queueJump = false)
+        {
+            var v = Connection.Scripting.Eval(Db, @"
+local inc = tonumber(ARGV[1])
+local max = tonumber(ARGV[2])
+local x = tonumber(redis.call('hincrbyfloat', KEYS[1], KEYS[2], inc))
+if(x > max) then
+    redis.call('hset', KEYS[1], KEYS[2], max)
+    x = max
+end
+return tostring(x)", new[] { Key, field }, new object[] { value, max }, useCache: true, inferStrings: true, queueJump: queueJump);
+
+            return v.ContinueWith(x => double.Parse((string)x.Result));
+        }
+
+        public virtual Task<long> IncrementLimitByMin(string field, int value, int min, bool queueJump = false)
+        {
+            var v = Connection.Scripting.Eval(Db, @"
+local inc = tonumber(ARGV[1])
+local min = tonumber(ARGV[2])
+local x = redis.call('hincrby', KEYS[1], KEYS[2], inc)
+if(x < min) then
+    redis.call('hset', KEYS[1], KEYS[2], min)
+    x = min
+end
+return x", new[] { Key, field }, new object[] { value, min }, useCache: true, inferStrings: true, queueJump: queueJump);
+            return v.ContinueWith(x => (long)x.Result);
+        }
+
+        public virtual Task<double> IncrementLimitByMin(string field, double value, double min, bool queueJump = false)
+        {
+            var v = Connection.Scripting.Eval(Db, @"
+local inc = tonumber(ARGV[1])
+local min = tonumber(ARGV[2])
+local x = tonumber(redis.call('hincrbyfloat', KEYS[1], KEYS[2], inc))
+if(x < min) then
+    redis.call('hset', KEYS[1], KEYS[2], min)
+    x = min
+end
+return tostring(x)", new[] { Key, field }, new object[] { value, min }, useCache: true, inferStrings: true, queueJump: queueJump);
+
+            return v.ContinueWith(x => double.Parse((string)x.Result));
         }
 
         /// <summary>
@@ -454,173 +571,83 @@ namespace CloudStructures.Redis
             return Command.Set(Db, Key, values, queueJump);
         }
 
+        public virtual async Task<TField> GetField<TField>(string field, bool queueJump = false)
+        {
+            var v = await Command.Get(Db, Key, field, queueJump).ConfigureAwait(false);
+            return valueConverter.Deserialize<TField>(v);
+        }
+
         public virtual Task<long> Increment(string field, int value = 1, bool queueJump = false)
         {
             return Command.Increment(Db, Key, field, value, queueJump);
         }
 
-        public virtual Task<double> Increment(string field, double value = 1, bool queueJump = false)
+        public virtual Task<double> Increment(string field, double value, bool queueJump = false)
         {
             return Command.Increment(Db, Key, field, value, queueJump);
         }
 
-        public virtual async Task<long[]> Increments(Tuple<string, int>[] fields, bool queueJump = false)
+        public virtual Task<long> IncrementLimitByMax(string field, int value, int max, bool queueJump = false)
         {
-            using (var tx = Connection.CreateTransaction())
-            {
-                var resultTask = new Task<long>[fields.Length];
-                for (int i = 0; i < fields.Length; i++)
-                {
-                    var field = fields[i];
-                    resultTask[i] = tx.Hashes.Increment(Db, Key, field.Item1, field.Item2, queueJump);
-                }
-
-                await tx.Execute(queueJump).ConfigureAwait(false);
-
-                var result = new long[fields.Length];
-                for (int i = 0; i < fields.Length; i++)
-                {
-                    result[i] = await resultTask[i].ConfigureAwait(false);
-                }
-
-                return result;
-            }
+            var v = Connection.Scripting.Eval(Db, @"
+local inc = tonumber(ARGV[1])
+local max = tonumber(ARGV[2])
+local x = redis.call('hincrby', KEYS[1], KEYS[2], inc)
+if(x > max) then
+    redis.call('hset', KEYS[1], KEYS[2], max)
+    x = max
+end
+return x", new[] { Key, field }, new object[] { value, max }, useCache: true, inferStrings: true, queueJump: queueJump);
+            return v.ContinueWith(x => (long)x.Result);
         }
 
-        public virtual async Task<double[]> Increments(Tuple<string, double>[] fields, bool queueJump = false)
+        public virtual Task<double> IncrementLimitByMax(string field, double value, double max, bool queueJump = false)
         {
-            using (var tx = Connection.CreateTransaction())
-            {
-                var resultTask = new Task<double>[fields.Length];
-                for (int i = 0; i < fields.Length; i++)
-                {
-                    var field = fields[i];
-                    resultTask[i] = tx.Hashes.Increment(Db, Key, field.Item1, field.Item2, queueJump);
-                }
+            var v = Connection.Scripting.Eval(Db, @"
+local inc = tonumber(ARGV[1])
+local max = tonumber(ARGV[2])
+local x = tonumber(redis.call('hincrbyfloat', KEYS[1], KEYS[2], inc))
+if(x > max) then
+    redis.call('hset', KEYS[1], KEYS[2], max)
+    x = max
+end
+return tostring(x)", new[] { Key, field }, new object[] { value, max }, useCache: true, inferStrings: true, queueJump: queueJump);
 
-                await tx.Execute(queueJump).ConfigureAwait(false);
+            return v.ContinueWith(x => double.Parse((string)x.Result));
+        }
 
-                var result = new double[fields.Length];
-                for (int i = 0; i < fields.Length; i++)
-                {
-                    result[i] = await resultTask[i].ConfigureAwait(false);
-                }
+        public virtual Task<long> IncrementLimitByMin(string field, int value, int min, bool queueJump = false)
+        {
+            var v = Connection.Scripting.Eval(Db, @"
+local inc = tonumber(ARGV[1])
+local min = tonumber(ARGV[2])
+local x = redis.call('hincrby', KEYS[1], KEYS[2], inc)
+if(x < min) then
+    redis.call('hset', KEYS[1], KEYS[2], min)
+    x = min
+end
+return x", new[] { Key, field }, new object[] { value, min }, useCache: true, inferStrings: true, queueJump: queueJump);
+            return v.ContinueWith(x => (long)x.Result);
+        }
 
-                return result;
-            }
+        public virtual Task<double> IncrementLimitByMin(string field, double value, double min, bool queueJump = false)
+        {
+            var v = Connection.Scripting.Eval(Db, @"
+local inc = tonumber(ARGV[1])
+local min = tonumber(ARGV[2])
+local x = tonumber(redis.call('hincrbyfloat', KEYS[1], KEYS[2], inc))
+if(x < min) then
+    redis.call('hset', KEYS[1], KEYS[2], min)
+    x = min
+end
+return tostring(x)", new[] { Key, field }, new object[] { value, min }, useCache: true, inferStrings: true, queueJump: queueJump);
+
+            return v.ContinueWith(x => double.Parse((string)x.Result));
         }
 
         public virtual Task<bool> SetExpire(int seconds, bool queueJump = false)
         {
             return Connection.Keys.Expire(Db, Key, seconds, queueJump);
-        }
-    }
-
-    /// <summary>
-    /// Memory memoized class mapped RedisHash
-    /// </summary>
-    public class MemoizedRedisClass<T> : RedisClass<T>
-        where T : class, new()
-    {
-        T cache = null;
-
-        public MemoizedRedisClass(RedisSettings settings, string hashKey, Func<T> valueFactory, int? expirySeconds = null)
-            : base(settings, hashKey, valueFactory, expirySeconds)
-        {
-        }
-
-        public MemoizedRedisClass(RedisGroup connectionGroup, string hashKey, Func<T> valueFactory, int? expirySeconds = null)
-            : base(connectionGroup, hashKey, valueFactory, expirySeconds)
-        {
-        }
-
-        public override async Task<T> GetValue(bool queueJump = false)
-        {
-            if (cache != null) return cache;
-
-            var value = await base.GetValue(queueJump).ConfigureAwait(false);
-            cache = value;
-            return value;
-        }
-
-        public override async Task SetValue(T value, bool queueJump = false)
-        {
-            await base.SetValue(value, queueJump).ConfigureAwait(false);
-            if (cache != null)
-            {
-                cache = value;
-            }
-        }
-
-        public override async Task<bool> SetField(string field, object value, bool queueJump = false)
-        {
-            var result = await base.SetField(field, value, queueJump).ConfigureAwait(false);
-            if (cache != null)
-            {
-                FastMember.ObjectAccessor.Create(cache)[field] = value;
-            }
-            return result;
-        }
-
-        public override async Task SetFields(Tuple<string, object>[] fields, bool queueJump = false)
-        {
-            await base.SetFields(fields, queueJump).ConfigureAwait(false);
-            if (cache != null)
-            {
-                var accessor = FastMember.TypeAccessor.Create(typeof(T), allowNonPublicAccessors: false);
-                foreach (var field in fields)
-                {
-                    accessor[cache, field.Item1] = field.Item2;
-                }
-            }
-        }
-
-        public override async Task<long> Increment(string field, int value = 1, bool queueJump = false)
-        {
-            var v = await base.Increment(field, value, queueJump).ConfigureAwait(false);
-            if (cache != null)
-            {
-                FastMember.ObjectAccessor.Create(cache)[field] = v;
-            }
-            return v;
-        }
-
-        public override async Task<double> Increment(string field, double value = 1, bool queueJump = false)
-        {
-            var v = await base.Increment(field, value, queueJump).ConfigureAwait(false);
-            if (cache != null)
-            {
-                FastMember.ObjectAccessor.Create(cache)[field] = v;
-            }
-            return v;
-        }
-
-        public override async Task<long[]> Increments(Tuple<string, int>[] fields, bool queueJump = false)
-        {
-            var v = await base.Increments(fields, queueJump).ConfigureAwait(false);
-            if (cache != null)
-            {
-                var accessor = FastMember.TypeAccessor.Create(typeof(T));
-                for (int i = 0; i < fields.Length; i++)
-                {
-                    accessor[cache, fields[i].Item1] = v[i];
-                }
-            }
-            return v;
-        }
-
-        public override async Task<double[]> Increments(Tuple<string, double>[] fields, bool queueJump = false)
-        {
-            var v = await base.Increments(fields, queueJump).ConfigureAwait(false);
-            if (cache != null)
-            {
-                var accessor = FastMember.TypeAccessor.Create(typeof(T));
-                for (int i = 0; i < fields.Length; i++)
-                {
-                    accessor[cache, fields[i].Item1] = v[i];
-                }
-            }
-            return v;
         }
     }
 }
