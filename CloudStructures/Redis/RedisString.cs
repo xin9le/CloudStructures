@@ -1,8 +1,5 @@
 ﻿using BookSleeve;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace CloudStructures.Redis
@@ -14,32 +11,26 @@ namespace CloudStructures.Redis
         readonly RedisSettings settings;
         readonly RedisTransaction transaction;
         readonly IRedisValueConverter valueConverter;
-        readonly Func<T> valueFactory;
-        readonly int? expirySeconds;
 
-        public RedisString(RedisSettings settings, string stringKey, Func<T> valueFactoryIfNotExists = null, int? expirySeconds = null)
+        public RedisString(RedisSettings settings, string stringKey)
         {
             this.settings = settings;
             this.Db = settings.Db;
             this.valueConverter = settings.ValueConverter;
             this.Key = stringKey;
-            this.valueFactory = valueFactoryIfNotExists;
-            this.expirySeconds = expirySeconds;
         }
 
-        public RedisString(RedisGroup connectionGroup, string stringKey, Func<T> valueFactoryIfNotExists = null, int? expirySeconds = null)
-            : this(connectionGroup.GetSettings(stringKey), stringKey, valueFactoryIfNotExists, expirySeconds)
+        public RedisString(RedisGroup connectionGroup, string stringKey)
+            : this(connectionGroup.GetSettings(stringKey), stringKey)
         {
         }
 
-        public RedisString(RedisTransaction transaction, int db, IRedisValueConverter valueConverter, string stringKey, Func<T> valueFactoryIfNotExists = null, int? expirySeconds = null)
+        public RedisString(RedisTransaction transaction, int db, IRedisValueConverter valueConverter, string stringKey)
         {
             this.transaction = transaction;
             this.Db = db;
             this.valueConverter = valueConverter;
             this.Key = stringKey;
-            this.valueFactory = valueFactoryIfNotExists;
-            this.expirySeconds = expirySeconds;
         }
 
         protected RedisConnection Connection
@@ -58,27 +49,30 @@ namespace CloudStructures.Redis
             }
         }
 
-        public virtual async Task<Tuple<bool, T>> TryGet(bool queueJump = false)
+        public async Task<Tuple<bool, T>> TryGet(bool queueJump = false)
         {
             var value = await Command.Get(Db, Key, queueJump).ConfigureAwait(false);
-            if (value == null)
-            {
-                if (valueFactory != null)
-                {
-                    var v = valueFactory();
-                    await Set(v, expirySeconds, queueJump).ConfigureAwait(false);
-                    return Tuple.Create(true, v);
-                }
-                else
-                {
-                    return Tuple.Create(false, default(T));
-                }
-            }
-
-            return Tuple.Create(true, valueConverter.Deserialize<T>(value));
+            return (value == null)
+                ? Tuple.Create(false, default(T))
+                : Tuple.Create(true, valueConverter.Deserialize<T>(value));
         }
 
-        public virtual Task Set(T value, long? expirySeconds = null, bool queueJump = false)
+        public async Task<T> GetOrAdd(Func<T> valueFactory, int? expirySeconds, bool queueJump = false)
+        {
+            var value = await TryGet(queueJump).ConfigureAwait(false);
+            if (value.Item1)
+            {
+                return value.Item2;
+            }
+            else
+            {
+                var v = valueFactory();
+                await Set(v, expirySeconds, queueJump).ConfigureAwait(false);
+                return v;
+            }
+        }
+
+        public Task Set(T value, long? expirySeconds = null, bool queueJump = false)
         {
             var v = valueConverter.Serialize(value);
             if (expirySeconds == null)
@@ -91,22 +85,22 @@ namespace CloudStructures.Redis
             }
         }
 
-        public virtual Task<long> Increment(long value = 1, bool queueJump = false)
+        public Task<long> Increment(long value = 1, bool queueJump = false)
         {
             return Command.Increment(Db, Key, value, queueJump);
         }
 
-        public virtual Task<double> Increment(double value, bool queueJump = false)
+        public Task<double> Increment(double value, bool queueJump = false)
         {
             return Command.Increment(Db, Key, value, queueJump);
         }
 
-        public virtual Task<long> Decrement(long value = 1, bool queueJump = false)
+        public Task<long> Decrement(long value = 1, bool queueJump = false)
         {
             return Command.Decrement(Db, Key, value, queueJump);
         }
 
-        public virtual Task<long> IncrementLimitByMax(long value, long max, bool queueJump = false)
+        public Task<long> IncrementLimitByMax(long value, long max, bool queueJump = false)
         {
             var v = Connection.Scripting.Eval(Db, @"
 local inc = tonumber(ARGV[1])
@@ -120,7 +114,7 @@ return x", new[] { Key }, new object[] { value, max }, useCache: true, inferStri
             return v.ContinueWith(x => (long)x.Result);
         }
 
-        public virtual Task<long> IncrementLimitByMin(long value, long min, bool queueJump = false)
+        public Task<long> IncrementLimitByMin(long value, long min, bool queueJump = false)
         {
             var v = Connection.Scripting.Eval(Db, @"
 local inc = tonumber(ARGV[1])
@@ -134,7 +128,7 @@ return x", new[] { Key }, new object[] { value, min }, useCache: true, inferStri
             return v.ContinueWith(x => (long)x.Result);
         }
 
-        public virtual Task<double> IncrementLimitByMax(double value, double max, bool queueJump = false)
+        public Task<double> IncrementLimitByMax(double value, double max, bool queueJump = false)
         {
             var v = Connection.Scripting.Eval(Db, @"
 local inc = tonumber(ARGV[1])
@@ -148,7 +142,7 @@ return tostring(x)", new[] { Key }, new object[] { value, max }, useCache: true,
             return v.ContinueWith(x => double.Parse((string)x.Result));
         }
 
-        public virtual Task<double> IncrementLimitByMin(double value, double min, bool queueJump = false)
+        public Task<double> IncrementLimitByMin(double value, double min, bool queueJump = false)
         {
             var v = Connection.Scripting.Eval(Db, @"
 local inc = tonumber(ARGV[1])

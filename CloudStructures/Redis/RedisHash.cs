@@ -8,6 +8,49 @@ using System.Threading.Tasks;
 // RedisDictionary/Hash/Class
 namespace CloudStructures.Redis
 {
+    internal class HashScript
+    {
+        public const string IncrementLimitByMax = @"
+local inc = tonumber(ARGV[1])
+local max = tonumber(ARGV[2])
+local x = redis.call('hincrby', KEYS[1], KEYS[2], inc)
+if(x > max) then
+    redis.call('hset', KEYS[1], KEYS[2], max)
+    x = max
+end
+return x";
+
+        public const string IncrementLimitByMin = @"
+local inc = tonumber(ARGV[1])
+local min = tonumber(ARGV[2])
+local x = redis.call('hincrby', KEYS[1], KEYS[2], inc)
+if(x < min) then
+    redis.call('hset', KEYS[1], KEYS[2], min)
+    x = min
+end
+return x";
+
+        public const string IncrementFloatLimitByMax = @"
+local inc = tonumber(ARGV[1])
+local max = tonumber(ARGV[2])
+local x = tonumber(redis.call('hincrbyfloat', KEYS[1], KEYS[2], inc))
+if(x > max) then
+    redis.call('hset', KEYS[1], KEYS[2], max)
+    x = max
+end
+return tostring(x)";
+
+        public const string IncrementFloatLimitByMin = @"
+local inc = tonumber(ARGV[1])
+local min = tonumber(ARGV[2])
+local x = tonumber(redis.call('hincrbyfloat', KEYS[1], KEYS[2], inc))
+if(x < min) then
+    redis.call('hset', KEYS[1], KEYS[2], min)
+    x = min
+end
+return tostring(x)";
+    }
+
     public class RedisDictionary<T>
     {
         public string Key { get; private set; }
@@ -56,7 +99,7 @@ namespace CloudStructures.Redis
         /// <summary>
         /// HEXISTS http://redis.io/commands/hexists
         /// </summary>
-        public virtual Task<bool> Exists(string field, bool queueJump = false)
+        public Task<bool> Exists(string field, bool queueJump = false)
         {
             return Command.Exists(Db, Key, field, queueJump);
         }
@@ -64,7 +107,7 @@ namespace CloudStructures.Redis
         /// <summary>
         /// HGET http://redis.io/commands/hget
         /// </summary>
-        public virtual async Task<T> Get(string field, bool queueJump = false)
+        public async Task<T> Get(string field, bool queueJump = false)
         {
             var v = await Command.Get(Db, Key, field, queueJump).ConfigureAwait(false);
             return valueConverter.Deserialize<T>(v);
@@ -73,7 +116,7 @@ namespace CloudStructures.Redis
         /// <summary>
         /// HMGET http://redis.io/commands/hmget
         /// </summary>
-        public virtual async Task<T[]> Get(string[] fields, bool queueJump = false)
+        public async Task<T[]> Get(string[] fields, bool queueJump = false)
         {
             var v = await Command.Get(Db, Key, fields, queueJump).ConfigureAwait(false);
             return v.Select(valueConverter.Deserialize<T>).ToArray();
@@ -82,7 +125,7 @@ namespace CloudStructures.Redis
         /// <summary>
         /// HGETALL http://redis.io/commands/hgetall
         /// </summary>
-        public virtual async Task<Dictionary<string, T>> GetAll(bool queueJump = false)
+        public async Task<Dictionary<string, T>> GetAll(bool queueJump = false)
         {
             var v = await Command.GetAll(Db, Key, queueJump).ConfigureAwait(false);
             return v.ToDictionary(x => x.Key, x => valueConverter.Deserialize<T>(x.Value));
@@ -91,7 +134,7 @@ namespace CloudStructures.Redis
         /// <summary>
         /// HKEYS http://redis.io/commands/hkeys
         /// </summary>
-        public virtual Task<string[]> GetKeys(bool queueJump = false)
+        public Task<string[]> GetKeys(bool queueJump = false)
         {
             return Command.GetKeys(Db, Key, queueJump);
         }
@@ -99,7 +142,7 @@ namespace CloudStructures.Redis
         /// <summary>
         /// HLEN http://redis.io/commands/hlen
         /// </summary>
-        public virtual Task<long> GetLength(bool queueJump = false)
+        public Task<long> GetLength(bool queueJump = false)
         {
             return Command.GetLength(Db, Key, queueJump);
         }
@@ -107,7 +150,7 @@ namespace CloudStructures.Redis
         /// <summary>
         /// HVALS http://redis.io/commands/hvals
         /// </summary>
-        public virtual async Task<T[]> GetValues(bool queueJump = false)
+        public async Task<T[]> GetValues(bool queueJump = false)
         {
             var v = await Command.GetValues(Db, Key, queueJump).ConfigureAwait(false);
             return v.Select(valueConverter.Deserialize<T>).ToArray();
@@ -116,73 +159,41 @@ namespace CloudStructures.Redis
         /// <summary>
         /// HINCRBY http://redis.io/commands/hincrby
         /// </summary>
-        public virtual Task<long> Increment(string field, int value = 1, bool queueJump = false)
+        public Task<long> Increment(string field, int value = 1, bool queueJump = false)
         {
             return Command.Increment(Db, Key, field, value, queueJump);
         }
 
-        public virtual Task<long> IncrementLimitByMax(string field, int value, int max, bool queueJump = false)
+        public Task<long> IncrementLimitByMax(string field, int value, int max, bool queueJump = false)
         {
-            var v = Connection.Scripting.Eval(Db, @"
-local inc = tonumber(ARGV[1])
-local max = tonumber(ARGV[2])
-local x = redis.call('hincrby', KEYS[1], KEYS[2], inc)
-if(x > max) then
-    redis.call('hset', KEYS[1], KEYS[2], max)
-    x = max
-end
-return x", new[] { Key, field }, new object[] { value, max }, useCache: true, inferStrings: true, queueJump: queueJump);
+            var v = Connection.Scripting.Eval(Db, HashScript.IncrementLimitByMax, new[] { Key, field }, new object[] { value, max }, useCache: true, inferStrings: true, queueJump: queueJump);
             return v.ContinueWith(x => (long)x.Result);
         }
 
         /// <summary>
         /// HINCRBYFLOAT http://redis.io/commands/hincrbyfloat
         /// </summary>
-        public virtual Task<double> Increment(string field, double value, bool queueJump = false)
+        public Task<double> Increment(string field, double value, bool queueJump = false)
         {
             return Command.Increment(Db, Key, field, value, queueJump);
         }
 
-        public virtual Task<double> IncrementLimitByMax(string field, double value, double max, bool queueJump = false)
+        public Task<double> IncrementLimitByMax(string field, double value, double max, bool queueJump = false)
         {
-            var v = Connection.Scripting.Eval(Db, @"
-local inc = tonumber(ARGV[1])
-local max = tonumber(ARGV[2])
-local x = tonumber(redis.call('hincrbyfloat', KEYS[1], KEYS[2], inc))
-if(x > max) then
-    redis.call('hset', KEYS[1], KEYS[2], max)
-    x = max
-end
-return tostring(x)", new[] { Key, field }, new object[] { value, max }, useCache: true, inferStrings: true, queueJump: queueJump);
+            var v = Connection.Scripting.Eval(Db, HashScript.IncrementFloatLimitByMax, new[] { Key, field }, new object[] { value, max }, useCache: true, inferStrings: true, queueJump: queueJump);
 
             return v.ContinueWith(x => double.Parse((string)x.Result));
         }
 
-        public virtual Task<long> IncrementLimitByMin(string field, int value, int min, bool queueJump = false)
+        public Task<long> IncrementLimitByMin(string field, int value, int min, bool queueJump = false)
         {
-            var v = Connection.Scripting.Eval(Db, @"
-local inc = tonumber(ARGV[1])
-local min = tonumber(ARGV[2])
-local x = redis.call('hincrby', KEYS[1], KEYS[2], inc)
-if(x < min) then
-    redis.call('hset', KEYS[1], KEYS[2], min)
-    x = min
-end
-return x", new[] { Key, field }, new object[] { value, min }, useCache: true, inferStrings: true, queueJump: queueJump);
+            var v = Connection.Scripting.Eval(Db, HashScript.IncrementLimitByMin, new[] { Key, field }, new object[] { value, min }, useCache: true, inferStrings: true, queueJump: queueJump);
             return v.ContinueWith(x => (long)x.Result);
         }
 
-        public virtual Task<double> IncrementLimitByMin(string field, double value, double min, bool queueJump = false)
+        public Task<double> IncrementLimitByMin(string field, double value, double min, bool queueJump = false)
         {
-            var v = Connection.Scripting.Eval(Db, @"
-local inc = tonumber(ARGV[1])
-local min = tonumber(ARGV[2])
-local x = tonumber(redis.call('hincrbyfloat', KEYS[1], KEYS[2], inc))
-if(x < min) then
-    redis.call('hset', KEYS[1], KEYS[2], min)
-    x = min
-end
-return tostring(x)", new[] { Key, field }, new object[] { value, min }, useCache: true, inferStrings: true, queueJump: queueJump);
+            var v = Connection.Scripting.Eval(Db, HashScript.IncrementFloatLimitByMin, new[] { Key, field }, new object[] { value, min }, useCache: true, inferStrings: true, queueJump: queueJump);
 
             return v.ContinueWith(x => double.Parse((string)x.Result));
         }
@@ -190,14 +201,14 @@ return tostring(x)", new[] { Key, field }, new object[] { value, min }, useCache
         /// <summary>
         /// HDEL http://redis.io/commands/hdel
         /// </summary>
-        public virtual Task<bool> Remove(string field, bool queueJump = false)
+        public Task<bool> Remove(string field, bool queueJump = false)
         {
             return Command.Remove(Db, Key, field, queueJump);
         }
         /// <summary>
         /// HDEL http://redis.io/commands/hdel
         /// </summary>
-        public virtual Task<long> Remove(string[] fields, bool queueJump = false)
+        public Task<long> Remove(string[] fields, bool queueJump = false)
         {
             return Command.Remove(Db, Key, fields, queueJump);
         }
@@ -205,7 +216,7 @@ return tostring(x)", new[] { Key, field }, new object[] { value, min }, useCache
         /// <summary>
         /// HMSET http://redis.io/commands/hmset
         /// </summary>
-        public virtual Task Set(Dictionary<string, T> values, bool queueJump = false)
+        public Task Set(Dictionary<string, T> values, bool queueJump = false)
         {
             var v = values.ToDictionary(x => x.Key, x => valueConverter.Serialize(x.Value));
             return Command.Set(Db, Key, v, queueJump);
@@ -214,7 +225,7 @@ return tostring(x)", new[] { Key, field }, new object[] { value, min }, useCache
         /// <summary>
         /// HSET http://redis.io/commands/hset
         /// </summary>
-        public virtual Task<bool> Set(string field, T value, bool queueJump = false)
+        public Task<bool> Set(string field, T value, bool queueJump = false)
         {
             return Command.Set(Db, Key, field, valueConverter.Serialize(value), queueJump);
         }
@@ -222,7 +233,7 @@ return tostring(x)", new[] { Key, field }, new object[] { value, min }, useCache
         /// <summary>
         /// HSETNX http://redis.io/commands/hsetnx
         /// </summary>
-        public virtual Task<bool> SetIfNotExists(string field, T value, bool queueJump = false)
+        public Task<bool> SetIfNotExists(string field, T value, bool queueJump = false)
         {
             return Command.SetIfNotExists(Db, Key, field, valueConverter.Serialize(value), queueJump);
         }
@@ -276,7 +287,7 @@ return tostring(x)", new[] { Key, field }, new object[] { value, min }, useCache
         /// <summary>
         /// HEXISTS http://redis.io/commands/hexists
         /// </summary>
-        public virtual Task<bool> Exists(string field, bool queueJump = false)
+        public Task<bool> Exists(string field, bool queueJump = false)
         {
             return Command.Exists(Db, Key, field, queueJump);
         }
@@ -284,7 +295,7 @@ return tostring(x)", new[] { Key, field }, new object[] { value, min }, useCache
         /// <summary>
         /// HGET http://redis.io/commands/hget
         /// </summary>
-        public virtual async Task<T> Get<T>(string field, bool queueJump = false)
+        public async Task<T> Get<T>(string field, bool queueJump = false)
         {
             var v = await Command.Get(Db, Key, field, queueJump).ConfigureAwait(false);
             return valueConverter.Deserialize<T>(v);
@@ -293,7 +304,7 @@ return tostring(x)", new[] { Key, field }, new object[] { value, min }, useCache
         /// <summary>
         /// HMGET http://redis.io/commands/hmget
         /// </summary>
-        public virtual async Task<T[]> Get<T>(string[] fields, bool queueJump = false)
+        public async Task<T[]> Get<T>(string[] fields, bool queueJump = false)
         {
             var v = await Command.Get(Db, Key, fields, queueJump).ConfigureAwait(false);
             return v.Select(valueConverter.Deserialize<T>).ToArray();
@@ -302,7 +313,7 @@ return tostring(x)", new[] { Key, field }, new object[] { value, min }, useCache
         /// <summary>
         /// HGETALL http://redis.io/commands/hgetall
         /// </summary>
-        public virtual async Task<Dictionary<string, T>> GetAll<T>(bool queueJump = false)
+        public async Task<Dictionary<string, T>> GetAll<T>(bool queueJump = false)
         {
             var v = await Command.GetAll(Db, Key, queueJump).ConfigureAwait(false);
             return v.ToDictionary(x => x.Key, x => valueConverter.Deserialize<T>(x.Value));
@@ -311,7 +322,7 @@ return tostring(x)", new[] { Key, field }, new object[] { value, min }, useCache
         /// <summary>
         /// HKEYS http://redis.io/commands/hkeys
         /// </summary>
-        public virtual Task<string[]> GetKeys(bool queueJump = false)
+        public Task<string[]> GetKeys(bool queueJump = false)
         {
             return Command.GetKeys(Db, Key, queueJump);
         }
@@ -319,7 +330,7 @@ return tostring(x)", new[] { Key, field }, new object[] { value, min }, useCache
         /// <summary>
         /// HLEN http://redis.io/commands/hlen
         /// </summary>
-        public virtual Task<long> GetLength(bool queueJump = false)
+        public Task<long> GetLength(bool queueJump = false)
         {
             return Command.GetLength(Db, Key, queueJump);
         }
@@ -327,7 +338,7 @@ return tostring(x)", new[] { Key, field }, new object[] { value, min }, useCache
         /// <summary>
         /// HVALS http://redis.io/commands/hvals
         /// </summary>
-        public virtual async Task<T[]> GetValues<T>(bool queueJump = false)
+        public async Task<T[]> GetValues<T>(bool queueJump = false)
         {
             var v = await Command.GetValues(Db, Key, queueJump).ConfigureAwait(false);
             return v.Select(valueConverter.Deserialize<T>).ToArray();
@@ -336,7 +347,7 @@ return tostring(x)", new[] { Key, field }, new object[] { value, min }, useCache
         /// <summary>
         /// HINCRBY http://redis.io/commands/hincrby
         /// </summary>
-        public virtual Task<long> Increment(string field, int value = 1, bool queueJump = false)
+        public Task<long> Increment(string field, int value = 1, bool queueJump = false)
         {
             return Command.Increment(Db, Key, field, value, queueJump);
         }
@@ -344,65 +355,33 @@ return tostring(x)", new[] { Key, field }, new object[] { value, min }, useCache
         /// <summary>
         /// HINCRBYFLOAT http://redis.io/commands/hincrbyfloat
         /// </summary>
-        public virtual Task<double> Increment(string field, double value, bool queueJump = false)
+        public Task<double> Increment(string field, double value, bool queueJump = false)
         {
             return Command.Increment(Db, Key, field, value, queueJump);
         }
 
-        public virtual Task<long> IncrementLimitByMax(string field, int value, int max, bool queueJump = false)
+        public Task<long> IncrementLimitByMax(string field, int value, int max, bool queueJump = false)
         {
-            var v = Connection.Scripting.Eval(Db, @"
-local inc = tonumber(ARGV[1])
-local max = tonumber(ARGV[2])
-local x = redis.call('hincrby', KEYS[1], KEYS[2], inc)
-if(x > max) then
-    redis.call('hset', KEYS[1], KEYS[2], max)
-    x = max
-end
-return x", new[] { Key, field }, new object[] { value, max }, useCache: true, inferStrings: true, queueJump: queueJump);
+            var v = Connection.Scripting.Eval(Db, HashScript.IncrementLimitByMax, new[] { Key, field }, new object[] { value, max }, useCache: true, inferStrings: true, queueJump: queueJump);
             return v.ContinueWith(x => (long)x.Result);
         }
 
-        public virtual Task<double> IncrementLimitByMax(string field, double value, double max, bool queueJump = false)
+        public Task<double> IncrementLimitByMax(string field, double value, double max, bool queueJump = false)
         {
-            var v = Connection.Scripting.Eval(Db, @"
-local inc = tonumber(ARGV[1])
-local max = tonumber(ARGV[2])
-local x = tonumber(redis.call('hincrbyfloat', KEYS[1], KEYS[2], inc))
-if(x > max) then
-    redis.call('hset', KEYS[1], KEYS[2], max)
-    x = max
-end
-return tostring(x)", new[] { Key, field }, new object[] { value, max }, useCache: true, inferStrings: true, queueJump: queueJump);
+            var v = Connection.Scripting.Eval(Db, HashScript.IncrementFloatLimitByMax, new[] { Key, field }, new object[] { value, max }, useCache: true, inferStrings: true, queueJump: queueJump);
 
             return v.ContinueWith(x => double.Parse((string)x.Result));
         }
 
-        public virtual Task<long> IncrementLimitByMin(string field, int value, int min, bool queueJump = false)
+        public Task<long> IncrementLimitByMin(string field, int value, int min, bool queueJump = false)
         {
-            var v = Connection.Scripting.Eval(Db, @"
-local inc = tonumber(ARGV[1])
-local min = tonumber(ARGV[2])
-local x = redis.call('hincrby', KEYS[1], KEYS[2], inc)
-if(x < min) then
-    redis.call('hset', KEYS[1], KEYS[2], min)
-    x = min
-end
-return x", new[] { Key, field }, new object[] { value, min }, useCache: true, inferStrings: true, queueJump: queueJump);
+            var v = Connection.Scripting.Eval(Db, HashScript.IncrementLimitByMin, new[] { Key, field }, new object[] { value, min }, useCache: true, inferStrings: true, queueJump: queueJump);
             return v.ContinueWith(x => (long)x.Result);
         }
 
-        public virtual Task<double> IncrementLimitByMin(string field, double value, double min, bool queueJump = false)
+        public Task<double> IncrementLimitByMin(string field, double value, double min, bool queueJump = false)
         {
-            var v = Connection.Scripting.Eval(Db, @"
-local inc = tonumber(ARGV[1])
-local min = tonumber(ARGV[2])
-local x = tonumber(redis.call('hincrbyfloat', KEYS[1], KEYS[2], inc))
-if(x < min) then
-    redis.call('hset', KEYS[1], KEYS[2], min)
-    x = min
-end
-return tostring(x)", new[] { Key, field }, new object[] { value, min }, useCache: true, inferStrings: true, queueJump: queueJump);
+            var v = Connection.Scripting.Eval(Db, HashScript.IncrementFloatLimitByMin, new[] { Key, field }, new object[] { value, min }, useCache: true, inferStrings: true, queueJump: queueJump);
 
             return v.ContinueWith(x => double.Parse((string)x.Result));
         }
@@ -410,14 +389,14 @@ return tostring(x)", new[] { Key, field }, new object[] { value, min }, useCache
         /// <summary>
         /// HDEL http://redis.io/commands/hdel
         /// </summary>
-        public virtual Task<bool> Remove(string field, bool queueJump = false)
+        public Task<bool> Remove(string field, bool queueJump = false)
         {
             return Command.Remove(Db, Key, field, queueJump);
         }
         /// <summary>
         /// HDEL http://redis.io/commands/hdel
         /// </summary>
-        public virtual Task<long> Remove(string[] fields, bool queueJump = false)
+        public Task<long> Remove(string[] fields, bool queueJump = false)
         {
             return Command.Remove(Db, Key, fields, queueJump);
         }
@@ -425,7 +404,7 @@ return tostring(x)", new[] { Key, field }, new object[] { value, min }, useCache
         /// <summary>
         /// HMSET http://redis.io/commands/hmset
         /// </summary>
-        public virtual Task Set(Dictionary<string, object> values, bool queueJump = false)
+        public Task Set(Dictionary<string, object> values, bool queueJump = false)
         {
             var v = values.ToDictionary(x => x.Key, x => valueConverter.Serialize(x.Value));
             return Command.Set(Db, Key, v, queueJump);
@@ -434,7 +413,7 @@ return tostring(x)", new[] { Key, field }, new object[] { value, min }, useCache
         /// <summary>
         /// HSET http://redis.io/commands/hset
         /// </summary>
-        public virtual Task<bool> Set(string field, object value, bool queueJump = false)
+        public Task<bool> Set(string field, object value, bool queueJump = false)
         {
             return Command.Set(Db, Key, field, valueConverter.Serialize(value), queueJump);
         }
@@ -442,7 +421,7 @@ return tostring(x)", new[] { Key, field }, new object[] { value, min }, useCache
         /// <summary>
         /// HSETNX http://redis.io/commands/hsetnx
         /// </summary>
-        public virtual Task<bool> SetIfNotExists(string field, object value, bool queueJump = false)
+        public Task<bool> SetIfNotExists(string field, object value, bool queueJump = false)
         {
             return Command.SetIfNotExists(Db, Key, field, valueConverter.Serialize(value), queueJump);
         }
@@ -459,32 +438,26 @@ return tostring(x)", new[] { Key, field }, new object[] { value, min }, useCache
         readonly RedisSettings settings;
         readonly RedisTransaction transaction;
         readonly IRedisValueConverter valueConverter;
-        readonly Func<T> valueFactory;
-        readonly int? expirySeconds;
 
-        public RedisClass(RedisSettings settings, string hashKey, Func<T> valueFactoryIfNotExists = null, int? expirySeconds = null)
+        public RedisClass(RedisSettings settings, string hashKey)
         {
             this.settings = settings;
             this.Db = settings.Db;
             this.valueConverter = settings.ValueConverter;
             this.Key = hashKey;
-            this.valueFactory = valueFactoryIfNotExists;
-            this.expirySeconds = expirySeconds;
         }
 
-        public RedisClass(RedisGroup connectionGroup, string hashKey, Func<T> valueFactoryIfNotExists = null, int? expirySeconds = null)
-            : this(connectionGroup.GetSettings(hashKey), hashKey, valueFactoryIfNotExists, expirySeconds)
+        public RedisClass(RedisGroup connectionGroup, string hashKey)
+            : this(connectionGroup.GetSettings(hashKey), hashKey)
         {
         }
 
-        public RedisClass(RedisTransaction transaction, int db, IRedisValueConverter valueConverter, string hashKey, Func<T> valueFactoryIfNotExists = null, int? expirySeconds = null)
+        public RedisClass(RedisTransaction transaction, int db, IRedisValueConverter valueConverter, string hashKey)
         {
             this.transaction = transaction;
             this.Db = db;
             this.valueConverter = valueConverter;
             this.Key = hashKey;
-            this.valueFactory = valueFactoryIfNotExists;
-            this.expirySeconds = expirySeconds;
         }
 
         protected RedisConnection Connection
@@ -503,26 +476,11 @@ return tostring(x)", new[] { Key, field }, new object[] { value, min }, useCache
             }
         }
 
-        public virtual async Task<T> GetValue(bool queueJump = false)
+        public async Task<T> GetValue(bool queueJump = false)
         {
             var data = await Command.GetAll(Db, Key, queueJump).ConfigureAwait(false);
             if (data == null)
             {
-                if (valueFactory != null)
-                {
-                    var value = valueFactory();
-                    if (expirySeconds != null)
-                    {
-                        var a = SetValue(value);
-                        var b = SetExpire(expirySeconds.Value, queueJump);
-                        await Task.WhenAll(a, b).ConfigureAwait(false);
-                    }
-                    else
-                    {
-                        await SetValue(value);
-                    }
-                    return value;
-                }
                 return null;
             }
 
@@ -541,7 +499,28 @@ return tostring(x)", new[] { Key, field }, new object[] { value, min }, useCache
             return result;
         }
 
-        public virtual Task SetValue(T value, bool queueJump = false)
+        public async Task<T> GetValueOrSet(Func<T> valueFactory, int? expirySeconds, bool queueJump)
+        {
+            var value = await GetValue(queueJump).ConfigureAwait(false);
+            if (value == null)
+            {
+                value = valueFactory();
+                if (expirySeconds != null)
+                {
+                    var a = SetValue(value);
+                    var b = SetExpire(expirySeconds.Value, queueJump);
+                    await Task.WhenAll(a, b).ConfigureAwait(false);
+                }
+                else
+                {
+                    await SetValue(value).ConfigureAwait(false);
+                }
+            }
+
+            return value;
+        }
+
+        public Task SetValue(T value, bool queueJump = false)
         {
             var accessor = FastMember.TypeAccessor.Create(typeof(T), allowNonPublicAccessors: false);
             var members = accessor.GetMembers();
@@ -554,12 +533,12 @@ return tostring(x)", new[] { Key, field }, new object[] { value, min }, useCache
             return Command.Set(Db, Key, values, queueJump);
         }
 
-        public virtual Task<bool> SetField(string field, object value, bool queueJump = false)
+        public Task<bool> SetField(string field, object value, bool queueJump = false)
         {
             return Command.Set(Db, Key, field, valueConverter.Serialize(value), queueJump);
         }
 
-        public virtual Task SetFields(Tuple<string, object>[] fields, bool queueJump = false)
+        public Task SetFields(Tuple<string, object>[] fields, bool queueJump = false)
         {
             var accessor = FastMember.TypeAccessor.Create(typeof(T), allowNonPublicAccessors: false);
             var values = new Dictionary<string, byte[]>(fields.Length);
@@ -571,81 +550,49 @@ return tostring(x)", new[] { Key, field }, new object[] { value, min }, useCache
             return Command.Set(Db, Key, values, queueJump);
         }
 
-        public virtual async Task<TField> GetField<TField>(string field, bool queueJump = false)
+        public async Task<TField> GetField<TField>(string field, bool queueJump = false)
         {
             var v = await Command.Get(Db, Key, field, queueJump).ConfigureAwait(false);
             return valueConverter.Deserialize<TField>(v);
         }
 
-        public virtual Task<long> Increment(string field, int value = 1, bool queueJump = false)
+        public Task<long> Increment(string field, int value = 1, bool queueJump = false)
         {
             return Command.Increment(Db, Key, field, value, queueJump);
         }
 
-        public virtual Task<double> Increment(string field, double value, bool queueJump = false)
+        public Task<double> Increment(string field, double value, bool queueJump = false)
         {
             return Command.Increment(Db, Key, field, value, queueJump);
         }
 
-        public virtual Task<long> IncrementLimitByMax(string field, int value, int max, bool queueJump = false)
+        public Task<long> IncrementLimitByMax(string field, int value, int max, bool queueJump = false)
         {
-            var v = Connection.Scripting.Eval(Db, @"
-local inc = tonumber(ARGV[1])
-local max = tonumber(ARGV[2])
-local x = redis.call('hincrby', KEYS[1], KEYS[2], inc)
-if(x > max) then
-    redis.call('hset', KEYS[1], KEYS[2], max)
-    x = max
-end
-return x", new[] { Key, field }, new object[] { value, max }, useCache: true, inferStrings: true, queueJump: queueJump);
+            var v = Connection.Scripting.Eval(Db, HashScript.IncrementLimitByMax, new[] { Key, field }, new object[] { value, max }, useCache: true, inferStrings: true, queueJump: queueJump);
             return v.ContinueWith(x => (long)x.Result);
         }
 
-        public virtual Task<double> IncrementLimitByMax(string field, double value, double max, bool queueJump = false)
+        public Task<double> IncrementLimitByMax(string field, double value, double max, bool queueJump = false)
         {
-            var v = Connection.Scripting.Eval(Db, @"
-local inc = tonumber(ARGV[1])
-local max = tonumber(ARGV[2])
-local x = tonumber(redis.call('hincrbyfloat', KEYS[1], KEYS[2], inc))
-if(x > max) then
-    redis.call('hset', KEYS[1], KEYS[2], max)
-    x = max
-end
-return tostring(x)", new[] { Key, field }, new object[] { value, max }, useCache: true, inferStrings: true, queueJump: queueJump);
+            var v = Connection.Scripting.Eval(Db, HashScript.IncrementFloatLimitByMax, new[] { Key, field }, new object[] { value, max }, useCache: true, inferStrings: true, queueJump: queueJump);
 
             return v.ContinueWith(x => double.Parse((string)x.Result));
         }
 
-        public virtual Task<long> IncrementLimitByMin(string field, int value, int min, bool queueJump = false)
+        public Task<long> IncrementLimitByMin(string field, int value, int min, bool queueJump = false)
         {
-            var v = Connection.Scripting.Eval(Db, @"
-local inc = tonumber(ARGV[1])
-local min = tonumber(ARGV[2])
-local x = redis.call('hincrby', KEYS[1], KEYS[2], inc)
-if(x < min) then
-    redis.call('hset', KEYS[1], KEYS[2], min)
-    x = min
-end
-return x", new[] { Key, field }, new object[] { value, min }, useCache: true, inferStrings: true, queueJump: queueJump);
+            var v = Connection.Scripting.Eval(Db, HashScript.IncrementLimitByMin, new[] { Key, field }, new object[] { value, min }, useCache: true, inferStrings: true, queueJump: queueJump);
             return v.ContinueWith(x => (long)x.Result);
         }
 
-        public virtual Task<double> IncrementLimitByMin(string field, double value, double min, bool queueJump = false)
+        public Task<double> IncrementLimitByMin(string field, double value, double min, bool queueJump = false)
         {
-            var v = Connection.Scripting.Eval(Db, @"
-local inc = tonumber(ARGV[1])
-local min = tonumber(ARGV[2])
-local x = tonumber(redis.call('hincrbyfloat', KEYS[1], KEYS[2], inc))
-if(x < min) then
-    redis.call('hset', KEYS[1], KEYS[2], min)
-    x = min
-end
-return tostring(x)", new[] { Key, field }, new object[] { value, min }, useCache: true, inferStrings: true, queueJump: queueJump);
+            var v = Connection.Scripting.Eval(Db, HashScript.IncrementFloatLimitByMin, new[] { Key, field }, new object[] { value, min }, useCache: true, inferStrings: true, queueJump: queueJump);
 
             return v.ContinueWith(x => double.Parse((string)x.Result));
         }
 
-        public virtual Task<bool> SetExpire(int seconds, bool queueJump = false)
+        public Task<bool> SetExpire(int seconds, bool queueJump = false)
         {
             return Connection.Keys.Expire(Db, Key, seconds, queueJump);
         }

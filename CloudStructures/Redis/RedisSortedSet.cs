@@ -53,7 +53,7 @@ namespace CloudStructures.Redis
         /// <summary>
         /// ZADD http://redis.io/commands/zadd
         /// </summary>
-        public virtual Task<bool> Add(T value, double score, bool queueJump = false)
+        public Task<bool> Add(T value, double score, bool queueJump = false)
         {
             return Command.Add(Db, Key, valueConverter.Serialize(value), score, queueJump);
         }
@@ -61,7 +61,7 @@ namespace CloudStructures.Redis
         /// <summary>
         /// ZCARD http://redis.io/commands/zcard
         /// </summary>
-        public virtual Task<long> GetLength(bool queueJump = false)
+        public Task<long> GetLength(bool queueJump = false)
         {
             return Command.GetLength(Db, Key, queueJump);
         }
@@ -69,7 +69,7 @@ namespace CloudStructures.Redis
         /// <summary>
         /// ZCOUNT http://redis.io/commands/zcount
         /// </summary>
-        public virtual Task<long> GetLength(double min, double max, bool queueJump = false)
+        public Task<long> GetLength(double min, double max, bool queueJump = false)
         {
             return Command.GetLength(Db, Key, min, max, queueJump);
         }
@@ -77,7 +77,7 @@ namespace CloudStructures.Redis
         /// <summary>
         /// ZINCRBY http://redis.io/commands/zincrby
         /// </summary>
-        public virtual Task<double> Increment(T member, double delta, bool queueJump = false)
+        public Task<double> Increment(T member, double delta, bool queueJump = false)
         {
             return Command.Increment(Db, Key, valueConverter.Serialize(member), delta, queueJump);
         }
@@ -85,7 +85,7 @@ namespace CloudStructures.Redis
         /// <summary>
         /// ZINCRBY http://redis.io/commands/zincrby
         /// </summary>
-        public virtual Task<double>[] Increment(T[] members, double delta, bool queueJump = false)
+        public Task<double>[] Increment(T[] members, double delta, bool queueJump = false)
         {
             var v = members.Select(x => valueConverter.Serialize(x)).ToArray();
             return Command.Increment(Db, Key, v, delta, queueJump);
@@ -94,7 +94,7 @@ namespace CloudStructures.Redis
         /// <summary>
         /// ZRANGE http://redis.io/commands/zrange
         /// </summary>
-        public virtual async Task<KeyValuePair<T, double>[]> Range(long start, long stop, bool ascending = true, bool queueJump = false)
+        public async Task<KeyValuePair<T, double>[]> Range(long start, long stop, bool ascending = true, bool queueJump = false)
         {
             var v = await Command.Range(Db, Key, start, stop, ascending, queueJump).ConfigureAwait(false);
             return v.Select(x => new KeyValuePair<T, double>(valueConverter.Deserialize<T>(x.Key), x.Value)).ToArray();
@@ -103,7 +103,7 @@ namespace CloudStructures.Redis
         /// <summary>
         /// ZRANGEBYSCORE http://redis.io/commands/zrangebyscore
         /// </summary>
-        public virtual async Task<KeyValuePair<T, double>[]> Range(double min = -1.0 / 0.0, double max = 1.0 / 0.0, bool ascending = true, bool minInclusive = true, bool maxInclusive = true, long offset = 0, long count = 9223372036854775807, bool queueJump = false)
+        public async Task<KeyValuePair<T, double>[]> Range(double min = -1.0 / 0.0, double max = 1.0 / 0.0, bool ascending = true, bool minInclusive = true, bool maxInclusive = true, long offset = 0, long count = 9223372036854775807, bool queueJump = false)
         {
             var v = await Command.Range(Db, Key, min, max, ascending, minInclusive, maxInclusive, offset, count, queueJump).ConfigureAwait(false);
             return v.Select(x => new KeyValuePair<T, double>(valueConverter.Deserialize<T>(x.Key), x.Value)).ToArray();
@@ -112,7 +112,7 @@ namespace CloudStructures.Redis
         /// <summary>
         /// ZRANK http://redis.io/commands/zrank
         /// </summary>
-        public virtual Task<long?> Rank(T member, bool ascending = true, bool queueJump = false)
+        public Task<long?> Rank(T member, bool ascending = true, bool queueJump = false)
         {
             return Command.Rank(Db, Key, valueConverter.Serialize(member), ascending, queueJump);
         }
@@ -120,7 +120,7 @@ namespace CloudStructures.Redis
         /// <summary>
         /// ZREM http://redis.io/commands/zrem
         /// </summary>
-        public virtual Task<bool> Remove(T member, bool queueJump = false)
+        public Task<bool> Remove(T member, bool queueJump = false)
         {
             return Command.Remove(Db, Key, valueConverter.Serialize(member), queueJump);
         }
@@ -128,7 +128,7 @@ namespace CloudStructures.Redis
         /// <summary>
         /// ZREM http://redis.io/commands/zrem
         /// </summary>
-        public virtual Task<long> Remove(T[] members, bool queueJump = false)
+        public Task<long> Remove(T[] members, bool queueJump = false)
         {
             var v = members.Select(x => valueConverter.Serialize(x)).ToArray();
             return Command.Remove(Db, Key, v, queueJump);
@@ -137,7 +137,7 @@ namespace CloudStructures.Redis
         /// <summary>
         /// ZREMRANGEBYRANK http://redis.io/commands/zremrangebyrank
         /// </summary>
-        public virtual Task<long> RemoveRange(long start, long stop, bool queueJump = false)
+        public Task<long> RemoveRange(long start, long stop, bool queueJump = false)
         {
             return Command.RemoveRange(Db, Key, start, stop, queueJump);
         }
@@ -145,7 +145,7 @@ namespace CloudStructures.Redis
         /// <summary>
         /// ZREMRANGEBYSCORE http://redis.io/commands/zremrangebyscore
         /// </summary>
-        public virtual Task<long> RemoveRange(double min, double max, bool minInclusive = true, bool maxInclusive = true, bool queueJump = false)
+        public Task<long> RemoveRange(double min, double max, bool minInclusive = true, bool maxInclusive = true, bool queueJump = false)
         {
             return Command.RemoveRange(Db, Key, min, max, minInclusive, maxInclusive, queueJump);
         }
@@ -153,17 +153,17 @@ namespace CloudStructures.Redis
         /// <summary>
         /// ZSCORE http://redis.io/commands/zscore
         /// </summary>
-        public virtual Task<double?> Score(T member, bool queueJump = false)
+        public Task<double?> Score(T member, bool queueJump = false)
         {
             return Command.Score(Db, Key, valueConverter.Serialize(member), queueJump);
         }
 
-        public virtual Task<bool> SetExpire(int seconds, bool queueJump = false)
+        public Task<bool> SetExpire(int seconds, bool queueJump = false)
         {
             return Connection.Keys.Expire(Db, Key, seconds, queueJump);
         }
 
-        public virtual Task<bool> Clear(bool queueJump = false)
+        public Task<bool> Clear(bool queueJump = false)
         {
             return Connection.Keys.Remove(Db, Key, queueJump);
         }
