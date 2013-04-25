@@ -57,7 +57,7 @@ namespace CloudStructures.Redis
                 : Tuple.Create(true, valueConverter.Deserialize<T>(value));
         }
 
-        public async Task<T> GetOrAdd(Func<T> valueFactory, int? expirySeconds, bool queueJump = false)
+        public async Task<T> GetOrAdd(Func<T> valueFactory, int? expirySeconds = null, bool queueJump = false)
         {
             var value = await TryGet(queueJump).ConfigureAwait(false);
             if (value.Item1)
@@ -83,6 +83,11 @@ namespace CloudStructures.Redis
             {
                 return Command.Set(Db, Key, v, expirySeconds.Value, queueJump: queueJump);
             }
+        }
+
+        public Task<bool> Remove(bool queueJump = false)
+        {
+            return Connection.Keys.Remove(Db, Key, queueJump);
         }
 
         public Task<long> Increment(long value = 1, bool queueJump = false)

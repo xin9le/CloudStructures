@@ -237,6 +237,11 @@ return tostring(x)";
         {
             return Command.SetIfNotExists(Db, Key, field, valueConverter.Serialize(value), queueJump);
         }
+
+        public Task<bool> Clear(bool queueJump = false)
+        {
+            return Connection.Keys.Remove(Db, Key, queueJump);
+        }
     }
 
     public class RedisHash
@@ -425,6 +430,11 @@ return tostring(x)";
         {
             return Command.SetIfNotExists(Db, Key, field, valueConverter.Serialize(value), queueJump);
         }
+
+        public Task<bool> Clear(bool queueJump = false)
+        {
+            return Connection.Keys.Remove(Db, Key, queueJump);
+        }
     }
 
 
@@ -499,7 +509,7 @@ return tostring(x)";
             return result;
         }
 
-        public async Task<T> GetValueOrSet(Func<T> valueFactory, int? expirySeconds, bool queueJump)
+        public async Task<T> GetValueOrSet(Func<T> valueFactory, int? expirySeconds = null, bool queueJump = false)
         {
             var value = await GetValue(queueJump).ConfigureAwait(false);
             if (value == null)
@@ -595,6 +605,11 @@ return tostring(x)";
         public Task<bool> SetExpire(int seconds, bool queueJump = false)
         {
             return Connection.Keys.Expire(Db, Key, seconds, queueJump);
+        }
+
+        public Task<bool> Clear(bool queueJump = false)
+        {
+            return Connection.Keys.Remove(Db, Key, queueJump);
         }
     }
 }

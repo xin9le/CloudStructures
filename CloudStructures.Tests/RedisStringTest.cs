@@ -11,9 +11,25 @@ namespace CloudStructures.Tests
     public class RedisStringTest
     {
         [TestMethod]
-        public void Add()
+        public void GetOrAdd()
         {
-      
+            var s = new RedisString<int>(GlobalSettings.Default, "test-string");
+            s.Remove().Wait();
+
+            var loaded = false;
+            s.GetOrAdd(() =>
+            {
+                loaded = true;
+                return 1000;
+            }).Result.Is(1000);
+
+            loaded.IsTrue();
+
+            s.GetOrAdd(() =>
+            {
+                Assert.Fail();
+                return 2000;
+            }).Result.Is(1000);
         }
     }
 }
