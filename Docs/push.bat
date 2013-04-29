@@ -1,1 +1,1 @@
-nuget push CloudStructures.0.2.3-beta.nupkg
+nuget push CloudStructures.0.2.4-beta.nupkg
