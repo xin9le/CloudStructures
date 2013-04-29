@@ -57,12 +57,12 @@ namespace CloudStructures.Redis
                 : Tuple.Create(true, valueConverter.Deserialize<T>(value));
         }
 
-        public Task<T> GetOrAdd(Func<T> valueFactory, TimeSpan expire, bool queueJump = false)
+        public Task<T> GetOrSet(Func<T> valueFactory, TimeSpan expire, bool queueJump = false)
         {
-            return GetOrAdd(valueFactory, (int)expire.TotalSeconds, queueJump);
+            return GetOrSet(valueFactory, (int)expire.TotalSeconds, queueJump);
         }
 
-        public async Task<T> GetOrAdd(Func<T> valueFactory, int? expirySeconds = null, bool queueJump = false)
+        public async Task<T> GetOrSet(Func<T> valueFactory, int? expirySeconds = null, bool queueJump = false)
         {
             var value = await TryGet(queueJump).ConfigureAwait(false);
             if (value.Item1)
@@ -113,6 +113,16 @@ namespace CloudStructures.Redis
         public Task<long> Decrement(long value = 1, bool queueJump = false)
         {
             return Command.Decrement(Db, Key, value, queueJump);
+        }
+
+        public Task<bool> SetExpire(TimeSpan expire, bool queueJump = false)
+        {
+            return SetExpire((int)expire.TotalSeconds, queueJump);
+        }
+
+        public Task<bool> SetExpire(int seconds, bool queueJump = false)
+        {
+            return Connection.Keys.Expire(Db, Key, seconds, queueJump);
         }
 
         public Task<long> IncrementLimitByMax(long value, long max, bool queueJump = false)

@@ -17,7 +17,7 @@ namespace CloudStructures.Tests
             s.Remove().Wait();
 
             var loaded = false;
-            s.GetOrAdd(() =>
+            s.GetOrSet(() =>
             {
                 loaded = true;
                 return 1000;
@@ -25,7 +25,7 @@ namespace CloudStructures.Tests
 
             loaded.IsTrue();
 
-            s.GetOrAdd(() =>
+            s.GetOrSet(() =>
             {
                 Assert.Fail();
                 return 2000;
