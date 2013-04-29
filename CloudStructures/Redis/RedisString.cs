@@ -7,15 +7,11 @@ namespace CloudStructures.Redis
     public class RedisString<T>
     {
         public string Key { get; private set; }
-        public int Db { get; private set; }
-        readonly RedisSettings settings;
-        readonly IRedisValueConverter valueConverter;
+        public RedisSettings Settings { get; private set; }
 
         public RedisString(RedisSettings settings, string stringKey)
         {
-            this.settings = settings;
-            this.Db = settings.Db;
-            this.valueConverter = settings.ValueConverter;
+            this.Settings = settings;
             this.Key = stringKey;
         }
 
@@ -28,7 +24,7 @@ namespace CloudStructures.Redis
         {
             get
             {
-                return settings.GetConnection();
+                return Settings.GetConnection();
             }
         }
 
@@ -42,10 +38,10 @@ namespace CloudStructures.Redis
 
         public async Task<Tuple<bool, T>> TryGet(bool queueJump = false)
         {
-            var value = await Command.Get(Db, Key, queueJump).ConfigureAwait(false);
+            var value = await Command.Get(Settings.Db, Key, queueJump).ConfigureAwait(false);
             return (value == null)
                 ? Tuple.Create(false, default(T))
-                : Tuple.Create(true, valueConverter.Deserialize<T>(value));
+                : Tuple.Create(true, Settings.ValueConverter.Deserialize<T>(value));
         }
 
         public Task<T> GetOrSet(Func<T> valueFactory, TimeSpan expire, bool queueJump = false)
@@ -75,35 +71,35 @@ namespace CloudStructures.Redis
 
         public Task Set(T value, long? expirySeconds = null, bool queueJump = false)
         {
-            var v = valueConverter.Serialize(value);
+            var v = Settings.ValueConverter.Serialize(value);
             if (expirySeconds == null)
             {
-                return Command.Set(Db, Key, v, queueJump: queueJump);
+                return Command.Set(Settings.Db, Key, v, queueJump: queueJump);
             }
             else
             {
-                return Command.Set(Db, Key, v, expirySeconds.Value, queueJump: queueJump);
+                return Command.Set(Settings.Db, Key, v, expirySeconds.Value, queueJump: queueJump);
             }
         }
 
         public Task<bool> Remove(bool queueJump = false)
         {
-            return Connection.Keys.Remove(Db, Key, queueJump);
+            return Connection.Keys.Remove(Settings.Db, Key, queueJump);
         }
 
         public Task<long> Increment(long value = 1, bool queueJump = false)
         {
-            return Command.Increment(Db, Key, value, queueJump);
+            return Command.Increment(Settings.Db, Key, value, queueJump);
         }
 
         public Task<double> Increment(double value, bool queueJump = false)
         {
-            return Command.Increment(Db, Key, value, queueJump);
+            return Command.Increment(Settings.Db, Key, value, queueJump);
         }
 
         public Task<long> Decrement(long value = 1, bool queueJump = false)
         {
-            return Command.Decrement(Db, Key, value, queueJump);
+            return Command.Decrement(Settings.Db, Key, value, queueJump);
         }
 
         public Task<bool> SetExpire(TimeSpan expire, bool queueJump = false)
@@ -113,12 +109,12 @@ namespace CloudStructures.Redis
 
         public Task<bool> SetExpire(int seconds, bool queueJump = false)
         {
-            return Connection.Keys.Expire(Db, Key, seconds, queueJump);
+            return Connection.Keys.Expire(Settings.Db, Key, seconds, queueJump);
         }
 
         public Task<long> IncrementLimitByMax(long value, long max, bool queueJump = false)
         {
-            var v = Connection.Scripting.Eval(Db, @"
+            var v = Connection.Scripting.Eval(Settings.Db, @"
 local inc = tonumber(ARGV[1])
 local max = tonumber(ARGV[2])
 local x = redis.call('incrby', KEYS[1], inc)
@@ -132,7 +128,7 @@ return x", new[] { Key }, new object[] { value, max }, useCache: true, inferStri
 
         public Task<long> IncrementLimitByMin(long value, long min, bool queueJump = false)
         {
-            var v = Connection.Scripting.Eval(Db, @"
+            var v = Connection.Scripting.Eval(Settings.Db, @"
 local inc = tonumber(ARGV[1])
 local min = tonumber(ARGV[2])
 local x = redis.call('incrby', KEYS[1], inc)
@@ -146,7 +142,7 @@ return x", new[] { Key }, new object[] { value, min }, useCache: true, inferStri
 
         public Task<double> IncrementLimitByMax(double value, double max, bool queueJump = false)
         {
-            var v = Connection.Scripting.Eval(Db, @"
+            var v = Connection.Scripting.Eval(Settings.Db, @"
 local inc = tonumber(ARGV[1])
 local max = tonumber(ARGV[2])
 local x = tonumber(redis.call('incrbyfloat', KEYS[1], inc))
@@ -160,7 +156,7 @@ return tostring(x)", new[] { Key }, new object[] { value, max }, useCache: true,
 
         public Task<double> IncrementLimitByMin(double value, double min, bool queueJump = false)
         {
-            var v = Connection.Scripting.Eval(Db, @"
+            var v = Connection.Scripting.Eval(Settings.Db, @"
 local inc = tonumber(ARGV[1])
 local min = tonumber(ARGV[2])
 local x = tonumber(redis.call('incrbyfloat', KEYS[1], inc))

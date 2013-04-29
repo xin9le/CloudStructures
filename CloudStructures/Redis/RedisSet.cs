@@ -8,15 +8,11 @@ namespace CloudStructures.Redis
     public class RedisSet<T>
     {
         public string Key { get; private set; }
-        public int Db { get; private set; }
-        readonly RedisSettings settings;
-        readonly IRedisValueConverter valueConverter;
+        public RedisSettings Settings { get; private set; }
 
         public RedisSet(RedisSettings settings, string stringKey)
         {
-            this.settings = settings;
-            this.Db = settings.Db;
-            this.valueConverter = settings.ValueConverter;
+            this.Settings = settings;
             this.Key = stringKey;
         }
 
@@ -29,7 +25,7 @@ namespace CloudStructures.Redis
         {
             get
             {
-                return settings.GetConnection();
+                return Settings.GetConnection();
             }
         }
 
@@ -46,7 +42,7 @@ namespace CloudStructures.Redis
         /// </summary>
         public Task<bool> Add(T value, bool queueJump = false)
         {
-            return Command.Add(Db, Key, valueConverter.Serialize(value), queueJump);
+            return Command.Add(Settings.Db, Key, Settings.ValueConverter.Serialize(value), queueJump);
         }
 
         /// <summary>
@@ -54,8 +50,8 @@ namespace CloudStructures.Redis
         /// </summary>
         public Task<long> Add(T[] values, bool queueJump = false)
         {
-            var v = values.Select(x => valueConverter.Serialize(x)).ToArray();
-            return Command.Add(Db, Key, v, queueJump);
+            var v = values.Select(x => Settings.ValueConverter.Serialize(x)).ToArray();
+            return Command.Add(Settings.Db, Key, v, queueJump);
         }
 
         /// <summary>
@@ -63,7 +59,7 @@ namespace CloudStructures.Redis
         /// </summary>
         public Task<bool> Contains(T value, bool queueJump = false)
         {
-            return Command.Contains(Db, Key, valueConverter.Serialize(value), queueJump);
+            return Command.Contains(Settings.Db, Key, Settings.ValueConverter.Serialize(value), queueJump);
         }
 
 
@@ -72,8 +68,8 @@ namespace CloudStructures.Redis
         /// </summary>
         public async Task<T[]> GetAll(bool queueJump = false)
         {
-            var v = await Command.GetAll(Db, Key, queueJump).ConfigureAwait(false);
-            return v.Select(valueConverter.Deserialize<T>).ToArray();
+            var v = await Command.GetAll(Settings.Db, Key, queueJump).ConfigureAwait(false);
+            return v.Select(Settings.ValueConverter.Deserialize<T>).ToArray();
         }
 
         /// <summary>
@@ -81,7 +77,7 @@ namespace CloudStructures.Redis
         /// </summary>
         public Task<long> GetLength(bool queueJump = false)
         {
-            return Command.GetLength(Db, Key, queueJump);
+            return Command.GetLength(Settings.Db, Key, queueJump);
         }
 
         /// <summary>
@@ -89,8 +85,8 @@ namespace CloudStructures.Redis
         /// </summary>
         public async Task<T> GetRandom(bool queueJump = false)
         {
-            var v = await Command.GetRandom(Db, Key, queueJump).ConfigureAwait(false);
-            return valueConverter.Deserialize<T>(v);
+            var v = await Command.GetRandom(Settings.Db, Key, queueJump).ConfigureAwait(false);
+            return Settings.ValueConverter.Deserialize<T>(v);
         }
 
         /// <summary>
@@ -98,8 +94,8 @@ namespace CloudStructures.Redis
         /// </summary>
         public async Task<T[]> GetRandom(int count, bool queueJump = false)
         {
-            var v = await Command.GetRandom(Db, Key, count, queueJump).ConfigureAwait(false);
-            return v.Select(valueConverter.Deserialize<T>).ToArray();
+            var v = await Command.GetRandom(Settings.Db, Key, count, queueJump).ConfigureAwait(false);
+            return v.Select(Settings.ValueConverter.Deserialize<T>).ToArray();
         }
 
         /// <summary>
@@ -107,7 +103,7 @@ namespace CloudStructures.Redis
         /// </summary>
         public Task<bool> Remove(T member, bool queueJump = false)
         {
-            return Command.Remove(Db, Key, valueConverter.Serialize(member), queueJump);
+            return Command.Remove(Settings.Db, Key, Settings.ValueConverter.Serialize(member), queueJump);
         }
 
         /// <summary>
@@ -115,8 +111,8 @@ namespace CloudStructures.Redis
         /// </summary>
         public Task<long> Remove(T[] members, bool queueJump = false)
         {
-            var v = members.Select(x => valueConverter.Serialize(x)).ToArray();
-            return Command.Remove(Db, Key, v, queueJump);
+            var v = members.Select(x => Settings.ValueConverter.Serialize(x)).ToArray();
+            return Command.Remove(Settings.Db, Key, v, queueJump);
         }
 
         /// <summary>
@@ -124,8 +120,8 @@ namespace CloudStructures.Redis
         /// </summary>
         public async Task<T> RemoveRandom(bool queueJump = false)
         {
-            var v = await Command.RemoveRandom(Db, Key, queueJump).ConfigureAwait(false);
-            return valueConverter.Deserialize<T>(v);
+            var v = await Command.RemoveRandom(Settings.Db, Key, queueJump).ConfigureAwait(false);
+            return Settings.ValueConverter.Deserialize<T>(v);
         }
 
         public Task<bool> SetExpire(TimeSpan expire, bool queueJump = false)
@@ -135,12 +131,12 @@ namespace CloudStructures.Redis
 
         public Task<bool> SetExpire(int seconds, bool queueJump = false)
         {
-            return Connection.Keys.Expire(Db, Key, seconds, queueJump);
+            return Connection.Keys.Expire(Settings.Db, Key, seconds, queueJump);
         }
 
         public Task<bool> Clear(bool queueJump = false)
         {
-            return Connection.Keys.Remove(Db, Key, queueJump);
+            return Connection.Keys.Remove(Settings.Db, Key, queueJump);
         }
     }
 }
