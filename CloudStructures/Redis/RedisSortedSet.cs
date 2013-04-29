@@ -11,7 +11,6 @@ namespace CloudStructures.Redis
         public string Key { get; private set; }
         public int Db { get; private set; }
         readonly RedisSettings settings;
-        readonly RedisTransaction transaction;
         readonly IRedisValueConverter valueConverter;
 
         public RedisSortedSet(RedisSettings settings, string stringKey)
@@ -27,19 +26,11 @@ namespace CloudStructures.Redis
         {
         }
 
-        public RedisSortedSet(RedisTransaction transaction, int db, IRedisValueConverter valueConverter, string stringKey)
-        {
-            this.transaction = transaction;
-            this.Db = db;
-            this.valueConverter = valueConverter;
-            this.Key = stringKey;
-        }
-
         protected RedisConnection Connection
         {
             get
             {
-                return (transaction == null) ? settings.GetConnection() : transaction;
+                return settings.GetConnection();
             }
         }
 

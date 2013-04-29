@@ -56,7 +56,6 @@ return tostring(x)";
         public string Key { get; private set; }
         public int Db { get; private set; }
         readonly RedisSettings settings;
-        readonly RedisTransaction transaction;
         readonly IRedisValueConverter valueConverter;
 
         public RedisDictionary(RedisSettings settings, string hashKey)
@@ -72,19 +71,11 @@ return tostring(x)";
         {
         }
 
-        public RedisDictionary(RedisTransaction transaction, int db, IRedisValueConverter valueConverter, string hashKey)
-        {
-            this.transaction = transaction;
-            this.Db = db;
-            this.valueConverter = valueConverter;
-            this.Key = hashKey;
-        }
-
         protected RedisConnection Connection
         {
             get
             {
-                return (transaction == null) ? settings.GetConnection() : transaction;
+                return settings.GetConnection();
             }
         }
 

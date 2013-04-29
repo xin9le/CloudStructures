@@ -12,7 +12,6 @@ namespace CloudStructures.Redis
         public string Key { get; private set; }
         public int Db { get; private set; }
         readonly RedisSettings settings;
-        readonly RedisTransaction transaction;
         readonly IRedisValueConverter valueConverter;
 
         public RedisList(RedisSettings settings, string listKey)
@@ -28,19 +27,11 @@ namespace CloudStructures.Redis
         {
         }
 
-        public RedisList(RedisTransaction transaction, int db, IRedisValueConverter valueConverter, string listKey)
-        {
-            this.transaction = transaction;
-            this.Db = db;
-            this.valueConverter = valueConverter;
-            this.Key = listKey;
-        }
-
         protected RedisConnection Connection
         {
             get
             {
-                return (transaction == null) ? settings.GetConnection() : transaction;
+                return settings.GetConnection();
             }
         }
 
@@ -154,25 +145,13 @@ namespace CloudStructures.Redis
 
         public async Task<long> AddFirstAndFixLength(T value, int fixLength, bool queueJump = false)
         {
-            if (transaction == null)
+            var v = valueConverter.Serialize(value);
+            using (var tx = settings.GetConnection().CreateTransaction())
             {
-                var v = valueConverter.Serialize(value);
-                using (var tx = settings.GetConnection().CreateTransaction())
-                {
-                    var addResult = tx.Lists.AddFirst(Db, Key, v, createIfMissing: true, queueJump: queueJump);
-                    var trimResult = tx.Lists.Trim(Db, Key, fixLength - 1, queueJump);
+                var addResult = tx.Lists.AddFirst(Db, Key, v, createIfMissing: true, queueJump: queueJump);
+                var trimResult = tx.Lists.Trim(Db, Key, fixLength - 1, queueJump);
 
-                    await tx.Execute(queueJump).ConfigureAwait(false);
-                    return await addResult.ConfigureAwait(false);
-                }
-            }
-            else
-            {
-                var command = transaction.Lists;
-                var v = valueConverter.Serialize(value);
-                var addResult = command.AddFirst(Db, Key, v, createIfMissing: true, queueJump: queueJump);
-                var trimResult = command.Trim(Db, Key, fixLength - 1, queueJump);
-
+                await tx.Execute(queueJump).ConfigureAwait(false);
                 return await addResult.ConfigureAwait(false);
             }
         }
