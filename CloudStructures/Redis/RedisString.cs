@@ -64,6 +64,26 @@ namespace CloudStructures.Redis
             }
         }
 
+        public Task<T> GetOrSet(Func<Task<T>> valueFactory, TimeSpan expire, bool queueJump = false)
+        {
+            return GetOrSet(valueFactory, (int)expire.TotalSeconds, queueJump);
+        }
+
+        public async Task<T> GetOrSet(Func<Task<T>> valueFactory, int? expirySeconds = null, bool queueJump = false)
+        {
+            var value = await TryGet(queueJump).ConfigureAwait(false);
+            if (value.Item1)
+            {
+                return value.Item2;
+            }
+            else
+            {
+                var v = await valueFactory().ConfigureAwait(false);
+                await Set(v, expirySeconds, queueJump).ConfigureAwait(false);
+                return v;
+            }
+        }
+
         public Task Set(T value, TimeSpan expire, bool queueJump = false)
         {
             return Set(value, (int)expire.TotalSeconds, queueJump);

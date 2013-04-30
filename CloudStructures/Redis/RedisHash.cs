@@ -497,6 +497,32 @@ return tostring(x)";
             return value;
         }
 
+        public Task<T> GetValueOrSet(Func<Task<T>> valueFactory, TimeSpan expire, bool queueJump = false)
+        {
+            return GetValueOrSet(valueFactory, (int)expire.TotalSeconds, queueJump);
+        }
+
+        public async Task<T> GetValueOrSet(Func<Task<T>> valueFactory, int? expirySeconds = null, bool queueJump = false)
+        {
+            var value = await GetValue(queueJump).ConfigureAwait(false);
+            if (value == null)
+            {
+                value = await valueFactory().ConfigureAwait(false);
+                if (expirySeconds != null)
+                {
+                    var a = SetValue(value);
+                    var b = SetExpire(expirySeconds.Value, queueJump);
+                    await Task.WhenAll(a, b).ConfigureAwait(false);
+                }
+                else
+                {
+                    await SetValue(value).ConfigureAwait(false);
+                }
+            }
+
+            return value;
+        }
+
         public Task SetValue(T value, bool queueJump = false)
         {
             var accessor = FastMember.TypeAccessor.Create(typeof(T), allowNonPublicAccessors: false);
