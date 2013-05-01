@@ -44,14 +44,14 @@ namespace CloudStructures.Redis
                 : Tuple.Create(true, Settings.ValueConverter.Deserialize<T>(value));
         }
 
-        public Task<T> GetOrSet(Func<T> valueFactory, TimeSpan expire, bool queueJump = false)
+        public Task<T> GetOrSet(Func<T> valueFactory, TimeSpan expire, bool configureAwait = true, bool queueJump = false)
         {
-            return GetOrSet(valueFactory, (int)expire.TotalSeconds, queueJump);
+            return GetOrSet(valueFactory, (int)expire.TotalSeconds,configureAwait, queueJump);
         }
 
-        public async Task<T> GetOrSet(Func<T> valueFactory, int? expirySeconds = null, bool queueJump = false)
+        public async Task<T> GetOrSet(Func<T> valueFactory, int? expirySeconds = null, bool configureAwait = true, bool queueJump = false)
         {
-            var value = await TryGet(queueJump).ConfigureAwait(false);
+            var value = await TryGet(queueJump).ConfigureAwait(configureAwait); // keep valueFactory synchronization context
             if (value.Item1)
             {
                 return value.Item2;
@@ -64,14 +64,14 @@ namespace CloudStructures.Redis
             }
         }
 
-        public Task<T> GetOrSet(Func<Task<T>> valueFactory, TimeSpan expire, bool queueJump = false)
+        public Task<T> GetOrSet(Func<Task<T>> valueFactory, TimeSpan expire, bool configureAwait = true, bool queueJump = false)
         {
             return GetOrSet(valueFactory, (int)expire.TotalSeconds, queueJump);
         }
 
-        public async Task<T> GetOrSet(Func<Task<T>> valueFactory, int? expirySeconds = null, bool queueJump = false)
+        public async Task<T> GetOrSet(Func<Task<T>> valueFactory, int? expirySeconds = null, bool configureAwait = true, bool queueJump = false)
         {
-            var value = await TryGet(queueJump).ConfigureAwait(false);
+            var value = await TryGet(queueJump).ConfigureAwait(configureAwait); // keep valueFactory synchronization context
             if (value.Item1)
             {
                 return value.Item2;

@@ -471,14 +471,14 @@ return tostring(x)";
             return result;
         }
 
-        public Task<T> GetValueOrSet(Func<T> valueFactory, TimeSpan expire, bool queueJump = false)
+        public Task<T> GetValueOrSet(Func<T> valueFactory, TimeSpan expire, bool configureAwait = true, bool queueJump = false)
         {
-            return GetValueOrSet(valueFactory, (int)expire.TotalSeconds, queueJump);
+            return GetValueOrSet(valueFactory, (int)expire.TotalSeconds, configureAwait, queueJump);
         }
 
-        public async Task<T> GetValueOrSet(Func<T> valueFactory, int? expirySeconds = null, bool queueJump = false)
+        public async Task<T> GetValueOrSet(Func<T> valueFactory, int? expirySeconds = null, bool configureAwait = true, bool queueJump = false)
         {
-            var value = await GetValue(queueJump).ConfigureAwait(false);
+            var value = await GetValue(queueJump).ConfigureAwait(configureAwait); // keep valueFactory synchronization context
             if (value == null)
             {
                 value = valueFactory();
@@ -497,14 +497,14 @@ return tostring(x)";
             return value;
         }
 
-        public Task<T> GetValueOrSet(Func<Task<T>> valueFactory, TimeSpan expire, bool queueJump = false)
+        public Task<T> GetValueOrSet(Func<Task<T>> valueFactory, TimeSpan expire, bool configureAwait = true, bool queueJump = false)
         {
-            return GetValueOrSet(valueFactory, (int)expire.TotalSeconds, queueJump);
+            return GetValueOrSet(valueFactory, (int)expire.TotalSeconds, configureAwait, queueJump);
         }
 
-        public async Task<T> GetValueOrSet(Func<Task<T>> valueFactory, int? expirySeconds = null, bool queueJump = false)
+        public async Task<T> GetValueOrSet(Func<Task<T>> valueFactory, int? expirySeconds = null, bool configureAwait = true, bool queueJump = false)
         {
-            var value = await GetValue(queueJump).ConfigureAwait(false);
+            var value = await GetValue(queueJump).ConfigureAwait(configureAwait);
             if (value == null)
             {
                 value = await valueFactory().ConfigureAwait(false);
