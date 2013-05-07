@@ -16,16 +16,16 @@ namespace CloudStructures.Redis
         static readonly IDisposable EmptyDisposable = new EmptyDisposable();
 
         Guid id;
-        string commandName;
+        string command;
         string key;
         Stopwatch stopwatch;
         IPerformanceMonitor monitor;
 
-        public static IDisposable Start(IPerformanceMonitor monitor, string key, [CallerFilePath]string callerFilePath = "", [CallerMemberName]string commandName = "")
+        public static IDisposable Start(IPerformanceMonitor monitor, string key, string callType, [CallerMemberName]string commandName = "")
         {
             if (monitor != null)
             {
-                return new Monitor(monitor, key, callerFilePath, commandName);
+                return new Monitor(monitor, key, callType, commandName);
             }
             else
             {
@@ -33,19 +33,20 @@ namespace CloudStructures.Redis
             }
         }
 
-        private Monitor(IPerformanceMonitor monitor, string key, string callerFilePath, string commandName)
+        private Monitor(IPerformanceMonitor monitor, string key, string callType, string commandName)
         {
             this.id = Guid.NewGuid();
             this.key = key;
-            this.commandName = Path.GetFileNameWithoutExtension(callerFilePath) + "." + commandName;
-            monitor.Start(id, commandName, key);
-            stopwatch.Start();
+            this.command = callType + "." + commandName;
+            this.monitor = monitor;
+            monitor.Start(id, command, key);
+            stopwatch = Stopwatch.StartNew();
         }
 
         public void Dispose()
         {
             stopwatch.Stop();
-            monitor.End(id, commandName, key, stopwatch.ElapsedMilliseconds);
+            monitor.End(id, command, key, stopwatch.ElapsedMilliseconds);
         }
     }
 

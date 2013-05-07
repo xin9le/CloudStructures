@@ -9,6 +9,8 @@ namespace CloudStructures.Redis
 {
     public class RedisList<T>
     {
+        const string CallType = "RedisList";
+
         public string Key { get; private set; }
         public RedisSettings Settings { get; private set; }
 
@@ -42,19 +44,25 @@ namespace CloudStructures.Redis
         /// <summary>
         /// LPUSH http://redis.io/commands/lpush
         /// </summary>
-        public Task<long> AddFirst(T value, bool queueJump = false)
+        public async Task<long> AddFirst(T value, bool queueJump = false)
         {
-            var v = Settings.ValueConverter.Serialize(value);
-            return Command.AddFirst(Settings.Db, Key, v, createIfMissing: true, queueJump: queueJump);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                var v = Settings.ValueConverter.Serialize(value);
+                return await Command.AddFirst(Settings.Db, Key, v, createIfMissing: true, queueJump: queueJump).ConfigureAwait(false);
+            }
         }
 
         /// <summary>
         /// RPUSH http://redis.io/commands/rpush
         /// </summary>
-        public Task<long> AddLast(T value, bool queueJump = false)
+        public async Task<long> AddLast(T value, bool queueJump = false)
         {
-            var v = Settings.ValueConverter.Serialize(value);
-            return Command.AddLast(Settings.Db, Key, v, createIfMissing: true, queueJump: queueJump);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                var v = Settings.ValueConverter.Serialize(value);
+                return await Command.AddLast(Settings.Db, Key, v, createIfMissing: true, queueJump: queueJump).ConfigureAwait(false);
+            }
         }
 
         /// <summary>
@@ -62,18 +70,24 @@ namespace CloudStructures.Redis
         /// </summary>
         public async Task<Tuple<bool, T>> TryGet(int index, bool queueJump = false)
         {
-            var value = await Command.Get(Settings.Db, Key, index, queueJump).ConfigureAwait(false);
-            return (value == null)
-                ? Tuple.Create(false, default(T))
-                : Tuple.Create(true, Settings.ValueConverter.Deserialize<T>(value));
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                var value = await Command.Get(Settings.Db, Key, index, queueJump).ConfigureAwait(false);
+                return (value == null)
+                    ? Tuple.Create(false, default(T))
+                    : Tuple.Create(true, Settings.ValueConverter.Deserialize<T>(value));
+            }
         }
 
         /// <summary>
         /// LLEN http://redis.io/commands/llen
         /// </summary>
-        public Task<long> GetLength(bool queueJump = false)
+        public async Task<long> GetLength(bool queueJump = false)
         {
-            return Command.GetLength(Settings.Db, Key, queueJump);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                return await Command.GetLength(Settings.Db, Key, queueJump).ConfigureAwait(false);
+            }
         }
 
         /// <summary>
@@ -81,17 +95,23 @@ namespace CloudStructures.Redis
         /// </summary>
         public async Task<T[]> Range(int start, int stop, bool queueJump = false)
         {
-            var results = await Command.Range(Settings.Db, Key, start, stop, queueJump).ConfigureAwait(false);
-            return results.Select(Settings.ValueConverter.Deserialize<T>).ToArray();
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                var results = await Command.Range(Settings.Db, Key, start, stop, queueJump).ConfigureAwait(false);
+                return results.Select(Settings.ValueConverter.Deserialize<T>).ToArray();
+            }
         }
 
         /// <summary>
         /// LREM http://redis.io/commands/lrem
         /// </summary>
-        public Task<long> Remove(T value, int count = 1, bool queueJump = false)
+        public async Task<long> Remove(T value, int count = 1, bool queueJump = false)
         {
-            var v = Settings.ValueConverter.Serialize(value);
-            return Command.Remove(Settings.Db, Key, v, count, queueJump);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                var v = Settings.ValueConverter.Serialize(value);
+                return await Command.Remove(Settings.Db, Key, v, count, queueJump).ConfigureAwait(false);
+            }
         }
 
         /// <summary>
@@ -99,8 +119,11 @@ namespace CloudStructures.Redis
         /// </summary>
         public async Task<T> RemoveFirst(bool queueJump = false)
         {
-            var result = await Command.RemoveFirst(Settings.Db, Key, queueJump).ConfigureAwait(false);
-            return Settings.ValueConverter.Deserialize<T>(result);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                var result = await Command.RemoveFirst(Settings.Db, Key, queueJump).ConfigureAwait(false);
+                return Settings.ValueConverter.Deserialize<T>(result);
+            }
         }
 
         /// <summary>
@@ -108,69 +131,96 @@ namespace CloudStructures.Redis
         /// </summary>
         public async Task<T> RemoveLast(bool queueJump = false)
         {
-            var result = await Command.RemoveLast(Settings.Db, Key, queueJump).ConfigureAwait(false);
-            return Settings.ValueConverter.Deserialize<T>(result);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                var result = await Command.RemoveLast(Settings.Db, Key, queueJump).ConfigureAwait(false);
+                return Settings.ValueConverter.Deserialize<T>(result);
+            }
         }
 
         /// <summary>
         /// LSET http://redis.io/commands/lset
         /// </summary>
-        public Task Set(int index, T value, bool queueJump = false)
+        public async Task Set(int index, T value, bool queueJump = false)
         {
-            var v = Settings.ValueConverter.Serialize(value);
-            return Command.Set(Settings.Db, Key, index, v, queueJump);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                var v = Settings.ValueConverter.Serialize(value);
+                await Command.Set(Settings.Db, Key, index, v, queueJump).ConfigureAwait(false);
+            }
         }
 
         /// <summary>
         /// LTRIM http://redis.io/commands/ltrim
         /// </summary>
-        public Task Trim(int count, bool queueJump = false)
+        public async Task Trim(int count, bool queueJump = false)
         {
-            return Command.Trim(Settings.Db, Key, count, queueJump);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                await Command.Trim(Settings.Db, Key, count, queueJump).ConfigureAwait(false);
+            }
         }
 
         /// <summary>
         /// LTRIM http://redis.io/commands/ltrim
         /// </summary>
-        public Task Trim(int start, int stop, bool queueJump = false)
+        public async Task Trim(int start, int stop, bool queueJump = false)
         {
-            return Command.Trim(Settings.Db, Key, start, stop, queueJump);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                await Command.Trim(Settings.Db, Key, start, stop, queueJump).ConfigureAwait(false);
+            }
         }
 
         // additional commands
 
         public async Task<long> AddFirstAndFixLength(T value, int fixLength, bool queueJump = false)
         {
-            var v = Settings.ValueConverter.Serialize(value);
-            using (var tx = Settings.GetConnection().CreateTransaction())
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
             {
-                var addResult = tx.Lists.AddFirst(Settings.Db, Key, v, createIfMissing: true, queueJump: queueJump);
-                var trimResult = tx.Lists.Trim(Settings.Db, Key, fixLength - 1, queueJump);
+                var v = Settings.ValueConverter.Serialize(value);
+                using (var tx = Settings.GetConnection().CreateTransaction())
+                {
+                    var addResult = tx.Lists.AddFirst(Settings.Db, Key, v, createIfMissing: true, queueJump: queueJump);
+                    var trimResult = tx.Lists.Trim(Settings.Db, Key, fixLength - 1, queueJump);
 
-                await tx.Execute(queueJump).ConfigureAwait(false);
-                return await addResult.ConfigureAwait(false);
+                    await tx.Execute(queueJump).ConfigureAwait(false);
+                    return await addResult.ConfigureAwait(false);
+                }
             }
         }
 
-        public Task<bool> SetExpire(TimeSpan expire, bool queueJump = false)
+        public async Task<bool> SetExpire(TimeSpan expire, bool queueJump = false)
         {
-            return SetExpire((int)expire.TotalSeconds, queueJump);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                return await SetExpire((int)expire.TotalSeconds, queueJump).ConfigureAwait(false);
+            }
         }
 
-        public Task<bool> SetExpire(int seconds, bool queueJump = false)
+        public async Task<bool> SetExpire(int seconds, bool queueJump = false)
         {
-            return Connection.Keys.Expire(Settings.Db, Key, seconds, queueJump);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                return await Connection.Keys.Expire(Settings.Db, Key, seconds, queueJump).ConfigureAwait(false);
+            }
         }
 
-        public Task<bool> Clear(bool queueJump = false)
+        public async Task<bool> Clear(bool queueJump = false)
         {
-            return Connection.Keys.Remove(Settings.Db, Key, queueJump);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                return await Connection.Keys.Remove(Settings.Db, Key, queueJump).ConfigureAwait(false);
+            }
         }
 
         public async Task<T[]> ToArray(bool queueJump = false)
         {
-            var length = await GetLength().ConfigureAwait(false);
-            return await Range(0, (int)length, queueJump).ConfigureAwait(false);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                var length = await GetLength().ConfigureAwait(false);
+                return await Range(0, (int)length, queueJump).ConfigureAwait(false);
+            }
         }
     }
 

@@ -19,9 +19,9 @@ namespace CloudStructures.Redis
         public int SyncTimeout { get; private set; }
         public int Db { get; private set; }
         public IRedisValueConverter ValueConverter { get; private set; }
-        public IPerformanceMonitor PerformanceMonitor { get; set; }
+        public IPerformanceMonitor PerformanceMonitor { get; private set; }
 
-        public RedisSettings(string host, int port = 6379, int ioTimeout = -1, string password = null, int maxUnsent = 2147483647, bool allowAdmin = false, int syncTimeout = 10000, int db = 0, IRedisValueConverter converter = null)
+        public RedisSettings(string host, int port = 6379, int ioTimeout = -1, string password = null, int maxUnsent = 2147483647, bool allowAdmin = false, int syncTimeout = 10000, int db = 0, IRedisValueConverter converter = null, IPerformanceMonitor performanceMonitor = null)
         {
             this.Host = host;
             this.Port = port;
@@ -32,6 +32,7 @@ namespace CloudStructures.Redis
             this.SyncTimeout = syncTimeout;
             this.Db = db;
             this.ValueConverter = converter ?? new JsonRedisValueConverter();
+            this.PerformanceMonitor = performanceMonitor;
         }
 
         // Manage Connection

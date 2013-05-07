@@ -7,6 +7,8 @@ namespace CloudStructures.Redis
 {
     public class RedisSet<T>
     {
+        const string CallType = "RedisSet";
+
         public string Key { get; private set; }
         public RedisSettings Settings { get; private set; }
 
@@ -40,26 +42,35 @@ namespace CloudStructures.Redis
         /// <summary>
         /// SADD http://redis.io/commands/sadd
         /// </summary>
-        public Task<bool> Add(T value, bool queueJump = false)
+        public async Task<bool> Add(T value, bool queueJump = false)
         {
-            return Command.Add(Settings.Db, Key, Settings.ValueConverter.Serialize(value), queueJump);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                return await Command.Add(Settings.Db, Key, Settings.ValueConverter.Serialize(value), queueJump).ConfigureAwait(false);
+            }
         }
 
         /// <summary>
         /// SADD http://redis.io/commands/sadd
         /// </summary>
-        public Task<long> Add(T[] values, bool queueJump = false)
+        public async Task<long> Add(T[] values, bool queueJump = false)
         {
-            var v = values.Select(x => Settings.ValueConverter.Serialize(x)).ToArray();
-            return Command.Add(Settings.Db, Key, v, queueJump);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                var v = values.Select(x => Settings.ValueConverter.Serialize(x)).ToArray();
+                return await Command.Add(Settings.Db, Key, v, queueJump).ConfigureAwait(false);
+            }
         }
 
         /// <summary>
         /// SISMEMBER http://redis.io/commands/sismember
         /// </summary>
-        public Task<bool> Contains(T value, bool queueJump = false)
+        public async Task<bool> Contains(T value, bool queueJump = false)
         {
-            return Command.Contains(Settings.Db, Key, Settings.ValueConverter.Serialize(value), queueJump);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                return await Command.Contains(Settings.Db, Key, Settings.ValueConverter.Serialize(value), queueJump).ConfigureAwait(false);
+            }
         }
 
 
@@ -68,16 +79,22 @@ namespace CloudStructures.Redis
         /// </summary>
         public async Task<T[]> GetAll(bool queueJump = false)
         {
-            var v = await Command.GetAll(Settings.Db, Key, queueJump).ConfigureAwait(false);
-            return v.Select(Settings.ValueConverter.Deserialize<T>).ToArray();
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                var v = await Command.GetAll(Settings.Db, Key, queueJump).ConfigureAwait(false);
+                return v.Select(Settings.ValueConverter.Deserialize<T>).ToArray();
+            }
         }
 
         /// <summary>
         /// SCARD http://redis.io/commands/scard
         /// </summary>
-        public Task<long> GetLength(bool queueJump = false)
+        public async Task<long> GetLength(bool queueJump = false)
         {
-            return Command.GetLength(Settings.Db, Key, queueJump);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                return await Command.GetLength(Settings.Db, Key, queueJump).ConfigureAwait(false);
+            }
         }
 
         /// <summary>
@@ -85,8 +102,11 @@ namespace CloudStructures.Redis
         /// </summary>
         public async Task<T> GetRandom(bool queueJump = false)
         {
-            var v = await Command.GetRandom(Settings.Db, Key, queueJump).ConfigureAwait(false);
-            return Settings.ValueConverter.Deserialize<T>(v);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                var v = await Command.GetRandom(Settings.Db, Key, queueJump).ConfigureAwait(false);
+                return Settings.ValueConverter.Deserialize<T>(v);
+            }
         }
 
         /// <summary>
@@ -94,25 +114,34 @@ namespace CloudStructures.Redis
         /// </summary>
         public async Task<T[]> GetRandom(int count, bool queueJump = false)
         {
-            var v = await Command.GetRandom(Settings.Db, Key, count, queueJump).ConfigureAwait(false);
-            return v.Select(Settings.ValueConverter.Deserialize<T>).ToArray();
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                var v = await Command.GetRandom(Settings.Db, Key, count, queueJump).ConfigureAwait(false);
+                return v.Select(Settings.ValueConverter.Deserialize<T>).ToArray();
+            }
         }
 
         /// <summary>
         /// SREM http://redis.io/commands/srem
         /// </summary>
-        public Task<bool> Remove(T member, bool queueJump = false)
+        public async Task<bool> Remove(T member, bool queueJump = false)
         {
-            return Command.Remove(Settings.Db, Key, Settings.ValueConverter.Serialize(member), queueJump);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                return await Command.Remove(Settings.Db, Key, Settings.ValueConverter.Serialize(member), queueJump).ConfigureAwait(false);
+            }
         }
 
         /// <summary>
         /// SREM http://redis.io/commands/srem
         /// </summary>
-        public Task<long> Remove(T[] members, bool queueJump = false)
+        public async Task<long> Remove(T[] members, bool queueJump = false)
         {
-            var v = members.Select(x => Settings.ValueConverter.Serialize(x)).ToArray();
-            return Command.Remove(Settings.Db, Key, v, queueJump);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                var v = members.Select(x => Settings.ValueConverter.Serialize(x)).ToArray();
+                return await Command.Remove(Settings.Db, Key, v, queueJump).ConfigureAwait(false);
+            }
         }
 
         /// <summary>
@@ -120,23 +149,35 @@ namespace CloudStructures.Redis
         /// </summary>
         public async Task<T> RemoveRandom(bool queueJump = false)
         {
-            var v = await Command.RemoveRandom(Settings.Db, Key, queueJump).ConfigureAwait(false);
-            return Settings.ValueConverter.Deserialize<T>(v);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                var v = await Command.RemoveRandom(Settings.Db, Key, queueJump).ConfigureAwait(false);
+                return Settings.ValueConverter.Deserialize<T>(v);
+            }
         }
 
-        public Task<bool> SetExpire(TimeSpan expire, bool queueJump = false)
+        public async Task<bool> SetExpire(TimeSpan expire, bool queueJump = false)
         {
-            return SetExpire((int)expire.TotalSeconds, queueJump);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                return await SetExpire((int)expire.TotalSeconds, queueJump).ConfigureAwait(false);
+            }
         }
 
-        public Task<bool> SetExpire(int seconds, bool queueJump = false)
+        public async Task<bool> SetExpire(int seconds, bool queueJump = false)
         {
-            return Connection.Keys.Expire(Settings.Db, Key, seconds, queueJump);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                return await Connection.Keys.Expire(Settings.Db, Key, seconds, queueJump).ConfigureAwait(false);
+            }
         }
 
-        public Task<bool> Clear(bool queueJump = false)
+        public async Task<bool> Clear(bool queueJump = false)
         {
-            return Connection.Keys.Remove(Settings.Db, Key, queueJump);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                return await Connection.Keys.Remove(Settings.Db, Key, queueJump).ConfigureAwait(false);
+            }
         }
     }
 }

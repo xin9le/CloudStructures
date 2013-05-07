@@ -103,7 +103,8 @@ namespace CloudStructures.Redis
                 x.AllowAdmin,
                 x.SyncTimeout,
                 x.Db,
-                x.ValueConverter));
+                x.ValueConverter,
+                x.PerformanceMonitor));
             return new RedisGroup(Name, settings.ToArray(), ServerSelector);
         }
     }
@@ -143,6 +144,18 @@ namespace CloudStructures.Redis
                 if (type == null) return null;
 
                 return (IRedisValueConverter)Activator.CreateInstance(type);
+            }
+        }
+
+        [ConfigurationProperty("performanceMonitor"), TypeConverter(typeof(TypeNameConverter))]
+        public IPerformanceMonitor PerformanceMonitor
+        {
+            get
+            {
+                var type = (Type)base["performanceMonitor"];
+                if (type == null) return null;
+
+                return (IPerformanceMonitor)Activator.CreateInstance(type);
             }
         }
     }

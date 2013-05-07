@@ -78,6 +78,7 @@
     <Compile Include="Redis\RedisString.cs" />
     <Compile Include="Redis\RedisSubject.cs" />
     <Compile Include="Redis\RedisValueConverter.cs" />
+    <Compile Include="Redis\PerformanceMonitor.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

@@ -6,6 +6,8 @@ namespace CloudStructures.Redis
 {
     public class RedisString<T>
     {
+        const string CallType = "RedisString";
+
         public string Key { get; private set; }
         public RedisSettings Settings { get; private set; }
 
@@ -38,7 +40,7 @@ namespace CloudStructures.Redis
 
         public async Task<Tuple<bool, T>> TryGet(bool queueJump = false)
         {
-            using (Monitor.Start(Settings.PerformanceMonitor, Key))
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
             {
                 var value = await Command.Get(Settings.Db, Key, queueJump).ConfigureAwait(false);
                 return (value == null)
@@ -54,16 +56,19 @@ namespace CloudStructures.Redis
 
         public async Task<T> GetOrSet(Func<T> valueFactory, int? expirySeconds = null, bool configureAwait = true, bool queueJump = false)
         {
-            var value = await TryGet(queueJump).ConfigureAwait(configureAwait); // keep valueFactory synchronization context
-            if (value.Item1)
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
             {
-                return value.Item2;
-            }
-            else
-            {
-                var v = valueFactory();
-                await Set(v, expirySeconds, queueJump).ConfigureAwait(false);
-                return v;
+                var value = await TryGet(queueJump).ConfigureAwait(configureAwait); // keep valueFactory synchronization context
+                if (value.Item1)
+                {
+                    return value.Item2;
+                }
+                else
+                {
+                    var v = valueFactory();
+                    await Set(v, expirySeconds, queueJump).ConfigureAwait(false);
+                    return v;
+                }
             }
         }
 
@@ -74,16 +79,19 @@ namespace CloudStructures.Redis
 
         public async Task<T> GetOrSet(Func<Task<T>> valueFactory, int? expirySeconds = null, bool configureAwait = true, bool queueJump = false)
         {
-            var value = await TryGet(queueJump).ConfigureAwait(configureAwait); // keep valueFactory synchronization context
-            if (value.Item1)
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
             {
-                return value.Item2;
-            }
-            else
-            {
-                var v = await valueFactory().ConfigureAwait(false);
-                await Set(v, expirySeconds, queueJump).ConfigureAwait(false);
-                return v;
+                var value = await TryGet(queueJump).ConfigureAwait(configureAwait); // keep valueFactory synchronization context
+                if (value.Item1)
+                {
+                    return value.Item2;
+                }
+                else
+                {
+                    var v = await valueFactory().ConfigureAwait(false);
+                    await Set(v, expirySeconds, queueJump).ConfigureAwait(false);
+                    return v;
+                }
             }
         }
 
@@ -94,50 +102,73 @@ namespace CloudStructures.Redis
 
         public Task Set(T value, long? expirySeconds = null, bool queueJump = false)
         {
-            var v = Settings.ValueConverter.Serialize(value);
-            if (expirySeconds == null)
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
             {
-                return Command.Set(Settings.Db, Key, v, queueJump: queueJump);
+                var v = Settings.ValueConverter.Serialize(value);
+                if (expirySeconds == null)
+                {
+                    return Command.Set(Settings.Db, Key, v, queueJump: queueJump);
+                }
+                else
+                {
+                    return Command.Set(Settings.Db, Key, v, expirySeconds.Value, queueJump: queueJump);
+                }
             }
-            else
+        }
+
+        public async Task<bool> Remove(bool queueJump = false)
+        {
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
             {
-                return Command.Set(Settings.Db, Key, v, expirySeconds.Value, queueJump: queueJump);
+                return await Connection.Keys.Remove(Settings.Db, Key, queueJump).ConfigureAwait(false);
             }
         }
 
-        public Task<bool> Remove(bool queueJump = false)
+        public async Task<long> Increment(long value = 1, bool queueJump = false)
         {
-            return Connection.Keys.Remove(Settings.Db, Key, queueJump);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                return await Command.Increment(Settings.Db, Key, value, queueJump).ConfigureAwait(false);
+            }
         }
 
-        public Task<long> Increment(long value = 1, bool queueJump = false)
+        public async Task<double> Increment(double value, bool queueJump = false)
         {
-            return Command.Increment(Settings.Db, Key, value, queueJump);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                return await Command.Increment(Settings.Db, Key, value, queueJump).ConfigureAwait(false);
+            }
         }
 
-        public Task<double> Increment(double value, bool queueJump = false)
+        public async Task<long> Decrement(long value = 1, bool queueJump = false)
         {
-            return Command.Increment(Settings.Db, Key, value, queueJump);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                return await Command.Decrement(Settings.Db, Key, value, queueJump).ConfigureAwait(false);
+            }
         }
 
-        public Task<long> Decrement(long value = 1, bool queueJump = false)
+        public async Task<bool> SetExpire(TimeSpan expire, bool queueJump = false)
         {
-            return Command.Decrement(Settings.Db, Key, value, queueJump);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                return await SetExpire((int)expire.TotalSeconds, queueJump).ConfigureAwait(false);
+            }
         }
 
-        public Task<bool> SetExpire(TimeSpan expire, bool queueJump = false)
+        public async Task<bool> SetExpire(int seconds, bool queueJump = false)
         {
-            return SetExpire((int)expire.TotalSeconds, queueJump);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                return await Connection.Keys.Expire(Settings.Db, Key, seconds, queueJump).ConfigureAwait(false);
+            }
         }
 
-        public Task<bool> SetExpire(int seconds, bool queueJump = false)
+        public async Task<long> IncrementLimitByMax(long value, long max, bool queueJump = false)
         {
-            return Connection.Keys.Expire(Settings.Db, Key, seconds, queueJump);
-        }
-
-        public Task<long> IncrementLimitByMax(long value, long max, bool queueJump = false)
-        {
-            var v = Connection.Scripting.Eval(Settings.Db, @"
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                var v = Connection.Scripting.Eval(Settings.Db, @"
 local inc = tonumber(ARGV[1])
 local max = tonumber(ARGV[2])
 local x = redis.call('incrby', KEYS[1], inc)
@@ -146,12 +177,15 @@ if(x > max) then
     x = max
 end
 return x", new[] { Key }, new object[] { value, max }, useCache: true, inferStrings: true, queueJump: queueJump);
-            return v.ContinueWith(x => (long)x.Result);
+                return (long)(await v.ConfigureAwait(false));
+            }
         }
 
-        public Task<long> IncrementLimitByMin(long value, long min, bool queueJump = false)
+        public async Task<long> IncrementLimitByMin(long value, long min, bool queueJump = false)
         {
-            var v = Connection.Scripting.Eval(Settings.Db, @"
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                var v = Connection.Scripting.Eval(Settings.Db, @"
 local inc = tonumber(ARGV[1])
 local min = tonumber(ARGV[2])
 local x = redis.call('incrby', KEYS[1], inc)
@@ -160,12 +194,15 @@ if(x < min) then
     x = min
 end
 return x", new[] { Key }, new object[] { value, min }, useCache: true, inferStrings: true, queueJump: queueJump);
-            return v.ContinueWith(x => (long)x.Result);
+                return (long)(await v.ConfigureAwait(false));
+            }
         }
 
-        public Task<double> IncrementLimitByMax(double value, double max, bool queueJump = false)
+        public async Task<double> IncrementLimitByMax(double value, double max, bool queueJump = false)
         {
-            var v = Connection.Scripting.Eval(Settings.Db, @"
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                var v = Connection.Scripting.Eval(Settings.Db, @"
 local inc = tonumber(ARGV[1])
 local max = tonumber(ARGV[2])
 local x = tonumber(redis.call('incrbyfloat', KEYS[1], inc))
@@ -174,12 +211,15 @@ if(x > max) then
     x = max
 end
 return tostring(x)", new[] { Key }, new object[] { value, max }, useCache: true, inferStrings: true, queueJump: queueJump);
-            return v.ContinueWith(x => double.Parse((string)x.Result));
+                return double.Parse((string)(await v.ConfigureAwait(false)));
+            }
         }
 
-        public Task<double> IncrementLimitByMin(double value, double min, bool queueJump = false)
+        public async Task<double> IncrementLimitByMin(double value, double min, bool queueJump = false)
         {
-            var v = Connection.Scripting.Eval(Settings.Db, @"
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                var v = Connection.Scripting.Eval(Settings.Db, @"
 local inc = tonumber(ARGV[1])
 local min = tonumber(ARGV[2])
 local x = tonumber(redis.call('incrbyfloat', KEYS[1], inc))
@@ -188,7 +228,8 @@ if(x < min) then
     x = min
 end
 return tostring(x)", new[] { Key }, new object[] { value, min }, useCache: true, inferStrings: true, queueJump: queueJump);
-            return v.ContinueWith(x => double.Parse((string)x.Result));
+                return double.Parse((string)(await v.ConfigureAwait(false)));
+            }
         }
     }
 

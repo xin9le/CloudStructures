@@ -53,6 +53,8 @@ return tostring(x)";
 
     public class RedisDictionary<T>
     {
+        const string CallType = "RedisDictionary";
+
         public string Key { get; private set; }
         public RedisSettings Settings { get; private set; }
 
@@ -87,9 +89,12 @@ return tostring(x)";
         /// <summary>
         /// HEXISTS http://redis.io/commands/hexists
         /// </summary>
-        public Task<bool> Exists(string field, bool queueJump = false)
+        public async Task<bool> Exists(string field, bool queueJump = false)
         {
-            return Command.Exists(Settings.Db, Key, field, queueJump);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                return await Command.Exists(Settings.Db, Key, field, queueJump).ConfigureAwait(false);
+            }
         }
 
         /// <summary>
@@ -97,8 +102,11 @@ return tostring(x)";
         /// </summary>
         public async Task<T> Get(string field, bool queueJump = false)
         {
-            var v = await Command.Get(Settings.Db, Key, field, queueJump).ConfigureAwait(false);
-            return Settings.ValueConverter.Deserialize<T>(v);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                var v = await Command.Get(Settings.Db, Key, field, queueJump).ConfigureAwait(false);
+                return Settings.ValueConverter.Deserialize<T>(v);
+            }
         }
 
         /// <summary>
@@ -106,8 +114,11 @@ return tostring(x)";
         /// </summary>
         public async Task<T[]> Get(string[] fields, bool queueJump = false)
         {
-            var v = await Command.Get(Settings.Db, Key, fields, queueJump).ConfigureAwait(false);
-            return v.Select(Settings.ValueConverter.Deserialize<T>).ToArray();
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                var v = await Command.Get(Settings.Db, Key, fields, queueJump).ConfigureAwait(false);
+                return v.Select(Settings.ValueConverter.Deserialize<T>).ToArray();
+            }
         }
 
         /// <summary>
@@ -115,24 +126,33 @@ return tostring(x)";
         /// </summary>
         public async Task<Dictionary<string, T>> GetAll(bool queueJump = false)
         {
-            var v = await Command.GetAll(Settings.Db, Key, queueJump).ConfigureAwait(false);
-            return v.ToDictionary(x => x.Key, x => Settings.ValueConverter.Deserialize<T>(x.Value));
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                var v = await Command.GetAll(Settings.Db, Key, queueJump).ConfigureAwait(false);
+                return v.ToDictionary(x => x.Key, x => Settings.ValueConverter.Deserialize<T>(x.Value));
+            }
         }
 
         /// <summary>
         /// HKEYS http://redis.io/commands/hkeys
         /// </summary>
-        public Task<string[]> GetKeys(bool queueJump = false)
+        public async Task<string[]> GetKeys(bool queueJump = false)
         {
-            return Command.GetKeys(Settings.Db, Key, queueJump);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                return await Command.GetKeys(Settings.Db, Key, queueJump).ConfigureAwait(false);
+            }
         }
 
         /// <summary>
         /// HLEN http://redis.io/commands/hlen
         /// </summary>
-        public Task<long> GetLength(bool queueJump = false)
+        public async Task<long> GetLength(bool queueJump = false)
         {
-            return Command.GetLength(Settings.Db, Key, queueJump);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                return await Command.GetLength(Settings.Db, Key, queueJump).ConfigureAwait(false);
+            }
         }
 
         /// <summary>
@@ -140,100 +160,142 @@ return tostring(x)";
         /// </summary>
         public async Task<T[]> GetValues(bool queueJump = false)
         {
-            var v = await Command.GetValues(Settings.Db, Key, queueJump).ConfigureAwait(false);
-            return v.Select(Settings.ValueConverter.Deserialize<T>).ToArray();
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                var v = await Command.GetValues(Settings.Db, Key, queueJump).ConfigureAwait(false);
+                return v.Select(Settings.ValueConverter.Deserialize<T>).ToArray();
+            }
         }
 
         /// <summary>
         /// HINCRBY http://redis.io/commands/hincrby
         /// </summary>
-        public Task<long> Increment(string field, int value = 1, bool queueJump = false)
+        public async Task<long> Increment(string field, int value = 1, bool queueJump = false)
         {
-            return Command.Increment(Settings.Db, Key, field, value, queueJump);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                return await Command.Increment(Settings.Db, Key, field, value, queueJump).ConfigureAwait(false);
+            }
         }
 
-        public Task<long> IncrementLimitByMax(string field, int value, int max, bool queueJump = false)
+        public async Task<long> IncrementLimitByMax(string field, int value, int max, bool queueJump = false)
         {
-            var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementLimitByMax, new[] { Key, field }, new object[] { value, max }, useCache: true, inferStrings: true, queueJump: queueJump);
-            return v.ContinueWith(x => (long)x.Result);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementLimitByMax, new[] { Key, field }, new object[] { value, max }, useCache: true, inferStrings: true, queueJump: queueJump);
+                return (long)(await v.ConfigureAwait(false));
+            }
         }
 
         /// <summary>
         /// HINCRBYFLOAT http://redis.io/commands/hincrbyfloat
         /// </summary>
-        public Task<double> Increment(string field, double value, bool queueJump = false)
+        public async Task<double> Increment(string field, double value, bool queueJump = false)
         {
-            return Command.Increment(Settings.Db, Key, field, value, queueJump);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                return await Command.Increment(Settings.Db, Key, field, value, queueJump).ConfigureAwait(false);
+            }
         }
 
-        public Task<double> IncrementLimitByMax(string field, double value, double max, bool queueJump = false)
+        public async Task<double> IncrementLimitByMax(string field, double value, double max, bool queueJump = false)
         {
-            var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementFloatLimitByMax, new[] { Key, field }, new object[] { value, max }, useCache: true, inferStrings: true, queueJump: queueJump);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementFloatLimitByMax, new[] { Key, field }, new object[] { value, max }, useCache: true, inferStrings: true, queueJump: queueJump);
 
-            return v.ContinueWith(x => double.Parse((string)x.Result));
+                return double.Parse((string)(await v.ConfigureAwait(false)));
+            }
         }
 
-        public Task<long> IncrementLimitByMin(string field, int value, int min, bool queueJump = false)
+        public async Task<long> IncrementLimitByMin(string field, int value, int min, bool queueJump = false)
         {
-            var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementLimitByMin, new[] { Key, field }, new object[] { value, min }, useCache: true, inferStrings: true, queueJump: queueJump);
-            return v.ContinueWith(x => (long)x.Result);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementLimitByMin, new[] { Key, field }, new object[] { value, min }, useCache: true, inferStrings: true, queueJump: queueJump);
+                return (long)(await v.ConfigureAwait(false));
+            }
         }
 
-        public Task<double> IncrementLimitByMin(string field, double value, double min, bool queueJump = false)
+        public async Task<double> IncrementLimitByMin(string field, double value, double min, bool queueJump = false)
         {
-            var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementFloatLimitByMin, new[] { Key, field }, new object[] { value, min }, useCache: true, inferStrings: true, queueJump: queueJump);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementFloatLimitByMin, new[] { Key, field }, new object[] { value, min }, useCache: true, inferStrings: true, queueJump: queueJump);
 
-            return v.ContinueWith(x => double.Parse((string)x.Result));
+                return double.Parse((string)(await v.ConfigureAwait(false)));
+            }
         }
 
         /// <summary>
         /// HDEL http://redis.io/commands/hdel
         /// </summary>
-        public Task<bool> Remove(string field, bool queueJump = false)
+        public async Task<bool> Remove(string field, bool queueJump = false)
         {
-            return Command.Remove(Settings.Db, Key, field, queueJump);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                return await Command.Remove(Settings.Db, Key, field, queueJump).ConfigureAwait(false);
+            }
         }
+
         /// <summary>
         /// HDEL http://redis.io/commands/hdel
         /// </summary>
-        public Task<long> Remove(string[] fields, bool queueJump = false)
+        public async Task<long> Remove(string[] fields, bool queueJump = false)
         {
-            return Command.Remove(Settings.Db, Key, fields, queueJump);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                return await Command.Remove(Settings.Db, Key, fields, queueJump).ConfigureAwait(false);
+            }
         }
 
         /// <summary>
         /// HMSET http://redis.io/commands/hmset
         /// </summary>
-        public Task Set(Dictionary<string, T> values, bool queueJump = false)
+        public async Task Set(Dictionary<string, T> values, bool queueJump = false)
         {
-            var v = values.ToDictionary(x => x.Key, x => Settings.ValueConverter.Serialize(x.Value));
-            return Command.Set(Settings.Db, Key, v, queueJump);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                var v = values.ToDictionary(x => x.Key, x => Settings.ValueConverter.Serialize(x.Value));
+                await Command.Set(Settings.Db, Key, v, queueJump).ConfigureAwait(false);
+            }
         }
 
         /// <summary>
         /// HSET http://redis.io/commands/hset
         /// </summary>
-        public Task<bool> Set(string field, T value, bool queueJump = false)
+        public async Task<bool> Set(string field, T value, bool queueJump = false)
         {
-            return Command.Set(Settings.Db, Key, field, Settings.ValueConverter.Serialize(value), queueJump);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                return await Command.Set(Settings.Db, Key, field, Settings.ValueConverter.Serialize(value), queueJump).ConfigureAwait(false);
+            }
         }
 
         /// <summary>
         /// HSETNX http://redis.io/commands/hsetnx
         /// </summary>
-        public Task<bool> SetIfNotExists(string field, T value, bool queueJump = false)
+        public async Task<bool> SetIfNotExists(string field, T value, bool queueJump = false)
         {
-            return Command.SetIfNotExists(Settings.Db, Key, field, Settings.ValueConverter.Serialize(value), queueJump);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                return await Command.SetIfNotExists(Settings.Db, Key, field, Settings.ValueConverter.Serialize(value), queueJump).ConfigureAwait(false);
+            }
         }
 
-        public Task<bool> Clear(bool queueJump = false)
+        public async Task<bool> Clear(bool queueJump = false)
         {
-            return Connection.Keys.Remove(Settings.Db, Key, queueJump);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                return await Connection.Keys.Remove(Settings.Db, Key, queueJump).ConfigureAwait(false);
+            }
         }
     }
 
     public class RedisHash
     {
+        const string CallType = "RedisHash";
+
         public string Key { get; private set; }
         public RedisSettings Settings { get; private set; }
 
@@ -267,9 +329,12 @@ return tostring(x)";
         /// <summary>
         /// HEXISTS http://redis.io/commands/hexists
         /// </summary>
-        public Task<bool> Exists(string field, bool queueJump = false)
+        public async Task<bool> Exists(string field, bool queueJump = false)
         {
-            return Command.Exists(Settings.Db, Key, field, queueJump);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                return await Command.Exists(Settings.Db, Key, field, queueJump).ConfigureAwait(false);
+            }
         }
 
         /// <summary>
@@ -277,8 +342,11 @@ return tostring(x)";
         /// </summary>
         public async Task<T> Get<T>(string field, bool queueJump = false)
         {
-            var v = await Command.Get(Settings.Db, Key, field, queueJump).ConfigureAwait(false);
-            return Settings.ValueConverter.Deserialize<T>(v);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                var v = await Command.Get(Settings.Db, Key, field, queueJump).ConfigureAwait(false);
+                return Settings.ValueConverter.Deserialize<T>(v);
+            }
         }
 
         /// <summary>
@@ -286,8 +354,11 @@ return tostring(x)";
         /// </summary>
         public async Task<T[]> Get<T>(string[] fields, bool queueJump = false)
         {
-            var v = await Command.Get(Settings.Db, Key, fields, queueJump).ConfigureAwait(false);
-            return v.Select(Settings.ValueConverter.Deserialize<T>).ToArray();
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                var v = await Command.Get(Settings.Db, Key, fields, queueJump).ConfigureAwait(false);
+                return v.Select(Settings.ValueConverter.Deserialize<T>).ToArray();
+            }
         }
 
         /// <summary>
@@ -295,24 +366,33 @@ return tostring(x)";
         /// </summary>
         public async Task<Dictionary<string, T>> GetAll<T>(bool queueJump = false)
         {
-            var v = await Command.GetAll(Settings.Db, Key, queueJump).ConfigureAwait(false);
-            return v.ToDictionary(x => x.Key, x => Settings.ValueConverter.Deserialize<T>(x.Value));
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                var v = await Command.GetAll(Settings.Db, Key, queueJump).ConfigureAwait(false);
+                return v.ToDictionary(x => x.Key, x => Settings.ValueConverter.Deserialize<T>(x.Value));
+            }
         }
 
         /// <summary>
         /// HKEYS http://redis.io/commands/hkeys
         /// </summary>
-        public Task<string[]> GetKeys(bool queueJump = false)
+        public async Task<string[]> GetKeys(bool queueJump = false)
         {
-            return Command.GetKeys(Settings.Db, Key, queueJump);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                return await Command.GetKeys(Settings.Db, Key, queueJump).ConfigureAwait(false);
+            }
         }
 
         /// <summary>
         /// HLEN http://redis.io/commands/hlen
         /// </summary>
-        public Task<long> GetLength(bool queueJump = false)
+        public async Task<long> GetLength(bool queueJump = false)
         {
-            return Command.GetLength(Settings.Db, Key, queueJump);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                return await Command.GetLength(Settings.Db, Key, queueJump).ConfigureAwait(false);
+            }
         }
 
         /// <summary>
@@ -320,95 +400,135 @@ return tostring(x)";
         /// </summary>
         public async Task<T[]> GetValues<T>(bool queueJump = false)
         {
-            var v = await Command.GetValues(Settings.Db, Key, queueJump).ConfigureAwait(false);
-            return v.Select(Settings.ValueConverter.Deserialize<T>).ToArray();
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                var v = await Command.GetValues(Settings.Db, Key, queueJump).ConfigureAwait(false);
+                return v.Select(Settings.ValueConverter.Deserialize<T>).ToArray();
+            }
         }
 
         /// <summary>
         /// HINCRBY http://redis.io/commands/hincrby
         /// </summary>
-        public Task<long> Increment(string field, int value = 1, bool queueJump = false)
+        public async Task<long> Increment(string field, int value = 1, bool queueJump = false)
         {
-            return Command.Increment(Settings.Db, Key, field, value, queueJump);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                return await Command.Increment(Settings.Db, Key, field, value, queueJump).ConfigureAwait(false);
+            }
         }
 
         /// <summary>
         /// HINCRBYFLOAT http://redis.io/commands/hincrbyfloat
         /// </summary>
-        public Task<double> Increment(string field, double value, bool queueJump = false)
+        public async Task<double> Increment(string field, double value, bool queueJump = false)
         {
-            return Command.Increment(Settings.Db, Key, field, value, queueJump);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                return await Command.Increment(Settings.Db, Key, field, value, queueJump).ConfigureAwait(false);
+            }
         }
 
-        public Task<long> IncrementLimitByMax(string field, int value, int max, bool queueJump = false)
+        public async Task<long> IncrementLimitByMax(string field, int value, int max, bool queueJump = false)
         {
-            var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementLimitByMax, new[] { Key, field }, new object[] { value, max }, useCache: true, inferStrings: true, queueJump: queueJump);
-            return v.ContinueWith(x => (long)x.Result);
+
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementLimitByMax, new[] { Key, field }, new object[] { value, max }, useCache: true, inferStrings: true, queueJump: queueJump);
+                return (long)(await v.ConfigureAwait(false));
+            }
         }
 
-        public Task<double> IncrementLimitByMax(string field, double value, double max, bool queueJump = false)
+        public async Task<double> IncrementLimitByMax(string field, double value, double max, bool queueJump = false)
         {
-            var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementFloatLimitByMax, new[] { Key, field }, new object[] { value, max }, useCache: true, inferStrings: true, queueJump: queueJump);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementFloatLimitByMax, new[] { Key, field }, new object[] { value, max }, useCache: true, inferStrings: true, queueJump: queueJump);
 
-            return v.ContinueWith(x => double.Parse((string)x.Result));
+                return double.Parse((string)(await v.ConfigureAwait(false)));
+            }
         }
 
-        public Task<long> IncrementLimitByMin(string field, int value, int min, bool queueJump = false)
+        public async Task<long> IncrementLimitByMin(string field, int value, int min, bool queueJump = false)
         {
-            var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementLimitByMin, new[] { Key, field }, new object[] { value, min }, useCache: true, inferStrings: true, queueJump: queueJump);
-            return v.ContinueWith(x => (long)x.Result);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementLimitByMin, new[] { Key, field }, new object[] { value, min }, useCache: true, inferStrings: true, queueJump: queueJump);
+                return (long)(await v.ConfigureAwait(false));
+            }
         }
 
-        public Task<double> IncrementLimitByMin(string field, double value, double min, bool queueJump = false)
+        public async Task<double> IncrementLimitByMin(string field, double value, double min, bool queueJump = false)
         {
-            var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementFloatLimitByMin, new[] { Key, field }, new object[] { value, min }, useCache: true, inferStrings: true, queueJump: queueJump);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementFloatLimitByMin, new[] { Key, field }, new object[] { value, min }, useCache: true, inferStrings: true, queueJump: queueJump);
 
-            return v.ContinueWith(x => double.Parse((string)x.Result));
+                return double.Parse((string)(await v.ConfigureAwait(false)));
+            }
         }
 
         /// <summary>
         /// HDEL http://redis.io/commands/hdel
         /// </summary>
-        public Task<bool> Remove(string field, bool queueJump = false)
+        public async Task<bool> Remove(string field, bool queueJump = false)
         {
-            return Command.Remove(Settings.Db, Key, field, queueJump);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                return await Command.Remove(Settings.Db, Key, field, queueJump);
+            }
         }
         /// <summary>
         /// HDEL http://redis.io/commands/hdel
         /// </summary>
-        public Task<long> Remove(string[] fields, bool queueJump = false)
+        public async Task<long> Remove(string[] fields, bool queueJump = false)
         {
-            return Command.Remove(Settings.Db, Key, fields, queueJump);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                return await Command.Remove(Settings.Db, Key, fields, queueJump);
+            }
         }
 
         /// <summary>
         /// HMSET http://redis.io/commands/hmset
         /// </summary>
-        public Task Set(Dictionary<string, object> values, bool queueJump = false)
+        public async Task Set(Dictionary<string, object> values, bool queueJump = false)
         {
-            var v = values.ToDictionary(x => x.Key, x => Settings.ValueConverter.Serialize(x.Value));
-            return Command.Set(Settings.Db, Key, v, queueJump);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                var v = values.ToDictionary(x => x.Key, x => Settings.ValueConverter.Serialize(x.Value));
+                await Command.Set(Settings.Db, Key, v, queueJump);
+            }
         }
 
         /// <summary>
         /// HSET http://redis.io/commands/hset
         /// </summary>
-        public Task<bool> Set(string field, object value, bool queueJump = false)
+        public async Task<bool> Set(string field, object value, bool queueJump = false)
         {
-            return Command.Set(Settings.Db, Key, field, Settings.ValueConverter.Serialize(value), queueJump);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                return await Command.Set(Settings.Db, Key, field, Settings.ValueConverter.Serialize(value), queueJump);
+            }
         }
 
         /// <summary>
         /// HSETNX http://redis.io/commands/hsetnx
         /// </summary>
-        public Task<bool> SetIfNotExists(string field, object value, bool queueJump = false)
+        public async Task<bool> SetIfNotExists(string field, object value, bool queueJump = false)
         {
-            return Command.SetIfNotExists(Settings.Db, Key, field, Settings.ValueConverter.Serialize(value), queueJump);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                return await Command.SetIfNotExists(Settings.Db, Key, field, Settings.ValueConverter.Serialize(value), queueJump);
+            }
         }
 
-        public Task<bool> Clear(bool queueJump = false)
+        public async Task<bool> Clear(bool queueJump = false)
         {
-            return Connection.Keys.Remove(Settings.Db, Key, queueJump);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                return await Connection.Keys.Remove(Settings.Db, Key, queueJump);
+            }
         }
     }
 
@@ -418,6 +538,8 @@ return tostring(x)";
     /// </summary>
     public class RedisClass<T> where T : class, new()
     {
+        const string CallType = "RedisClass";
+
         public string Key { get; private set; }
         public RedisSettings Settings { get; private set; }
 
@@ -450,25 +572,28 @@ return tostring(x)";
 
         public async Task<T> GetValue(bool queueJump = false)
         {
-            var data = await Command.GetAll(Settings.Db, Key, queueJump).ConfigureAwait(false);
-            if (data == null)
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
             {
-                return null;
-            }
-
-            var accessor = FastMember.TypeAccessor.Create(typeof(T), allowNonPublicAccessors: false);
-            var result = (T)accessor.CreateNew();
-
-            foreach (var member in accessor.GetMembers())
-            {
-                byte[] value;
-                if (data.TryGetValue(member.Name, out value))
+                var data = await Command.GetAll(Settings.Db, Key, queueJump).ConfigureAwait(false);
+                if (data == null)
                 {
-                    accessor[result, member.Name] = Settings.ValueConverter.Deserialize(member.Type, value);
+                    return null;
                 }
-            }
 
-            return result;
+                var accessor = FastMember.TypeAccessor.Create(typeof(T), allowNonPublicAccessors: false);
+                var result = (T)accessor.CreateNew();
+
+                foreach (var member in accessor.GetMembers())
+                {
+                    byte[] value;
+                    if (data.TryGetValue(member.Name, out value))
+                    {
+                        accessor[result, member.Name] = Settings.ValueConverter.Deserialize(member.Type, value);
+                    }
+                }
+
+                return result;
+            }
         }
 
         public Task<T> GetValueOrSet(Func<T> valueFactory, TimeSpan expire, bool configureAwait = true, bool queueJump = false)
@@ -478,23 +603,26 @@ return tostring(x)";
 
         public async Task<T> GetValueOrSet(Func<T> valueFactory, int? expirySeconds = null, bool configureAwait = true, bool queueJump = false)
         {
-            var value = await GetValue(queueJump).ConfigureAwait(configureAwait); // keep valueFactory synchronization context
-            if (value == null)
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
             {
-                value = valueFactory();
-                if (expirySeconds != null)
+                var value = await GetValue(queueJump).ConfigureAwait(configureAwait); // keep valueFactory synchronization context
+                if (value == null)
                 {
-                    var a = SetValue(value);
-                    var b = SetExpire(expirySeconds.Value, queueJump);
-                    await Task.WhenAll(a, b).ConfigureAwait(false);
+                    value = valueFactory();
+                    if (expirySeconds != null)
+                    {
+                        var a = SetValue(value);
+                        var b = SetExpire(expirySeconds.Value, queueJump);
+                        await Task.WhenAll(a, b).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        await SetValue(value).ConfigureAwait(false);
+                    }
                 }
-                else
-                {
-                    await SetValue(value).ConfigureAwait(false);
-                }
-            }
 
-            return value;
+                return value;
+            }
         }
 
         public Task<T> GetValueOrSet(Func<Task<T>> valueFactory, TimeSpan expire, bool configureAwait = true, bool queueJump = false)
@@ -504,110 +632,152 @@ return tostring(x)";
 
         public async Task<T> GetValueOrSet(Func<Task<T>> valueFactory, int? expirySeconds = null, bool configureAwait = true, bool queueJump = false)
         {
-            var value = await GetValue(queueJump).ConfigureAwait(configureAwait);
-            if (value == null)
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
             {
-                value = await valueFactory().ConfigureAwait(false);
-                if (expirySeconds != null)
+                var value = await GetValue(queueJump).ConfigureAwait(configureAwait);
+                if (value == null)
                 {
-                    var a = SetValue(value);
-                    var b = SetExpire(expirySeconds.Value, queueJump);
-                    await Task.WhenAll(a, b).ConfigureAwait(false);
+                    value = await valueFactory().ConfigureAwait(false);
+                    if (expirySeconds != null)
+                    {
+                        var a = SetValue(value);
+                        var b = SetExpire(expirySeconds.Value, queueJump);
+                        await Task.WhenAll(a, b).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        await SetValue(value).ConfigureAwait(false);
+                    }
                 }
-                else
+
+                return value;
+            }
+        }
+
+        public async Task SetValue(T value, bool queueJump = false)
+        {
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                var accessor = FastMember.TypeAccessor.Create(typeof(T), allowNonPublicAccessors: false);
+                var members = accessor.GetMembers();
+                var values = new Dictionary<string, byte[]>(members.Count);
+                foreach (var member in members)
                 {
-                    await SetValue(value).ConfigureAwait(false);
+                    values.Add(member.Name, Settings.ValueConverter.Serialize(accessor[value, member.Name]));
                 }
-            }
 
-            return value;
+                await Command.Set(Settings.Db, Key, values, queueJump).ConfigureAwait(false);
+            }
         }
 
-        public Task SetValue(T value, bool queueJump = false)
+        public async Task<bool> SetField(string field, object value, bool queueJump = false)
         {
-            var accessor = FastMember.TypeAccessor.Create(typeof(T), allowNonPublicAccessors: false);
-            var members = accessor.GetMembers();
-            var values = new Dictionary<string, byte[]>(members.Count);
-            foreach (var member in members)
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
             {
-                values.Add(member.Name, Settings.ValueConverter.Serialize(accessor[value, member.Name]));
+                return await Command.Set(Settings.Db, Key, field, Settings.ValueConverter.Serialize(value), queueJump).ConfigureAwait(false);
             }
-
-            return Command.Set(Settings.Db, Key, values, queueJump);
         }
 
-        public Task<bool> SetField(string field, object value, bool queueJump = false)
+        public async Task SetFields(Tuple<string, object>[] fields, bool queueJump = false)
         {
-            return Command.Set(Settings.Db, Key, field, Settings.ValueConverter.Serialize(value), queueJump);
-        }
-
-        public Task SetFields(Tuple<string, object>[] fields, bool queueJump = false)
-        {
-            var accessor = FastMember.TypeAccessor.Create(typeof(T), allowNonPublicAccessors: false);
-            var values = new Dictionary<string, byte[]>(fields.Length);
-            foreach (var field in fields)
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
             {
-                values.Add(field.Item1, Settings.ValueConverter.Serialize(accessor[field.Item2, field.Item1]));
-            }
+                var accessor = FastMember.TypeAccessor.Create(typeof(T), allowNonPublicAccessors: false);
+                var values = new Dictionary<string, byte[]>(fields.Length);
+                foreach (var field in fields)
+                {
+                    values.Add(field.Item1, Settings.ValueConverter.Serialize(accessor[field.Item2, field.Item1]));
+                }
 
-            return Command.Set(Settings.Db, Key, values, queueJump);
+                await Command.Set(Settings.Db, Key, values, queueJump).ConfigureAwait(false);
+            }
         }
 
         public async Task<TField> GetField<TField>(string field, bool queueJump = false)
         {
-            var v = await Command.Get(Settings.Db, Key, field, queueJump).ConfigureAwait(false);
-            return Settings.ValueConverter.Deserialize<TField>(v);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                var v = await Command.Get(Settings.Db, Key, field, queueJump).ConfigureAwait(false);
+                return Settings.ValueConverter.Deserialize<TField>(v);
+            }
         }
 
-        public Task<long> Increment(string field, int value = 1, bool queueJump = false)
+        public async Task<long> Increment(string field, int value = 1, bool queueJump = false)
         {
-            return Command.Increment(Settings.Db, Key, field, value, queueJump);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                return await Command.Increment(Settings.Db, Key, field, value, queueJump).ConfigureAwait(false);
+            }
         }
 
-        public Task<double> Increment(string field, double value, bool queueJump = false)
+        public async Task<double> Increment(string field, double value, bool queueJump = false)
         {
-            return Command.Increment(Settings.Db, Key, field, value, queueJump);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                return await Command.Increment(Settings.Db, Key, field, value, queueJump).ConfigureAwait(false);
+            }
         }
 
-        public Task<long> IncrementLimitByMax(string field, int value, int max, bool queueJump = false)
+        public async Task<long> IncrementLimitByMax(string field, int value, int max, bool queueJump = false)
         {
-            var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementLimitByMax, new[] { Key, field }, new object[] { value, max }, useCache: true, inferStrings: true, queueJump: queueJump);
-            return v.ContinueWith(x => (long)x.Result);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementLimitByMax, new[] { Key, field }, new object[] { value, max }, useCache: true, inferStrings: true, queueJump: queueJump);
+                return (long)(await v.ConfigureAwait(false));
+            }
         }
 
-        public Task<double> IncrementLimitByMax(string field, double value, double max, bool queueJump = false)
+        public async Task<double> IncrementLimitByMax(string field, double value, double max, bool queueJump = false)
         {
-            var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementFloatLimitByMax, new[] { Key, field }, new object[] { value, max }, useCache: true, inferStrings: true, queueJump: queueJump);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementFloatLimitByMax, new[] { Key, field }, new object[] { value, max }, useCache: true, inferStrings: true, queueJump: queueJump);
 
-            return v.ContinueWith(x => double.Parse((string)x.Result));
+                return double.Parse((string)(await v.ConfigureAwait(false)));
+            }
         }
 
-        public Task<long> IncrementLimitByMin(string field, int value, int min, bool queueJump = false)
+        public async Task<long> IncrementLimitByMin(string field, int value, int min, bool queueJump = false)
         {
-            var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementLimitByMin, new[] { Key, field }, new object[] { value, min }, useCache: true, inferStrings: true, queueJump: queueJump);
-            return v.ContinueWith(x => (long)x.Result);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementLimitByMin, new[] { Key, field }, new object[] { value, min }, useCache: true, inferStrings: true, queueJump: queueJump);
+                return (long)(await v.ConfigureAwait(false));
+            }
         }
 
-        public Task<double> IncrementLimitByMin(string field, double value, double min, bool queueJump = false)
+        public async Task<double> IncrementLimitByMin(string field, double value, double min, bool queueJump = false)
         {
-            var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementFloatLimitByMin, new[] { Key, field }, new object[] { value, min }, useCache: true, inferStrings: true, queueJump: queueJump);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementFloatLimitByMin, new[] { Key, field }, new object[] { value, min }, useCache: true, inferStrings: true, queueJump: queueJump);
 
-            return v.ContinueWith(x => double.Parse((string)x.Result));
+                return double.Parse((string)(await v.ConfigureAwait(false)));
+            }
         }
 
-        public Task<bool> SetExpire(TimeSpan expire, bool queueJump = false)
+        public async Task<bool> SetExpire(TimeSpan expire, bool queueJump = false)
         {
-            return SetExpire((int)expire.TotalSeconds, queueJump);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                return await SetExpire((int)expire.TotalSeconds, queueJump).ConfigureAwait(false);
+            }
         }
 
-        public Task<bool> SetExpire(int seconds, bool queueJump = false)
+        public async Task<bool> SetExpire(int seconds, bool queueJump = false)
         {
-            return Connection.Keys.Expire(Settings.Db, Key, seconds, queueJump);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                return await Connection.Keys.Expire(Settings.Db, Key, seconds, queueJump).ConfigureAwait(false);
+            }
         }
 
-        public Task<bool> Clear(bool queueJump = false)
+        public async Task<bool> Clear(bool queueJump = false)
         {
-            return Connection.Keys.Remove(Settings.Db, Key, queueJump);
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                return await Connection.Keys.Remove(Settings.Db, Key, queueJump).ConfigureAwait(false);
+            }
         }
     }
 }
