@@ -38,15 +38,18 @@ namespace CloudStructures.Redis
 
         public async Task<Tuple<bool, T>> TryGet(bool queueJump = false)
         {
-            var value = await Command.Get(Settings.Db, Key, queueJump).ConfigureAwait(false);
-            return (value == null)
-                ? Tuple.Create(false, default(T))
-                : Tuple.Create(true, Settings.ValueConverter.Deserialize<T>(value));
+            using (Monitor.Start(Settings.PerformanceMonitor, Key))
+            {
+                var value = await Command.Get(Settings.Db, Key, queueJump).ConfigureAwait(false);
+                return (value == null)
+                    ? Tuple.Create(false, default(T))
+                    : Tuple.Create(true, Settings.ValueConverter.Deserialize<T>(value));
+            }
         }
 
         public Task<T> GetOrSet(Func<T> valueFactory, TimeSpan expire, bool configureAwait = true, bool queueJump = false)
         {
-            return GetOrSet(valueFactory, (int)expire.TotalSeconds,configureAwait, queueJump);
+            return GetOrSet(valueFactory, (int)expire.TotalSeconds, configureAwait, queueJump);
         }
 
         public async Task<T> GetOrSet(Func<T> valueFactory, int? expirySeconds = null, bool configureAwait = true, bool queueJump = false)

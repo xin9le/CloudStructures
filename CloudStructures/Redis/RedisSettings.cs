@@ -19,6 +19,7 @@ namespace CloudStructures.Redis
         public int SyncTimeout { get; private set; }
         public int Db { get; private set; }
         public IRedisValueConverter ValueConverter { get; private set; }
+        public IPerformanceMonitor PerformanceMonitor { get; set; }
 
         public RedisSettings(string host, int port = 6379, int ioTimeout = -1, string password = null, int maxUnsent = 2147483647, bool allowAdmin = false, int syncTimeout = 10000, int db = 0, IRedisValueConverter converter = null)
         {
