@@ -43,14 +43,12 @@ namespace CloudStructures.Redis
         public RedisConnection GetConnection()
         {
             if ((connection == null)
-            || (connection.State != RedisConnectionBase.ConnectionState.Open)
-            || (connection.State != RedisConnectionBase.ConnectionState.Opening))
+            || ((connection.State != RedisConnectionBase.ConnectionState.Open) && (connection.State != RedisConnectionBase.ConnectionState.Opening)))
             {
                 lock (connectionLock)
                 {
-                    if ((connection == null)
-                    || (connection.State != RedisConnectionBase.ConnectionState.Open)
-                    || (connection.State != RedisConnectionBase.ConnectionState.Opening))
+                if ((connection == null)
+                || ((connection.State != RedisConnectionBase.ConnectionState.Open) && (connection.State != RedisConnectionBase.ConnectionState.Opening)))
                     {
                         connection = new RedisConnection(Host, Port, IoTimeout, Password, MaxUnsent, AllowAdmin, SyncTimeout);
                         connection.Open().Wait(); // wait open
