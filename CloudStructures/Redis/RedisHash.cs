@@ -603,26 +603,23 @@ return tostring(x)";
 
         public async Task<T> GetValueOrSet(Func<T> valueFactory, int? expirySeconds = null, bool configureAwait = true, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            var value = await GetValue(queueJump).ConfigureAwait(configureAwait); // keep valueFactory synchronization context
+            if (value == null)
             {
-                var value = await GetValue(queueJump).ConfigureAwait(configureAwait); // keep valueFactory synchronization context
-                if (value == null)
+                value = valueFactory();
+                if (expirySeconds != null)
                 {
-                    value = valueFactory();
-                    if (expirySeconds != null)
-                    {
-                        var a = SetValue(value);
-                        var b = SetExpire(expirySeconds.Value, queueJump);
-                        await Task.WhenAll(a, b).ConfigureAwait(false);
-                    }
-                    else
-                    {
-                        await SetValue(value).ConfigureAwait(false);
-                    }
+                    var a = SetValue(value);
+                    var b = SetExpire(expirySeconds.Value, queueJump);
+                    await Task.WhenAll(a, b).ConfigureAwait(false);
                 }
-
-                return value;
+                else
+                {
+                    await SetValue(value).ConfigureAwait(false);
+                }
             }
+
+            return value;
         }
 
         public Task<T> GetValueOrSet(Func<Task<T>> valueFactory, TimeSpan expire, bool configureAwait = true, bool queueJump = false)
@@ -632,26 +629,23 @@ return tostring(x)";
 
         public async Task<T> GetValueOrSet(Func<Task<T>> valueFactory, int? expirySeconds = null, bool configureAwait = true, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            var value = await GetValue(queueJump).ConfigureAwait(configureAwait);
+            if (value == null)
             {
-                var value = await GetValue(queueJump).ConfigureAwait(configureAwait);
-                if (value == null)
+                value = await valueFactory().ConfigureAwait(false);
+                if (expirySeconds != null)
                 {
-                    value = await valueFactory().ConfigureAwait(false);
-                    if (expirySeconds != null)
-                    {
-                        var a = SetValue(value);
-                        var b = SetExpire(expirySeconds.Value, queueJump);
-                        await Task.WhenAll(a, b).ConfigureAwait(false);
-                    }
-                    else
-                    {
-                        await SetValue(value).ConfigureAwait(false);
-                    }
+                    var a = SetValue(value);
+                    var b = SetExpire(expirySeconds.Value, queueJump);
+                    await Task.WhenAll(a, b).ConfigureAwait(false);
                 }
-
-                return value;
+                else
+                {
+                    await SetValue(value).ConfigureAwait(false);
+                }
             }
+
+            return value;
         }
 
         public async Task SetValue(T value, bool queueJump = false)

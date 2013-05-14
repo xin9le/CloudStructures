@@ -56,19 +56,16 @@ namespace CloudStructures.Redis
 
         public async Task<T> GetOrSet(Func<T> valueFactory, int? expirySeconds = null, bool configureAwait = true, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            var value = await TryGet(queueJump).ConfigureAwait(configureAwait); // keep valueFactory synchronization context
+            if (value.Item1)
             {
-                var value = await TryGet(queueJump).ConfigureAwait(configureAwait); // keep valueFactory synchronization context
-                if (value.Item1)
-                {
-                    return value.Item2;
-                }
-                else
-                {
-                    var v = valueFactory();
-                    await Set(v, expirySeconds, queueJump).ConfigureAwait(false);
-                    return v;
-                }
+                return value.Item2;
+            }
+            else
+            {
+                var v = valueFactory();
+                await Set(v, expirySeconds, queueJump).ConfigureAwait(false);
+                return v;
             }
         }
 
@@ -79,19 +76,16 @@ namespace CloudStructures.Redis
 
         public async Task<T> GetOrSet(Func<Task<T>> valueFactory, int? expirySeconds = null, bool configureAwait = true, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            var value = await TryGet(queueJump).ConfigureAwait(configureAwait); // keep valueFactory synchronization context
+            if (value.Item1)
             {
-                var value = await TryGet(queueJump).ConfigureAwait(configureAwait); // keep valueFactory synchronization context
-                if (value.Item1)
-                {
-                    return value.Item2;
-                }
-                else
-                {
-                    var v = await valueFactory().ConfigureAwait(false);
-                    await Set(v, expirySeconds, queueJump).ConfigureAwait(false);
-                    return v;
-                }
+                return value.Item2;
+            }
+            else
+            {
+                var v = await valueFactory().ConfigureAwait(false);
+                await Set(v, expirySeconds, queueJump).ConfigureAwait(false);
+                return v;
             }
         }
 
@@ -100,18 +94,18 @@ namespace CloudStructures.Redis
             return Set(value, (int)expire.TotalSeconds, queueJump);
         }
 
-        public Task Set(T value, long? expirySeconds = null, bool queueJump = false)
+        public async Task Set(T value, long? expirySeconds = null, bool queueJump = false)
         {
             using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
             {
                 var v = Settings.ValueConverter.Serialize(value);
                 if (expirySeconds == null)
                 {
-                    return Command.Set(Settings.Db, Key, v, queueJump: queueJump);
+                    await Command.Set(Settings.Db, Key, v, queueJump: queueJump).ConfigureAwait(false);
                 }
                 else
                 {
-                    return Command.Set(Settings.Db, Key, v, expirySeconds.Value, queueJump: queueJump);
+                    await Command.Set(Settings.Db, Key, v, expirySeconds.Value, queueJump: queueJump).ConfigureAwait(false);
                 }
             }
         }
