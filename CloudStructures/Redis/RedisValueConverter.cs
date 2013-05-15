@@ -48,8 +48,8 @@ namespace CloudStructures.Redis
         public byte[] Serialize(object value)
         {
             var code = (value == null)
-             ? TypeCode.Empty
-             : Type.GetTypeCode(value.GetType());
+                ? TypeCode.Empty
+                : Type.GetTypeCode(value.GetType());
 
             switch (code)
             {
@@ -66,8 +66,8 @@ namespace CloudStructures.Redis
                 case TypeCode.UInt64:
                 case TypeCode.Single:
                 case TypeCode.Double:
-                case TypeCode.String:
                     return Encoding.UTF8.GetBytes(value.ToString());
+                case TypeCode.String: // allow null value
                 default:
                     using (var ms = new MemoryStream())
                     {
@@ -106,8 +106,7 @@ namespace CloudStructures.Redis
                     return Single.Parse(Encoding.UTF8.GetString(value));
                 case TypeCode.Double:
                     return Double.Parse(Encoding.UTF8.GetString(value));
-                case TypeCode.String:
-                    return Encoding.UTF8.GetString(value);
+                case TypeCode.String: // allow null value
                 default:
                     using (var ms = new MemoryStream(value))
                     {
