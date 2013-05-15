@@ -55,7 +55,7 @@ namespace CloudStructures.Redis
             {
                 case TypeCode.Empty:
                 case TypeCode.DBNull:
-                    return null;
+                    return new byte[0];
                 case TypeCode.SByte:
                 case TypeCode.Byte:
                 case TypeCode.Int16:
@@ -87,24 +87,34 @@ namespace CloudStructures.Redis
                 case TypeCode.DBNull:
                     return null;
                 case TypeCode.SByte:
+                    if (value.Length == 0) return null;
                     return SByte.Parse(Encoding.UTF8.GetString(value));
                 case TypeCode.Byte:
+                    if (value.Length == 0) return null;
                     return Byte.Parse(Encoding.UTF8.GetString(value));
                 case TypeCode.Int16:
+                    if (value.Length == 0) return null;
                     return Int16.Parse(Encoding.UTF8.GetString(value));
                 case TypeCode.Int32:
+                    if (value.Length == 0) return null;
                     return Int32.Parse(Encoding.UTF8.GetString(value));
                 case TypeCode.Int64:
+                    if (value.Length == 0) return null;
                     return Int64.Parse(Encoding.UTF8.GetString(value));
                 case TypeCode.UInt16:
+                    if (value.Length == 0) return null;
                     return UInt16.Parse(Encoding.UTF8.GetString(value));
                 case TypeCode.UInt32:
+                    if (value.Length == 0) return null;
                     return UInt32.Parse(Encoding.UTF8.GetString(value));
                 case TypeCode.UInt64:
+                    if (value.Length == 0) return null;
                     return UInt64.Parse(Encoding.UTF8.GetString(value));
                 case TypeCode.Single:
+                    if (value.Length == 0) return null;
                     return Single.Parse(Encoding.UTF8.GetString(value));
                 case TypeCode.Double:
+                    if (value.Length == 0) return null;
                     return Double.Parse(Encoding.UTF8.GetString(value));
                 case TypeCode.String: // allow null value
                 default:
