@@ -8,7 +8,7 @@ namespace CloudStructures.Redis
     public interface IPerformanceMonitor
     {
         void Start(Guid identity, string command, string key);
-        void End(Guid identity, string command, string key, long durationMilliseconds);
+        void End(Guid identity, string command, string key, double durationMilliseconds);
     }
 
     internal class Monitor : IDisposable
@@ -46,7 +46,7 @@ namespace CloudStructures.Redis
         public void Dispose()
         {
             stopwatch.Stop();
-            monitor.End(id, command, key, stopwatch.ElapsedMilliseconds);
+            monitor.End(id, command, key, stopwatch.Elapsed.TotalMilliseconds);
         }
     }
 

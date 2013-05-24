@@ -672,16 +672,11 @@ return tostring(x)";
             }
         }
 
-        public async Task SetFields(Tuple<string, object>[] fields, bool queueJump = false)
+        public async Task SetFields(IEnumerable<KeyValuePair<string, object>> fields, bool queueJump = false)
         {
             using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
             {
-                var accessor = FastMember.TypeAccessor.Create(typeof(T), allowNonPublicAccessors: false);
-                var values = new Dictionary<string, byte[]>(fields.Length);
-                foreach (var field in fields)
-                {
-                    values.Add(field.Item1, Settings.ValueConverter.Serialize(accessor[field.Item2, field.Item1]));
-                }
+                var values = fields.ToDictionary(x => x.Key, x => Settings.ValueConverter.Serialize(x.Value));
 
                 await Command.Set(Settings.Db, Key, values, queueJump).ConfigureAwait(false);
             }
