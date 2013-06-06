@@ -575,7 +575,7 @@ return tostring(x)";
             using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
             {
                 var data = await Command.GetAll(Settings.Db, Key, queueJump).ConfigureAwait(false);
-                if (data == null)
+                if (data == null || data.Count == 0)
                 {
                     return null;
                 }
