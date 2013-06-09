@@ -599,17 +599,17 @@ return tostring(x)";
         /// <summary>
         /// expire subtract Datetime.Now
         /// </summary>
-        public Task<T> GetValueOrSet(Func<T> valueFactory, DateTime expire, bool configureAwait = true, bool queueJump = false)
+        public Task<T> GetValueOrSet(Func<T> valueFactory, DateTime expire, bool configureAwait = false, bool queueJump = false)
         {
             return GetValueOrSet(valueFactory, expire - DateTime.Now, configureAwait, queueJump);
         }
 
-        public Task<T> GetValueOrSet(Func<T> valueFactory, TimeSpan expire, bool configureAwait = true, bool queueJump = false)
+        public Task<T> GetValueOrSet(Func<T> valueFactory, TimeSpan expire, bool configureAwait = false, bool queueJump = false)
         {
             return GetValueOrSet(valueFactory, (int)expire.TotalSeconds, configureAwait, queueJump);
         }
 
-        public async Task<T> GetValueOrSet(Func<T> valueFactory, int? expirySeconds = null, bool configureAwait = true, bool queueJump = false)
+        public async Task<T> GetValueOrSet(Func<T> valueFactory, int? expirySeconds = null, bool configureAwait = false, bool queueJump = false)
         {
             var value = await GetValue(queueJump).ConfigureAwait(configureAwait); // keep valueFactory synchronization context
             if (value == null)
@@ -633,17 +633,17 @@ return tostring(x)";
         /// <summary>
         /// expire subtract Datetime.Now
         /// </summary>
-        public Task<T> GetValueOrSet(Func<Task<T>> valueFactory, DateTime expire, bool configureAwait = true, bool queueJump = false)
+        public Task<T> GetValueOrSet(Func<Task<T>> valueFactory, DateTime expire, bool configureAwait = false, bool queueJump = false)
         {
             return GetValueOrSet(valueFactory, expire - DateTime.Now, configureAwait, queueJump);
         }
 
-        public Task<T> GetValueOrSet(Func<Task<T>> valueFactory, TimeSpan expire, bool configureAwait = true, bool queueJump = false)
+        public Task<T> GetValueOrSet(Func<Task<T>> valueFactory, TimeSpan expire, bool configureAwait = false, bool queueJump = false)
         {
             return GetValueOrSet(valueFactory, (int)expire.TotalSeconds, configureAwait, queueJump);
         }
 
-        public async Task<T> GetValueOrSet(Func<Task<T>> valueFactory, int? expirySeconds = null, bool configureAwait = true, bool queueJump = false)
+        public async Task<T> GetValueOrSet(Func<Task<T>> valueFactory, int? expirySeconds = null, bool configureAwait = false, bool queueJump = false)
         {
             var value = await GetValue(queueJump).ConfigureAwait(configureAwait);
             if (value == null)
