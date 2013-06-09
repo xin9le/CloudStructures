@@ -596,6 +596,14 @@ return tostring(x)";
             }
         }
 
+        /// <summary>
+        /// expire subtract Datetime.Now
+        /// </summary>
+        public Task<T> GetValueOrSet(Func<T> valueFactory, DateTime expire, bool configureAwait = true, bool queueJump = false)
+        {
+            return GetValueOrSet(valueFactory, expire - DateTime.Now, configureAwait, queueJump);
+        }
+
         public Task<T> GetValueOrSet(Func<T> valueFactory, TimeSpan expire, bool configureAwait = true, bool queueJump = false)
         {
             return GetValueOrSet(valueFactory, (int)expire.TotalSeconds, configureAwait, queueJump);
@@ -620,6 +628,14 @@ return tostring(x)";
             }
 
             return value;
+        }
+
+        /// <summary>
+        /// expire subtract Datetime.Now
+        /// </summary>
+        public Task<T> GetValueOrSet(Func<Task<T>> valueFactory, DateTime expire, bool configureAwait = true, bool queueJump = false)
+        {
+            return GetValueOrSet(valueFactory, expire - DateTime.Now, configureAwait, queueJump);
         }
 
         public Task<T> GetValueOrSet(Func<Task<T>> valueFactory, TimeSpan expire, bool configureAwait = true, bool queueJump = false)
@@ -745,12 +761,17 @@ return tostring(x)";
             }
         }
 
-        public async Task<bool> SetExpire(TimeSpan expire, bool queueJump = false)
+        /// <summary>
+        /// expire subtract Datetime.Now
+        /// </summary>
+        public Task<bool> SetExpire(DateTime expire, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
-            {
-                return await SetExpire((int)expire.TotalSeconds, queueJump).ConfigureAwait(false);
-            }
+            return SetExpire(expire - DateTime.Now, queueJump);
+        }
+
+        public Task<bool> SetExpire(TimeSpan expire, bool queueJump = false)
+        {
+            return SetExpire((int)expire.TotalSeconds, queueJump);
         }
 
         public async Task<bool> SetExpire(int seconds, bool queueJump = false)

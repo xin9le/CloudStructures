@@ -71,6 +71,11 @@ PubSub -> Observable
 ---
 CloudStructures with Reactive Extensions. RedisSubject is ISubject = IObservable and IObserver. Observer publish message to Redis PubSub Channnel. Observable subscribe to Redis PubSub Channel.
 
+using with NuGet(Including PreRelease), [CloudStructures-Rx](https://nuget.org/packages/CloudStructures-Rx/)
+```
+PM> Install-Package CloudStructures -Pre
+```
+
 ```csharp
 // RedisSubject as ISubject<T>
 var subject = new RedisSubject<string>(RedisServer.Default, "PubSubTest");

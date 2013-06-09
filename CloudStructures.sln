@@ -7,12 +7,15 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CloudStructures.Tests", "Cl
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{CC9007A7-F1A7-4623-A21E-C4F25F41AA6D}"
 	ProjectSection(SolutionItems) = preProject
+		Docs\CloudStructures-Rx.nuspec = Docs\CloudStructures-Rx.nuspec
 		Docs\CloudStructures.nuspec = Docs\CloudStructures.nuspec
 		Docs\NuGet.exe = Docs\NuGet.exe
 		Docs\pack.bat = Docs\pack.bat
 		Docs\push.bat = Docs\push.bat
 		README.md = README.md
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CloudStructures.Rx", "CloudStructures.Rx\CloudStructures.Rx.csproj", "{D3AFBFA7-2CC9-453C-BC6A-FCAE9948C99F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -28,6 +31,10 @@ Global
 		{15EAAF2A-8976-4A8C-89C6-9403D2DC0FD5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{15EAAF2A-8976-4A8C-89C6-9403D2DC0FD5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{15EAAF2A-8976-4A8C-89C6-9403D2DC0FD5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D3AFBFA7-2CC9-453C-BC6A-FCAE9948C99F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D3AFBFA7-2CC9-453C-BC6A-FCAE9948C99F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D3AFBFA7-2CC9-453C-BC6A-FCAE9948C99F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D3AFBFA7-2CC9-453C-BC6A-FCAE9948C99F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

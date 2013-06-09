@@ -190,12 +190,17 @@ namespace CloudStructures.Redis
             }
         }
 
-        public async Task<bool> SetExpire(TimeSpan expire, bool queueJump = false)
+        /// <summary>
+        /// expire subtract Datetime.Now
+        /// </summary>
+        public Task<bool> SetExpire(DateTime expire, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
-            {
-                return await SetExpire((int)expire.TotalSeconds, queueJump).ConfigureAwait(false);
-            }
+            return SetExpire(expire - DateTime.Now, queueJump);
+        }
+
+        public Task<bool> SetExpire(TimeSpan expire, bool queueJump = false)
+        {
+            return SetExpire((int)expire.TotalSeconds, queueJump);
         }
 
         public async Task<bool> SetExpire(int seconds, bool queueJump = false)

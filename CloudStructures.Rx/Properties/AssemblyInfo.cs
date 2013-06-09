@@ -2,19 +2,20 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-
-[assembly: AssemblyTitle("CloudStructures")]
+[assembly: AssemblyTitle("CloudStructures.Rx")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("CloudStructures")]
+[assembly: AssemblyProduct("CloudStructures.Rx")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
+
 
 [assembly: ComVisible(false)]
 
 
-[assembly: Guid("4a2bd42e-d4b1-448f-b0e5-b75ae712898a")]
+[assembly: Guid("44772aad-7bfd-4fb9-a290-b74459978382")]
+
 
 
 [assembly: AssemblyVersion("0.4.0.0")]

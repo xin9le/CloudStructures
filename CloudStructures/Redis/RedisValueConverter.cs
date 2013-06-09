@@ -57,16 +57,25 @@ namespace CloudStructures.Redis
                 case TypeCode.DBNull:
                     return new byte[0];
                 case TypeCode.SByte:
+                    return Encoding.UTF8.GetBytes(((sbyte)value).ToString());
                 case TypeCode.Byte:
+                    return Encoding.UTF8.GetBytes(((byte)value).ToString());
                 case TypeCode.Int16:
+                    return Encoding.UTF8.GetBytes(((Int16)value).ToString());
                 case TypeCode.Int32:
+                    return Encoding.UTF8.GetBytes(((Int32)value).ToString());
                 case TypeCode.Int64:
+                    return Encoding.UTF8.GetBytes(((Int64)value).ToString());
                 case TypeCode.UInt16:
+                    return Encoding.UTF8.GetBytes(((UInt16)value).ToString());
                 case TypeCode.UInt32:
+                    return Encoding.UTF8.GetBytes(((UInt32)value).ToString());
                 case TypeCode.UInt64:
+                    return Encoding.UTF8.GetBytes(((UInt64)value).ToString());
                 case TypeCode.Single:
+                    return Encoding.UTF8.GetBytes(((Single)value).ToString());
                 case TypeCode.Double:
-                    return Encoding.UTF8.GetBytes(value.ToString());
+                    return Encoding.UTF8.GetBytes(((Double)value).ToString());
                 case TypeCode.String: // allow null value
                 default:
                     using (var ms = new MemoryStream())

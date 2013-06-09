@@ -49,6 +49,52 @@ namespace CloudStructures.Redis
             }
         }
 
+        /// <summary>
+        /// expire subtract Datetime.Now
+        /// </summary>
+        public Task<T> GetSet(T value, DateTime expire, bool queueJump = false)
+        {
+            return GetSet(value, expire - DateTime.Now, queueJump);
+        }
+
+        public Task<T> GetSet(T value, TimeSpan expire, bool queueJump = false)
+        {
+            return GetSet(value, (int)expire.TotalSeconds, queueJump);
+        }
+
+        public async Task<T> GetSet(T value, int? expirySeconds = null, bool queueJump = false)
+        {
+            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            {
+                var v = Settings.ValueConverter.Serialize(value);
+                if (expirySeconds == null)
+                {
+                    var result = await Command.GetSet(Settings.Db, Key, v, queueJump: queueJump).ConfigureAwait(false);
+                    return Settings.ValueConverter.Deserialize<T>(result);
+                }
+                else
+                {
+                    using (var tx = Connection.CreateTransaction())
+                    {
+                        var getset = tx.Strings.GetSet(Settings.Db, Key, v, queueJump: queueJump);
+                        var expire = tx.Keys.Expire(Settings.Db, Key, expirySeconds.Value, queueJump);
+
+                        await tx.Execute(queueJump).ConfigureAwait(false);
+                        var result = await getset.ConfigureAwait(false);
+                        return Settings.ValueConverter.Deserialize<T>(result);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// expire subtract Datetime.Now
+        /// </summary>
+        public Task<T> GetOrSet(Func<T> valueFactory, DateTime expire, bool configureAwait = true, bool queueJump = false)
+        {
+            return GetOrSet(valueFactory, expire - DateTime.Now, configureAwait, queueJump);
+        }
+
         public Task<T> GetOrSet(Func<T> valueFactory, TimeSpan expire, bool configureAwait = true, bool queueJump = false)
         {
             return GetOrSet(valueFactory, (int)expire.TotalSeconds, configureAwait, queueJump);
@@ -67,6 +113,14 @@ namespace CloudStructures.Redis
                 await Set(v, expirySeconds, queueJump).ConfigureAwait(false);
                 return v;
             }
+        }
+
+        /// <summary>
+        /// expire subtract Datetime.Now
+        /// </summary>
+        public Task<T> GetOrSet(Func<Task<T>> valueFactory, DateTime expire, bool configureAwait = true, bool queueJump = false)
+        {
+            return GetOrSet(valueFactory, expire - DateTime.Now, queueJump);
         }
 
         public Task<T> GetOrSet(Func<Task<T>> valueFactory, TimeSpan expire, bool configureAwait = true, bool queueJump = false)
@@ -142,12 +196,17 @@ namespace CloudStructures.Redis
             }
         }
 
-        public async Task<bool> SetExpire(TimeSpan expire, bool queueJump = false)
+        /// <summary>
+        /// expire subtract Datetime.Now
+        /// </summary>
+        public Task<bool> SetExpire(DateTime expire, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
-            {
-                return await SetExpire((int)expire.TotalSeconds, queueJump).ConfigureAwait(false);
-            }
+            return SetExpire(expire - DateTime.Now, queueJump);
+        }
+
+        public Task<bool> SetExpire(TimeSpan expire, bool queueJump = false)
+        {
+            return SetExpire((int)expire.TotalSeconds, queueJump);
         }
 
         public async Task<bool> SetExpire(int seconds, bool queueJump = false)
