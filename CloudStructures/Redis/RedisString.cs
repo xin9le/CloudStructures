@@ -90,17 +90,17 @@ namespace CloudStructures.Redis
         /// <summary>
         /// expire subtract Datetime.Now
         /// </summary>
-        public Task<T> GetOrSet(Func<T> valueFactory, DateTime expire, bool configureAwait = false, bool queueJump = false)
+        public Task<T> GetOrSet(Func<T> valueFactory, DateTime expire, bool configureAwait = true, bool queueJump = false)
         {
             return GetOrSet(valueFactory, expire - DateTime.Now, configureAwait, queueJump);
         }
 
-        public Task<T> GetOrSet(Func<T> valueFactory, TimeSpan expire, bool configureAwait = false, bool queueJump = false)
+        public Task<T> GetOrSet(Func<T> valueFactory, TimeSpan expire, bool configureAwait = true, bool queueJump = false)
         {
             return GetOrSet(valueFactory, (int)expire.TotalSeconds, configureAwait, queueJump);
         }
 
-        public async Task<T> GetOrSet(Func<T> valueFactory, int? expirySeconds = null, bool configureAwait = false, bool queueJump = false)
+        public async Task<T> GetOrSet(Func<T> valueFactory, int? expirySeconds = null, bool configureAwait = true, bool queueJump = false)
         {
             var value = await TryGet(queueJump).ConfigureAwait(configureAwait); // keep valueFactory synchronization context
             if (value.Item1)
@@ -118,17 +118,17 @@ namespace CloudStructures.Redis
         /// <summary>
         /// expire subtract Datetime.Now
         /// </summary>
-        public Task<T> GetOrSet(Func<Task<T>> valueFactory, DateTime expire, bool configureAwait = false, bool queueJump = false)
+        public Task<T> GetOrSet(Func<Task<T>> valueFactory, DateTime expire, bool configureAwait = true, bool queueJump = false)
         {
             return GetOrSet(valueFactory, expire - DateTime.Now, queueJump);
         }
 
-        public Task<T> GetOrSet(Func<Task<T>> valueFactory, TimeSpan expire, bool configureAwait = false, bool queueJump = false)
+        public Task<T> GetOrSet(Func<Task<T>> valueFactory, TimeSpan expire, bool configureAwait = true, bool queueJump = false)
         {
             return GetOrSet(valueFactory, (int)expire.TotalSeconds, queueJump);
         }
 
-        public async Task<T> GetOrSet(Func<Task<T>> valueFactory, int? expirySeconds = null, bool configureAwait = false, bool queueJump = false)
+        public async Task<T> GetOrSet(Func<Task<T>> valueFactory, int? expirySeconds = null, bool configureAwait = true, bool queueJump = false)
         {
             var value = await TryGet(queueJump).ConfigureAwait(configureAwait); // keep valueFactory synchronization context
             if (value.Item1)
