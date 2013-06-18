@@ -88,6 +88,8 @@ namespace CloudStructures.Redis
 
         public object Deserialize(Type type, byte[] value)
         {
+            if (value == null) return null;
+
             var code = GetNonNullableTypeCode(type);
 
             switch (code)
