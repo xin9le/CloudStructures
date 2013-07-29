@@ -283,6 +283,27 @@ return tostring(x)";
             }
         }
 
+        /// <summary>
+        /// expire subtract Datetime.Now
+        /// </summary>
+        public Task<bool> SetExpire(DateTime expire, bool queueJump = false)
+        {
+            return SetExpire(expire - DateTime.Now, queueJump);
+        }
+
+        public Task<bool> SetExpire(TimeSpan expire, bool queueJump = false)
+        {
+            return SetExpire((int)expire.TotalSeconds, queueJump);
+        }
+
+        public async Task<bool> SetExpire(int seconds, bool queueJump = false)
+        {
+            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            {
+                return await Connection.Keys.Expire(Settings.Db, Key, seconds, queueJump).ConfigureAwait(false);
+            }
+        }
+
         public async Task<bool> Clear(bool queueJump = false)
         {
             using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
@@ -520,6 +541,27 @@ return tostring(x)";
             using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
             {
                 return await Command.SetIfNotExists(Settings.Db, Key, field, Settings.ValueConverter.Serialize(value), queueJump);
+            }
+        }
+
+        /// <summary>
+        /// expire subtract Datetime.Now
+        /// </summary>
+        public Task<bool> SetExpire(DateTime expire, bool queueJump = false)
+        {
+            return SetExpire(expire - DateTime.Now, queueJump);
+        }
+
+        public Task<bool> SetExpire(TimeSpan expire, bool queueJump = false)
+        {
+            return SetExpire((int)expire.TotalSeconds, queueJump);
+        }
+
+        public async Task<bool> SetExpire(int seconds, bool queueJump = false)
+        {
+            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            {
+                return await Connection.Keys.Expire(Settings.Db, Key, seconds, queueJump).ConfigureAwait(false);
             }
         }
 
