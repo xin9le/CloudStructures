@@ -49,6 +49,12 @@ namespace CloudStructures.Redis
             }
         }
 
+        public async Task<T> GetValueOrDefault(T defaultValue = default(T), bool queueJump = false)
+        {
+            var result = await TryGet(queueJump).ConfigureAwait(false);
+            return result.Item1 ? result.Item2 : defaultValue;
+        }
+
         /// <summary>
         /// expire subtract Datetime.Now
         /// </summary>
@@ -291,15 +297,6 @@ end
 return tostring(x)", new[] { Key }, new object[] { value, min }, useCache: true, inferStrings: true, queueJump: queueJump);
                 return double.Parse((string)(await v.ConfigureAwait(false)));
             }
-        }
-    }
-
-    public static class RedisStringExtensions
-    {
-        public static async Task<T> GetValueOrDefault<T>(this RedisString<T> redis, T defaultValue = default(T), bool queueJump = false)
-        {
-            var result = await redis.TryGet(queueJump).ConfigureAwait(false);
-            return result.Item1 ? result.Item2 : defaultValue;
         }
     }
 }

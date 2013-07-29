@@ -80,6 +80,15 @@ namespace CloudStructures.Redis
         }
 
         /// <summary>
+        /// LINDEX http://redis.io/commands/lindex
+        /// </summary>
+        public async Task<T> GetOrDefault(int index, T defaultValue = default(T), bool queueJump = false)
+        {
+            var result = await TryGet(index, queueJump).ConfigureAwait(false);
+            return result.Item1 ? result.Item2 : defaultValue;
+        }
+
+        /// <summary>
         /// LLEN http://redis.io/commands/llen
         /// </summary>
         public async Task<long> GetLength(bool queueJump = false)
@@ -234,18 +243,6 @@ namespace CloudStructures.Redis
                 var length = await GetLength().ConfigureAwait(false);
                 return await Range(0, (int)length, queueJump).ConfigureAwait(false);
             }
-        }
-    }
-
-    public static class RedisListExtensions
-    {
-        /// <summary>
-        /// LINDEX http://redis.io/commands/lindex
-        /// </summary>
-        public static async Task<T> GetOrDefault<T>(this RedisList<T> redis, int index, T defaultValue = default(T), bool queueJump = false)
-        {
-            var result = await redis.TryGet(index, queueJump).ConfigureAwait(false);
-            return result.Item1 ? result.Item2 : defaultValue;
         }
     }
 }
