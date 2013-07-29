@@ -2,18 +2,18 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <metadata>
         <id>CloudStructures-Rx</id>
-        <version>0.4.1-beta</version>
+        <version>0.5.0-beta</version>
         <title>CloudStructures-Rx</title>
         <authors>neuecc</authors>
         <owners>neuecc</owners>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
-        <description>Distributed Collections based on Redis and BookSleeve. PubSub to Observable support.</description>
+        <description>Redis PubSub to Observable.</description>
         <language>en-US</language>
         <licenseUrl>http://opensource.org/licenses/MIT</licenseUrl>
         <projectUrl>https://github.com/neuecc/CloudStructures</projectUrl>
         <tags>Redis Rx</tags>
         <dependencies>
-            <dependency id="CloudStructures" version="0.4.1" />
+            <dependency id="CloudStructures" version="0.5.0" />
             <dependency id="Rx-Main" version="2.1.30214.0" />
         </dependencies>
     </metadata>

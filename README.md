@@ -1,12 +1,12 @@
 CloudStructures
 ===============
-Distributed Collections based on Redis and BookSleeve. This is inspired by Cloud Collection(System.Cloud.Collections.IAsyncList[T], etc...) of [ActorFx](http://actorfx.codeplex.com/).
+Redis Client based on BookSleeve. Features: connection management, serialize/deserialize to object, key distribute and configuration. The concept is distributed collection inspired by Cloud Collection(System.Cloud.Collections.IAsyncList[T], etc...) of [ActorFx](http://actorfx.codeplex.com/).
 
 Install
 ---
 using with NuGet(Including PreRelease), [CloudStructures](https://nuget.org/packages/CloudStructures/)
 ```
-PM> Install-Package CloudStructures -Pre
+PM> Install-Package CloudStructures
 ```
 
 Example
@@ -21,25 +21,25 @@ public static class RedisServer
 // a class
 public class Person
 {
-    public string Name { get; private set; }
-    public RedisList<Person> Friends { get; private set; }
-
-    public Person(string name)
-    {
-        Name = name;
-        Friends = new RedisList<Person>(RedisServer.Default, "Person-" + Name);
-    }
+    public string Name { get; set; }
+    public int Age { get; set; }
 }
 
-// local ? cloud ? object
-var sato = new Person("Mike");
 
-// add person
-await sato.Friends.AddLast(new Person("John"));
-await sato.Friends.AddLast(new Person("Mary"));
+// Redis String
+var redis = new RedisString<Person>(RedisServer.Default, "test-string-key");
+await redis.Set(new Person { Name = "John", Age = 34 });
 
-// count
-var friendCount = await sato.Friends.GetLength();
+var copy = await redis.GetValueOrDefault();
+
+// Redis list
+var redis = new RedisList<Person>(RedisServer.Default, "test-list-key");
+await redis.AddLast(new Person { Name = "Tom" });
+await redis.AddLast(new Person { Name = "Mary" });
+
+var persons = await redis.Range(0, 10);
+
+// and others - Set, SortedSet, Hash, Dictionary(Generic Hash), Class(Object-Hash-Mapping)
 ```
 
 ConnectionManagement
@@ -62,14 +62,14 @@ var group = new RedisGroup(groupName: "Cache", settings: new[]
 // key hashing
 var conn = group.GetSettings("hogehoge-100").GetConnection();
 
-// customize serializer(default as JSON)
+// customize serializer(default as JSON, and option includes protocol-buffers)
 new RedisSettings("127.0.0.1", converter: new JsonRedisValueConverter());
 new RedisSettings("127.0.0.1", converter: new ProtoBufRedisValueConverter());
 ```
 
 PubSub -> Observable
 ---
-CloudStructures with Reactive Extensions. RedisSubject is ISubject = IObservable and IObserver. Observer publish message to Redis PubSub Channnel. Observable subscribe to Redis PubSub Channel.
+Experimental feature, CloudStructures with Reactive Extensions. RedisSubject is ISubject = IObservable and IObserver. Observer publish message to Redis PubSub Channnel. Observable subscribe to Redis PubSub Channel.
 
 using with NuGet(Including PreRelease), [CloudStructures-Rx](https://nuget.org/packages/CloudStructures-Rx/)
 ```
@@ -127,5 +127,5 @@ load configuration from web.config or app.config
 var groups = CloudStructuresConfigurationSection.GetSection().ToRedisGroups();
 ```
 
-group attributes are "host, port, ioTimeout, password, maxUnsent, allowAdmin, syncTimeout, db, valueConverter".
-It is same as RedisSettings.
+group attributes are "host, port, ioTimeout, password, maxUnsent, allowAdmin, syncTimeout, db, valueConverter, commandTracer".  
+It is same as RedisSettings except commandTracer.
