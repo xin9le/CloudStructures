@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Configuration;
 using System.Linq;
+using System.Linq.Expressions;
 
 namespace CloudStructures.Redis
 {
@@ -104,7 +105,7 @@ namespace CloudStructures.Redis
                 x.SyncTimeout,
                 x.Db,
                 x.ValueConverter,
-                x.PerformanceMonitor));
+                x.CommandTracer));
             return new RedisGroup(Name, settings.ToArray(), ServerSelector);
         }
     }
@@ -147,15 +148,23 @@ namespace CloudStructures.Redis
             }
         }
 
-        [ConfigurationProperty("performanceMonitor"), TypeConverter(typeof(TypeNameConverter))]
-        public IPerformanceMonitor PerformanceMonitor
+        [ConfigurationProperty("commandTracer"), TypeConverter(typeof(TypeNameConverter))]
+        public Func<ICommandTracer> CommandTracer
         {
             get
             {
-                var type = (Type)base["performanceMonitor"];
+                var type = (Type)base["commandTracer"];
                 if (type == null) return null;
 
-                return (IPerformanceMonitor)Activator.CreateInstance(type);
+                try
+                {
+                    var factory = Expression.Lambda<Func<ICommandTracer>>(Expression.New(type)).Compile();
+                    return factory;
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception("CommandTracer must needs non parameter constructor", ex);
+                }
             }
         }
     }

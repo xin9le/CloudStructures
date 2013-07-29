@@ -40,7 +40,7 @@ namespace CloudStructures.Redis
 
         public async Task<Tuple<bool, T>> TryGet(bool queueJump = false)
         {
-            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
             {
                 var value = await Command.Get(Settings.Db, Key, queueJump).ConfigureAwait(false);
                 return (value == null)
@@ -64,7 +64,7 @@ namespace CloudStructures.Redis
 
         public async Task<T> GetSet(T value, int? expirySeconds = null, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
             {
                 var v = Settings.ValueConverter.Serialize(value);
                 if (expirySeconds == null)
@@ -150,7 +150,7 @@ namespace CloudStructures.Redis
 
         public async Task Set(T value, long? expirySeconds = null, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
             {
                 var v = Settings.ValueConverter.Serialize(value);
                 if (expirySeconds == null)
@@ -166,7 +166,7 @@ namespace CloudStructures.Redis
 
         public async Task<bool> Remove(bool queueJump = false)
         {
-            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
             {
                 return await Connection.Keys.Remove(Settings.Db, Key, queueJump).ConfigureAwait(false);
             }
@@ -174,7 +174,7 @@ namespace CloudStructures.Redis
 
         public async Task<long> Increment(long value = 1, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
             {
                 return await Command.Increment(Settings.Db, Key, value, queueJump).ConfigureAwait(false);
             }
@@ -182,7 +182,7 @@ namespace CloudStructures.Redis
 
         public async Task<double> Increment(double value, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
             {
                 return await Command.Increment(Settings.Db, Key, value, queueJump).ConfigureAwait(false);
             }
@@ -190,7 +190,7 @@ namespace CloudStructures.Redis
 
         public async Task<long> Decrement(long value = 1, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
             {
                 return await Command.Decrement(Settings.Db, Key, value, queueJump).ConfigureAwait(false);
             }
@@ -211,7 +211,7 @@ namespace CloudStructures.Redis
 
         public async Task<bool> SetExpire(int seconds, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
             {
                 return await Connection.Keys.Expire(Settings.Db, Key, seconds, queueJump).ConfigureAwait(false);
             }
@@ -219,7 +219,7 @@ namespace CloudStructures.Redis
 
         public async Task<long> IncrementLimitByMax(long value, long max, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
             {
                 var v = Connection.Scripting.Eval(Settings.Db, @"
 local inc = tonumber(ARGV[1])
@@ -236,7 +236,7 @@ return x", new[] { Key }, new object[] { value, max }, useCache: true, inferStri
 
         public async Task<long> IncrementLimitByMin(long value, long min, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
             {
                 var v = Connection.Scripting.Eval(Settings.Db, @"
 local inc = tonumber(ARGV[1])
@@ -253,7 +253,7 @@ return x", new[] { Key }, new object[] { value, min }, useCache: true, inferStri
 
         public async Task<double> IncrementLimitByMax(double value, double max, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
             {
                 var v = Connection.Scripting.Eval(Settings.Db, @"
 local inc = tonumber(ARGV[1])
@@ -270,7 +270,7 @@ return tostring(x)", new[] { Key }, new object[] { value, max }, useCache: true,
 
         public async Task<double> IncrementLimitByMin(double value, double min, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
             {
                 var v = Connection.Scripting.Eval(Settings.Db, @"
 local inc = tonumber(ARGV[1])

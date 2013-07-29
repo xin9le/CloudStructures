@@ -19,9 +19,9 @@ namespace CloudStructures.Redis
         public int SyncTimeout { get; private set; }
         public int Db { get; private set; }
         public IRedisValueConverter ValueConverter { get; private set; }
-        public IPerformanceMonitor PerformanceMonitor { get; private set; }
+        public Func<ICommandTracer> CommandTracerFactory { get; private set; }
 
-        public RedisSettings(string host, int port = 6379, int ioTimeout = -1, string password = null, int maxUnsent = 2147483647, bool allowAdmin = false, int syncTimeout = 10000, int db = 0, IRedisValueConverter converter = null, IPerformanceMonitor performanceMonitor = null)
+        public RedisSettings(string host, int port = 6379, int ioTimeout = -1, string password = null, int maxUnsent = 2147483647, bool allowAdmin = false, int syncTimeout = 10000, int db = 0, IRedisValueConverter converter = null, Func<ICommandTracer> tracerFactory = null)
         {
             this.Host = host;
             this.Port = port;
@@ -32,7 +32,7 @@ namespace CloudStructures.Redis
             this.SyncTimeout = syncTimeout;
             this.Db = db;
             this.ValueConverter = converter ?? new JsonRedisValueConverter();
-            this.PerformanceMonitor = performanceMonitor;
+            this.CommandTracerFactory = tracerFactory;
         }
 
         // Manage Connection
@@ -40,18 +40,22 @@ namespace CloudStructures.Redis
         RedisConnection connection;
         object connectionLock = new object();
 
-        public RedisConnection GetConnection()
+        public RedisConnection GetConnection(bool waitOpen = true)
         {
             if ((connection == null)
             || ((connection.State != RedisConnectionBase.ConnectionState.Open) && (connection.State != RedisConnectionBase.ConnectionState.Opening)))
             {
                 lock (connectionLock)
                 {
-                if ((connection == null)
-                || ((connection.State != RedisConnectionBase.ConnectionState.Open) && (connection.State != RedisConnectionBase.ConnectionState.Opening)))
+                    if ((connection == null)
+                    || ((connection.State != RedisConnectionBase.ConnectionState.Open) && (connection.State != RedisConnectionBase.ConnectionState.Opening)))
                     {
                         connection = new RedisConnection(Host, Port, IoTimeout, Password, MaxUnsent, AllowAdmin, SyncTimeout);
-                        connection.Open().Wait(); // wait open
+                        var open = connection.Open();
+                        if (waitOpen)
+                        {
+                            open.Wait();
+                        }
                     }
                 }
             }

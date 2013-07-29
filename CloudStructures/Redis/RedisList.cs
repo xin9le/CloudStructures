@@ -46,7 +46,7 @@ namespace CloudStructures.Redis
         /// </summary>
         public async Task<long> AddFirst(T value, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
             {
                 var v = Settings.ValueConverter.Serialize(value);
                 return await Command.AddFirst(Settings.Db, Key, v, createIfMissing: true, queueJump: queueJump).ConfigureAwait(false);
@@ -58,7 +58,7 @@ namespace CloudStructures.Redis
         /// </summary>
         public async Task<long> AddLast(T value, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
             {
                 var v = Settings.ValueConverter.Serialize(value);
                 return await Command.AddLast(Settings.Db, Key, v, createIfMissing: true, queueJump: queueJump).ConfigureAwait(false);
@@ -70,7 +70,7 @@ namespace CloudStructures.Redis
         /// </summary>
         public async Task<Tuple<bool, T>> TryGet(int index, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
             {
                 var value = await Command.Get(Settings.Db, Key, index, queueJump).ConfigureAwait(false);
                 return (value == null)
@@ -84,7 +84,7 @@ namespace CloudStructures.Redis
         /// </summary>
         public async Task<long> GetLength(bool queueJump = false)
         {
-            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
             {
                 return await Command.GetLength(Settings.Db, Key, queueJump).ConfigureAwait(false);
             }
@@ -95,7 +95,7 @@ namespace CloudStructures.Redis
         /// </summary>
         public async Task<T[]> Range(int start, int stop, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
             {
                 var results = await Command.Range(Settings.Db, Key, start, stop, queueJump).ConfigureAwait(false);
                 return results.Select(Settings.ValueConverter.Deserialize<T>).ToArray();
@@ -107,7 +107,7 @@ namespace CloudStructures.Redis
         /// </summary>
         public async Task<long> Remove(T value, int count = 1, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
             {
                 var v = Settings.ValueConverter.Serialize(value);
                 return await Command.Remove(Settings.Db, Key, v, count, queueJump).ConfigureAwait(false);
@@ -119,7 +119,7 @@ namespace CloudStructures.Redis
         /// </summary>
         public async Task<T> RemoveFirst(bool queueJump = false)
         {
-            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
             {
                 var result = await Command.RemoveFirst(Settings.Db, Key, queueJump).ConfigureAwait(false);
                 return Settings.ValueConverter.Deserialize<T>(result);
@@ -131,7 +131,7 @@ namespace CloudStructures.Redis
         /// </summary>
         public async Task<T> RemoveLast(bool queueJump = false)
         {
-            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
             {
                 var result = await Command.RemoveLast(Settings.Db, Key, queueJump).ConfigureAwait(false);
                 return Settings.ValueConverter.Deserialize<T>(result);
@@ -143,7 +143,7 @@ namespace CloudStructures.Redis
         /// </summary>
         public async Task Set(int index, T value, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
             {
                 var v = Settings.ValueConverter.Serialize(value);
                 await Command.Set(Settings.Db, Key, index, v, queueJump).ConfigureAwait(false);
@@ -155,7 +155,7 @@ namespace CloudStructures.Redis
         /// </summary>
         public async Task Trim(int count, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
             {
                 await Command.Trim(Settings.Db, Key, count, queueJump).ConfigureAwait(false);
             }
@@ -166,7 +166,7 @@ namespace CloudStructures.Redis
         /// </summary>
         public async Task Trim(int start, int stop, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
             {
                 await Command.Trim(Settings.Db, Key, start, stop, queueJump).ConfigureAwait(false);
             }
@@ -176,7 +176,7 @@ namespace CloudStructures.Redis
 
         public async Task<long> AddFirstAndFixLength(T value, int fixLength, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
             {
                 var v = Settings.ValueConverter.Serialize(value);
                 using (var tx = Settings.GetConnection().CreateTransaction())
@@ -205,7 +205,7 @@ namespace CloudStructures.Redis
 
         public async Task<bool> SetExpire(int seconds, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
             {
                 return await Connection.Keys.Expire(Settings.Db, Key, seconds, queueJump).ConfigureAwait(false);
             }
@@ -213,7 +213,7 @@ namespace CloudStructures.Redis
 
         public async Task<bool> Clear(bool queueJump = false)
         {
-            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
             {
                 return await Connection.Keys.Remove(Settings.Db, Key, queueJump).ConfigureAwait(false);
             }
@@ -221,7 +221,7 @@ namespace CloudStructures.Redis
 
         public async Task<T[]> ToArray(bool queueJump = false)
         {
-            using (Monitor.Start(Settings.PerformanceMonitor, Key, CallType))
+            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
             {
                 var length = await GetLength().ConfigureAwait(false);
                 return await Range(0, (int)length, queueJump).ConfigureAwait(false);

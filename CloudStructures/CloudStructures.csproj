@@ -44,6 +44,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Newtonsoft.Json.5.0.6\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="protobuf-net, Version=2.0.0.640, Culture=neutral, PublicKeyToken=257b51d87d2e4d67, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\protobuf-net.2.0.0.640\lib\net40\protobuf-net.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
@@ -63,7 +67,7 @@
     <Compile Include="Redis\RedisSortedSet.cs" />
     <Compile Include="Redis\RedisString.cs" />
     <Compile Include="Redis\RedisValueConverter.cs" />
-    <Compile Include="Redis\PerformanceMonitor.cs" />
+    <Compile Include="Redis\ICommandTracer.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
