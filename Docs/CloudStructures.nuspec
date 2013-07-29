@@ -13,10 +13,10 @@
         <projectUrl>https://github.com/neuecc/CloudStructures</projectUrl>
         <tags>Redis</tags>
         <dependencies>
-            <dependency id="BookSleeve" version="1.3.34" />
-            <dependency id="FastMember" version="1.0.0.9" />
-            <dependency id="Newtonsoft.Json" version="5.0.4" />
-            <dependency id="protobuf-net" version="2.0.0.621" />
+            <dependency id="BookSleeve" version="1.3.38" />
+            <dependency id="FastMember" version="1.0.0.10" />
+            <dependency id="Newtonsoft.Json" version="5.0.6" />
+            <dependency id="protobuf-net" version="2.0.0.640" />
         </dependencies>
     </metadata>
     <files>

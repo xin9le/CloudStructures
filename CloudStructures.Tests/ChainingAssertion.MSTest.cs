@@ -1,6 +1,6 @@
 ﻿/*--------------------------------------------------------------------------
  * Chaining Assertion
- * ver 1.7.0.1 (Nov. 28th, 2012)
+ * ver 1.7.1.0 (Apr. 29th, 2013)
  *
  * created and maintained by neuecc <ils@neue.cc - @neuecc on Twitter>
  * licensed under Microsoft Public License(Ms-PL)
@@ -194,6 +194,7 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
 {
     #region Extensions
 
+    [System.Diagnostics.DebuggerStepThroughAttribute]
     [ContractVerification(false)]
     public static partial class AssertEx
     {
