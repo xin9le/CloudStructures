@@ -211,6 +211,14 @@ namespace CloudStructures.Redis
             }
         }
 
+        public async Task<bool> KeyExists(bool queueJump = false)
+        {
+            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            {
+                return await Connection.Keys.Exists(Settings.Db, Key, queueJump).ConfigureAwait(false);
+            }
+        }
+
         public async Task<bool> Clear(bool queueJump = false)
         {
             using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
