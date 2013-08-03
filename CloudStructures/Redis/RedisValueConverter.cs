@@ -129,6 +129,12 @@ namespace CloudStructures.Redis
                     return Double.Parse(Encoding.UTF8.GetString(value));
                 case TypeCode.String: // allow null value
                 default:
+                    // return null if type isn't IEnumerable
+                    if (!typeof(System.Collections.IEnumerable).IsAssignableFrom(type) && value.Length == 0)
+                    {
+                        return null;
+                    }
+
                     using (var ms = new MemoryStream(value))
                     {
                         return ProtoBuf.Serializer.NonGeneric.Deserialize(type, ms);
