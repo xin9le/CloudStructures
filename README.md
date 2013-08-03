@@ -4,7 +4,7 @@ Redis Client based on BookSleeve. Features: connection management, serialize/des
 
 Install
 ---
-using with NuGet(Including PreRelease), [CloudStructures](https://nuget.org/packages/CloudStructures/)
+using with NuGet, [CloudStructures](https://nuget.org/packages/CloudStructures/)
 ```
 PM> Install-Package CloudStructures
 ```
