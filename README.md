@@ -73,7 +73,7 @@ Experimental feature, CloudStructures with Reactive Extensions. RedisSubject is 
 
 using with NuGet(Including PreRelease), [CloudStructures-Rx](https://nuget.org/packages/CloudStructures-Rx/)
 ```
-PM> Install-Package CloudStructures -Pre
+PM> Install-Package CloudStructures-Rx -Pre
 ```
 
 ```csharp
