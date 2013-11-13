@@ -38,15 +38,15 @@ namespace CloudStructures.Redis
             }
         }
 
-        public async Task<Tuple<bool, T>> TryGet(bool queueJump = false)
+        public Task<Tuple<bool, T>> TryGet(bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordReceive(Settings, Key, CallType, async () =>
             {
                 var value = await Command.Get(Settings.Db, Key, queueJump).ConfigureAwait(false);
                 return (value == null)
                     ? Tuple.Create(false, default(T))
                     : Tuple.Create(true, Settings.ValueConverter.Deserialize<T>(value));
-            }
+            });
         }
 
         public async Task<T> GetValueOrDefault(T defaultValue = default(T), bool queueJump = false)
@@ -68,15 +68,16 @@ namespace CloudStructures.Redis
             return GetSet(value, (int)expire.TotalSeconds, queueJump);
         }
 
-        public async Task<T> GetSet(T value, int? expirySeconds = null, bool queueJump = false)
+        public Task<T> GetSet(T value, int? expirySeconds = null, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
                 var v = Settings.ValueConverter.Serialize(value);
+                T r;
                 if (expirySeconds == null)
                 {
                     var result = await Command.GetSet(Settings.Db, Key, v, queueJump: queueJump).ConfigureAwait(false);
-                    return Settings.ValueConverter.Deserialize<T>(result);
+                    r = Settings.ValueConverter.Deserialize<T>(result);
                 }
                 else
                 {
@@ -87,10 +88,12 @@ namespace CloudStructures.Redis
 
                         await tx.Execute(queueJump).ConfigureAwait(false);
                         var result = await getset.ConfigureAwait(false);
-                        return Settings.ValueConverter.Deserialize<T>(result);
+                        r = Settings.ValueConverter.Deserialize<T>(result);
                     }
                 }
-            }
+
+                return Pair.Create(new { value, expirySeconds }, r);
+            });
         }
 
         /// <summary>
@@ -143,7 +146,7 @@ namespace CloudStructures.Redis
             }
             else
             {
-                var v = await valueFactory().ConfigureAwait(false);
+                var v = await valueFactory().ConfigureAwait(configureAwait);
                 await Set(v, expirySeconds, queueJump).ConfigureAwait(false);
                 return v;
             }
@@ -154,9 +157,9 @@ namespace CloudStructures.Redis
             return Set(value, (int)expire.TotalSeconds, queueJump);
         }
 
-        public async Task Set(T value, long? expirySeconds = null, bool queueJump = false)
+        public Task Set(T value, long? expirySeconds = null, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordSend(Settings, Key, CallType, async () =>
             {
                 var v = Settings.ValueConverter.Serialize(value);
                 if (expirySeconds == null)
@@ -167,39 +170,120 @@ namespace CloudStructures.Redis
                 {
                     await Command.Set(Settings.Db, Key, v, expirySeconds.Value, queueJump: queueJump).ConfigureAwait(false);
                 }
-            }
+
+                return new { value, expirySeconds };
+            });
         }
 
-        public async Task<bool> Remove(bool queueJump = false)
+        public Task<bool> Remove(bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordReceive(Settings, Key, CallType, () =>
             {
-                return await Connection.Keys.Remove(Settings.Db, Key, queueJump).ConfigureAwait(false);
-            }
+                return Connection.Keys.Remove(Settings.Db, Key, queueJump);
+            });
         }
 
-        public async Task<long> Increment(long value = 1, bool queueJump = false)
+        public Task<long> Increment(long value = 1, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                return await Command.Increment(Settings.Db, Key, value, queueJump).ConfigureAwait(false);
-            }
+                var r = await Command.Increment(Settings.Db, Key, value, queueJump).ConfigureAwait(false);
+                return Pair.Create(new { value }, r);
+            });
         }
 
-        public async Task<double> Increment(double value, bool queueJump = false)
+        public Task<double> Increment(double value, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                return await Command.Increment(Settings.Db, Key, value, queueJump).ConfigureAwait(false);
-            }
+                var r = await Command.Increment(Settings.Db, Key, value, queueJump).ConfigureAwait(false);
+                return Pair.Create(new { value }, r);
+            });
         }
 
-        public async Task<long> Decrement(long value = 1, bool queueJump = false)
+        public Task<long> Decrement(long value = 1, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                return await Command.Decrement(Settings.Db, Key, value, queueJump).ConfigureAwait(false);
-            }
+                var r = await Command.Decrement(Settings.Db, Key, value, queueJump).ConfigureAwait(false);
+                return Pair.Create(new { value }, r);
+            });
+        }
+
+        public Task<long> IncrementLimitByMax(long value, long max, bool queueJump = false)
+        {
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
+            {
+                var v = Connection.Scripting.Eval(Settings.Db, @"
+local inc = tonumber(ARGV[1])
+local max = tonumber(ARGV[2])
+local x = redis.call('incrby', KEYS[1], inc)
+if(x > max) then
+    redis.call('set', KEYS[1], max)
+    x = max
+end
+return x", new[] { Key }, new object[] { value, max }, useCache: true, inferStrings: true, queueJump: queueJump);
+                var r = (long)(await v.ConfigureAwait(false));
+
+                return Pair.Create(new { value, max }, r);
+            });
+        }
+
+        public Task<long> IncrementLimitByMin(long value, long min, bool queueJump = false)
+        {
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
+            {
+                var v = Connection.Scripting.Eval(Settings.Db, @"
+local inc = tonumber(ARGV[1])
+local min = tonumber(ARGV[2])
+local x = redis.call('incrby', KEYS[1], inc)
+if(x < min) then
+    redis.call('set', KEYS[1], min)
+    x = min
+end
+return x", new[] { Key }, new object[] { value, min }, useCache: true, inferStrings: true, queueJump: queueJump);
+                var r = (long)(await v.ConfigureAwait(false));
+
+                return Pair.Create(new { value, min }, r);
+            });
+        }
+
+        public Task<double> IncrementLimitByMax(double value, double max, bool queueJump = false)
+        {
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
+            {
+                var v = Connection.Scripting.Eval(Settings.Db, @"
+local inc = tonumber(ARGV[1])
+local max = tonumber(ARGV[2])
+local x = tonumber(redis.call('incrbyfloat', KEYS[1], inc))
+if(x > max) then
+    redis.call('set', KEYS[1], max)
+    x = max
+end
+return tostring(x)", new[] { Key }, new object[] { value, max }, useCache: true, inferStrings: true, queueJump: queueJump);
+                var r = double.Parse((string)(await v.ConfigureAwait(false)));
+
+                return Pair.Create(new { value, max }, r);
+            });
+        }
+
+        public Task<double> IncrementLimitByMin(double value, double min, bool queueJump = false)
+        {
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
+            {
+                var v = Connection.Scripting.Eval(Settings.Db, @"
+local inc = tonumber(ARGV[1])
+local min = tonumber(ARGV[2])
+local x = tonumber(redis.call('incrbyfloat', KEYS[1], inc))
+if(x < min) then
+    redis.call('set', KEYS[1], min)
+    x = min
+end
+return tostring(x)", new[] { Key }, new object[] { value, min }, useCache: true, inferStrings: true, queueJump: queueJump);
+                var r = double.Parse((string)(await v.ConfigureAwait(false)));
+
+                return Pair.Create(new { value, min }, r);
+            });
         }
 
         /// <summary>
@@ -215,88 +299,21 @@ namespace CloudStructures.Redis
             return SetExpire((int)expire.TotalSeconds, queueJump);
         }
 
-        public async Task<bool> SetExpire(int seconds, bool queueJump = false)
+        public Task<bool> SetExpire(int seconds, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                return await Connection.Keys.Expire(Settings.Db, Key, seconds, queueJump).ConfigureAwait(false);
-            }
+                var r = await Connection.Keys.Expire(Settings.Db, Key, seconds, queueJump).ConfigureAwait(false);
+                return Pair.Create(new { seconds }, r);
+            });
         }
 
-        public async Task<bool> KeyExists(bool queueJump = false)
+        public Task<bool> KeyExists(bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordReceive(Settings, Key, CallType, () =>
             {
-                return await Connection.Keys.Exists(Settings.Db, Key, queueJump).ConfigureAwait(false);
-            }
-        }
-
-        public async Task<long> IncrementLimitByMax(long value, long max, bool queueJump = false)
-        {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
-            {
-                var v = Connection.Scripting.Eval(Settings.Db, @"
-local inc = tonumber(ARGV[1])
-local max = tonumber(ARGV[2])
-local x = redis.call('incrby', KEYS[1], inc)
-if(x > max) then
-    redis.call('set', KEYS[1], max)
-    x = max
-end
-return x", new[] { Key }, new object[] { value, max }, useCache: true, inferStrings: true, queueJump: queueJump);
-                return (long)(await v.ConfigureAwait(false));
-            }
-        }
-
-        public async Task<long> IncrementLimitByMin(long value, long min, bool queueJump = false)
-        {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
-            {
-                var v = Connection.Scripting.Eval(Settings.Db, @"
-local inc = tonumber(ARGV[1])
-local min = tonumber(ARGV[2])
-local x = redis.call('incrby', KEYS[1], inc)
-if(x < min) then
-    redis.call('set', KEYS[1], min)
-    x = min
-end
-return x", new[] { Key }, new object[] { value, min }, useCache: true, inferStrings: true, queueJump: queueJump);
-                return (long)(await v.ConfigureAwait(false));
-            }
-        }
-
-        public async Task<double> IncrementLimitByMax(double value, double max, bool queueJump = false)
-        {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
-            {
-                var v = Connection.Scripting.Eval(Settings.Db, @"
-local inc = tonumber(ARGV[1])
-local max = tonumber(ARGV[2])
-local x = tonumber(redis.call('incrbyfloat', KEYS[1], inc))
-if(x > max) then
-    redis.call('set', KEYS[1], max)
-    x = max
-end
-return tostring(x)", new[] { Key }, new object[] { value, max }, useCache: true, inferStrings: true, queueJump: queueJump);
-                return double.Parse((string)(await v.ConfigureAwait(false)));
-            }
-        }
-
-        public async Task<double> IncrementLimitByMin(double value, double min, bool queueJump = false)
-        {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
-            {
-                var v = Connection.Scripting.Eval(Settings.Db, @"
-local inc = tonumber(ARGV[1])
-local min = tonumber(ARGV[2])
-local x = tonumber(redis.call('incrbyfloat', KEYS[1], inc))
-if(x < min) then
-    redis.call('set', KEYS[1], min)
-    x = min
-end
-return tostring(x)", new[] { Key }, new object[] { value, min }, useCache: true, inferStrings: true, queueJump: queueJump);
-                return double.Parse((string)(await v.ConfigureAwait(false)));
-            }
+                return Connection.Keys.Exists(Settings.Db, Key, queueJump);
+            });
         }
     }
 }

@@ -89,7 +89,7 @@ namespace CloudStructures.Redis
         public object Deserialize(Type type, byte[] value)
         {
             if (value == null) return null;
-
+            
             var code = GetNonNullableTypeCode(type);
 
             switch (code)
@@ -129,7 +129,7 @@ namespace CloudStructures.Redis
                     return Double.Parse(Encoding.UTF8.GetString(value));
                 case TypeCode.String: // allow null value
                 default:
-                    // return null if type isn't IEnumerable
+                    // empty byte and empty collection returns empty collection
                     if (!typeof(System.Collections.IEnumerable).IsAssignableFrom(type) && value.Length == 0)
                     {
                         return null;

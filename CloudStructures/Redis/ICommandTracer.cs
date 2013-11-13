@@ -1,52 +1,120 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 
 namespace CloudStructures.Redis
 {
     public interface ICommandTracer
     {
-        void CommandStart(string command, string key);
-        void CommandFinish();
+        void CommandStart(RedisSettings usedSettings, string command, string key);
+        void CommandFinish(object sentObject, object receivedObject, bool isError);
     }
 
-    internal class Monitor : IDisposable
+    internal static class Pair
     {
-        static readonly IDisposable EmptyDisposable = new EmptyDisposable();
-
-        readonly ICommandTracer tracer;
-
-        public static IDisposable Start(Func<ICommandTracer> tracerFactory, string key, string callType, [CallerMemberName]string commandName = "")
+        public static Pair<T> Create<T>(object sentObject, T receivedObject)
         {
+            return new Pair<T> { SentObject = sentObject, ReceivedObject = receivedObject };
+        }
+    }
+
+    internal class Pair<T>
+    {
+        public object SentObject { get; set; }
+        public T ReceivedObject { get; set; }
+    }
+
+    internal static class TraceHelper
+    {
+        public static async Task RecordSend(RedisSettings usedSettings, string key, string callType, Func<Task<object>> executeAndReturnSentObject, [CallerMemberName]string commandName = "")
+        {
+            var tracerFactory = usedSettings.CommandTracerFactory;
+            ICommandTracer tracer = null;
             if (tracerFactory != null)
             {
-                var tracer = tracerFactory();
+                tracer = tracerFactory();
                 var command = callType + "." + commandName;
-                tracer.CommandStart(command, key);
-                return new Monitor(tracer);
+
+                tracer.CommandStart(usedSettings, command, key); // start within context
             }
-            else
+
+            object sendObject = null;
+            bool isError = true;
+            try
             {
-                return EmptyDisposable;
+                sendObject = await executeAndReturnSentObject().ConfigureAwait(false);
+                isError = false;
+            }
+            finally
+            {
+                if (tracer != null)
+                {
+                    tracer.CommandFinish(sendObject, null, isError); // finish without context
+                }
             }
         }
-
-        Monitor(ICommandTracer tracer)
+        public static async Task<T> RecordReceive<T>(RedisSettings usedSettings, string key, string callType, Func<Task<T>> executeAndReturnReceivedObject, [CallerMemberName]string commandName = "")
         {
-            this.tracer = tracer;
+            var tracerFactory = usedSettings.CommandTracerFactory;
+            ICommandTracer tracer = null;
+            if (tracerFactory != null)
+            {
+                tracer = tracerFactory();
+                var command = callType + "." + commandName;
+
+                tracer.CommandStart(usedSettings, command, key); // start within context
+            }
+
+            T receivedObject = default(T);
+            bool isError = true;
+            try
+            {
+                receivedObject = await executeAndReturnReceivedObject().ConfigureAwait(false);
+                isError = false;
+            }
+            finally
+            {
+                if (tracer != null)
+                {
+                    tracer.CommandFinish(null, receivedObject, isError); // finish without context
+                }
+            }
+
+            return receivedObject;
         }
 
-        public void Dispose()
+        public static async Task<T> RecordSendAndReceive<T>(RedisSettings usedSettings, string key, string callType, Func<Task<Pair<T>>> executeAndReturnSentAndReceivedObject, [CallerMemberName]string commandName = "")
         {
-            tracer.CommandFinish();
-        }
-    }
+            var tracerFactory = usedSettings.CommandTracerFactory;
+            ICommandTracer tracer = null;
+            if (tracerFactory != null)
+            {
+                tracer = tracerFactory();
+                var command = callType + "." + commandName;
 
-    internal class EmptyDisposable : IDisposable
-    {
-        public void Dispose()
-        {
+                tracer.CommandStart(usedSettings, command, key); // start within context
+            }
 
+            object sendObject = null;
+            T receivedObject = default(T);
+            bool isError = true;
+            try
+            {
+                var sendAndReceivedObject = await executeAndReturnSentAndReceivedObject().ConfigureAwait(false);
+                sendObject = sendAndReceivedObject.SentObject;
+                receivedObject = sendAndReceivedObject.ReceivedObject;
+                isError = false;
+            }
+            finally
+            {
+                if (tracer != null)
+                {
+                    tracer.CommandFinish(sendObject, receivedObject, isError); // finish without context
+                }
+            }
+
+            return receivedObject;
         }
     }
 }

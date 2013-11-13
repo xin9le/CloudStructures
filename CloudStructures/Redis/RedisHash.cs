@@ -89,198 +89,211 @@ return tostring(x)";
         /// <summary>
         /// HEXISTS http://redis.io/commands/hexists
         /// </summary>
-        public async Task<bool> Exists(string field, bool queueJump = false)
+        public Task<bool> Exists(string field, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                return await Command.Exists(Settings.Db, Key, field, queueJump).ConfigureAwait(false);
-            }
+                var r = await Command.Exists(Settings.Db, Key, field, queueJump).ConfigureAwait(false);
+                return Pair.Create(new { field }, r);
+            });
         }
 
         /// <summary>
         /// HGET http://redis.io/commands/hget
         /// </summary>
-        public async Task<T> Get(string field, bool queueJump = false)
+        public Task<T> Get(string field, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
                 var v = await Command.Get(Settings.Db, Key, field, queueJump).ConfigureAwait(false);
-                return Settings.ValueConverter.Deserialize<T>(v);
-            }
+                var r = Settings.ValueConverter.Deserialize<T>(v);
+                return Pair.Create(new { field }, r);
+            });
         }
 
         /// <summary>
         /// HMGET http://redis.io/commands/hmget
         /// </summary>
-        public async Task<T[]> Get(string[] fields, bool queueJump = false)
+        public Task<T[]> Get(string[] fields, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
                 var v = await Command.Get(Settings.Db, Key, fields, queueJump).ConfigureAwait(false);
-                return v.Select(Settings.ValueConverter.Deserialize<T>).ToArray();
-            }
+                var r = v.Select(Settings.ValueConverter.Deserialize<T>).ToArray();
+                return Pair.Create(new { fields }, r);
+            });
         }
 
         /// <summary>
         /// HGETALL http://redis.io/commands/hgetall
         /// </summary>
-        public async Task<Dictionary<string, T>> GetAll(bool queueJump = false)
+        public Task<Dictionary<string, T>> GetAll(bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordReceive(Settings, Key, CallType, async () =>
             {
                 var v = await Command.GetAll(Settings.Db, Key, queueJump).ConfigureAwait(false);
-                return v.ToDictionary(x => x.Key, x => Settings.ValueConverter.Deserialize<T>(x.Value));
-            }
+                var r = v.ToDictionary(x => x.Key, x => Settings.ValueConverter.Deserialize<T>(x.Value));
+                return r;
+            });
         }
 
         /// <summary>
         /// HKEYS http://redis.io/commands/hkeys
         /// </summary>
-        public async Task<string[]> GetKeys(bool queueJump = false)
+        public Task<string[]> GetKeys(bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordReceive(Settings, Key, CallType, () =>
             {
-                return await Command.GetKeys(Settings.Db, Key, queueJump).ConfigureAwait(false);
-            }
+                return Command.GetKeys(Settings.Db, Key, queueJump);
+            });
         }
 
         /// <summary>
         /// HLEN http://redis.io/commands/hlen
         /// </summary>
-        public async Task<long> GetLength(bool queueJump = false)
+        public Task<long> GetLength(bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordReceive(Settings, Key, CallType, () =>
             {
-                return await Command.GetLength(Settings.Db, Key, queueJump).ConfigureAwait(false);
-            }
+                return Command.GetLength(Settings.Db, Key, queueJump);
+            });
         }
 
         /// <summary>
         /// HVALS http://redis.io/commands/hvals
         /// </summary>
-        public async Task<T[]> GetValues(bool queueJump = false)
+        public Task<T[]> GetValues(bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordReceive(Settings, Key, CallType, async () =>
             {
                 var v = await Command.GetValues(Settings.Db, Key, queueJump).ConfigureAwait(false);
                 return v.Select(Settings.ValueConverter.Deserialize<T>).ToArray();
-            }
+            });
         }
 
         /// <summary>
         /// HINCRBY http://redis.io/commands/hincrby
         /// </summary>
-        public async Task<long> Increment(string field, int value = 1, bool queueJump = false)
+        public Task<long> Increment(string field, int value = 1, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                return await Command.Increment(Settings.Db, Key, field, value, queueJump).ConfigureAwait(false);
-            }
+                var r = await Command.Increment(Settings.Db, Key, field, value, queueJump).ConfigureAwait(false);
+                return Pair.Create(new { field, value }, r);
+            });
         }
 
-        public async Task<long> IncrementLimitByMax(string field, int value, int max, bool queueJump = false)
+        public Task<long> IncrementLimitByMax(string field, int value, int max, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
                 var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementLimitByMax, new[] { Key, field }, new object[] { value, max }, useCache: true, inferStrings: true, queueJump: queueJump);
-                return (long)(await v.ConfigureAwait(false));
-            }
+                var r = (long)(await v.ConfigureAwait(false));
+                return Pair.Create(new { field, value, max }, r);
+            });
         }
 
         /// <summary>
         /// HINCRBYFLOAT http://redis.io/commands/hincrbyfloat
         /// </summary>
-        public async Task<double> Increment(string field, double value, bool queueJump = false)
+        public Task<double> Increment(string field, double value, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                return await Command.Increment(Settings.Db, Key, field, value, queueJump).ConfigureAwait(false);
-            }
+                var r = await Command.Increment(Settings.Db, Key, field, value, queueJump).ConfigureAwait(false);
+                return Pair.Create(new { field, value }, r);
+            });
         }
 
-        public async Task<double> IncrementLimitByMax(string field, double value, double max, bool queueJump = false)
+        public Task<double> IncrementLimitByMax(string field, double value, double max, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
                 var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementFloatLimitByMax, new[] { Key, field }, new object[] { value, max }, useCache: true, inferStrings: true, queueJump: queueJump);
-
-                return double.Parse((string)(await v.ConfigureAwait(false)));
-            }
+                var r = double.Parse((string)(await v.ConfigureAwait(false)));
+                return Pair.Create(new { field, value, max }, r);
+            });
         }
 
-        public async Task<long> IncrementLimitByMin(string field, int value, int min, bool queueJump = false)
+        public Task<long> IncrementLimitByMin(string field, int value, int min, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
                 var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementLimitByMin, new[] { Key, field }, new object[] { value, min }, useCache: true, inferStrings: true, queueJump: queueJump);
-                return (long)(await v.ConfigureAwait(false));
-            }
+                var r = (long)(await v.ConfigureAwait(false));
+                return Pair.Create(new { field, value, min }, r);
+            });
         }
 
-        public async Task<double> IncrementLimitByMin(string field, double value, double min, bool queueJump = false)
+        public Task<double> IncrementLimitByMin(string field, double value, double min, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
                 var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementFloatLimitByMin, new[] { Key, field }, new object[] { value, min }, useCache: true, inferStrings: true, queueJump: queueJump);
-
-                return double.Parse((string)(await v.ConfigureAwait(false)));
-            }
+                var r = double.Parse((string)(await v.ConfigureAwait(false)));
+                return Pair.Create(new { field, value, min }, r);
+            });
         }
 
         /// <summary>
         /// HDEL http://redis.io/commands/hdel
         /// </summary>
-        public async Task<bool> Remove(string field, bool queueJump = false)
+        public Task<bool> Remove(string field, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                return await Command.Remove(Settings.Db, Key, field, queueJump).ConfigureAwait(false);
-            }
+                var r = await Command.Remove(Settings.Db, Key, field, queueJump).ConfigureAwait(false);
+                return Pair.Create(new { field }, r);
+            });
         }
 
         /// <summary>
         /// HDEL http://redis.io/commands/hdel
         /// </summary>
-        public async Task<long> Remove(string[] fields, bool queueJump = false)
+        public Task<long> Remove(string[] fields, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                return await Command.Remove(Settings.Db, Key, fields, queueJump).ConfigureAwait(false);
-            }
+                var r = await Command.Remove(Settings.Db, Key, fields, queueJump).ConfigureAwait(false);
+                return Pair.Create(new { fields }, r);
+            });
         }
 
         /// <summary>
         /// HMSET http://redis.io/commands/hmset
         /// </summary>
-        public async Task Set(Dictionary<string, T> values, bool queueJump = false)
+        public Task Set(Dictionary<string, T> values, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordSend(Settings, Key, CallType, async () =>
             {
                 var v = values.ToDictionary(x => x.Key, x => Settings.ValueConverter.Serialize(x.Value));
                 await Command.Set(Settings.Db, Key, v, queueJump).ConfigureAwait(false);
-            }
+                return new { values };
+            });
         }
 
         /// <summary>
         /// HSET http://redis.io/commands/hset
         /// </summary>
-        public async Task<bool> Set(string field, T value, bool queueJump = false)
+        public Task<bool> Set(string field, T value, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                return await Command.Set(Settings.Db, Key, field, Settings.ValueConverter.Serialize(value), queueJump).ConfigureAwait(false);
-            }
+                var r = await Command.Set(Settings.Db, Key, field, Settings.ValueConverter.Serialize(value), queueJump).ConfigureAwait(false);
+                return Pair.Create(new { field, value }, r);
+            });
         }
 
         /// <summary>
         /// HSETNX http://redis.io/commands/hsetnx
         /// </summary>
-        public async Task<bool> SetIfNotExists(string field, T value, bool queueJump = false)
+        public Task<bool> SetIfNotExists(string field, T value, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                return await Command.SetIfNotExists(Settings.Db, Key, field, Settings.ValueConverter.Serialize(value), queueJump).ConfigureAwait(false);
-            }
+                var r = await Command.SetIfNotExists(Settings.Db, Key, field, Settings.ValueConverter.Serialize(value), queueJump).ConfigureAwait(false);
+                return Pair.Create(new { field, value }, r);
+            });
         }
 
         /// <summary>
@@ -296,28 +309,29 @@ return tostring(x)";
             return SetExpire((int)expire.TotalSeconds, queueJump);
         }
 
-        public async Task<bool> SetExpire(int seconds, bool queueJump = false)
+        public Task<bool> SetExpire(int seconds, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                return await Connection.Keys.Expire(Settings.Db, Key, seconds, queueJump).ConfigureAwait(false);
-            }
+                var r = await Connection.Keys.Expire(Settings.Db, Key, seconds, queueJump).ConfigureAwait(false);
+                return Pair.Create(new { seconds }, r);
+            });
         }
 
-        public async Task<bool> KeyExists(bool queueJump = false)
+        public Task<bool> KeyExists(bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordReceive(Settings, Key, CallType, () =>
             {
-                return await Connection.Keys.Exists(Settings.Db, Key, queueJump).ConfigureAwait(false);
-            }
+                return Connection.Keys.Exists(Settings.Db, Key, queueJump);
+            });
         }
 
-        public async Task<bool> Clear(bool queueJump = false)
+        public Task<bool> Clear(bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordReceive(Settings, Key, CallType, () =>
             {
-                return await Connection.Keys.Remove(Settings.Db, Key, queueJump).ConfigureAwait(false);
-            }
+                return Connection.Keys.Remove(Settings.Db, Key, queueJump);
+            });
         }
     }
 
@@ -358,198 +372,210 @@ return tostring(x)";
         /// <summary>
         /// HEXISTS http://redis.io/commands/hexists
         /// </summary>
-        public async Task<bool> Exists(string field, bool queueJump = false)
+        public Task<bool> Exists(string field, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                return await Command.Exists(Settings.Db, Key, field, queueJump).ConfigureAwait(false);
-            }
+                var r = await Command.Exists(Settings.Db, Key, field, queueJump).ConfigureAwait(false);
+                return Pair.Create(new { field }, r);
+            });
         }
 
         /// <summary>
         /// HGET http://redis.io/commands/hget
         /// </summary>
-        public async Task<T> Get<T>(string field, bool queueJump = false)
+        public Task<T> Get<T>(string field, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
                 var v = await Command.Get(Settings.Db, Key, field, queueJump).ConfigureAwait(false);
-                return Settings.ValueConverter.Deserialize<T>(v);
-            }
+                var r = Settings.ValueConverter.Deserialize<T>(v);
+                return Pair.Create(new { field }, r);
+            });
         }
 
         /// <summary>
         /// HMGET http://redis.io/commands/hmget
         /// </summary>
-        public async Task<T[]> Get<T>(string[] fields, bool queueJump = false)
+        public Task<T[]> Get<T>(string[] fields, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
                 var v = await Command.Get(Settings.Db, Key, fields, queueJump).ConfigureAwait(false);
-                return v.Select(Settings.ValueConverter.Deserialize<T>).ToArray();
-            }
+                var r = v.Select(Settings.ValueConverter.Deserialize<T>).ToArray();
+                return Pair.Create(new { fields }, r);
+            });
         }
 
         /// <summary>
         /// HGETALL http://redis.io/commands/hgetall
         /// </summary>
-        public async Task<Dictionary<string, T>> GetAll<T>(bool queueJump = false)
+        public Task<Dictionary<string, T>> GetAll<T>(bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordReceive(Settings, Key, CallType, async () =>
             {
                 var v = await Command.GetAll(Settings.Db, Key, queueJump).ConfigureAwait(false);
-                return v.ToDictionary(x => x.Key, x => Settings.ValueConverter.Deserialize<T>(x.Value));
-            }
+                var r = v.ToDictionary(x => x.Key, x => Settings.ValueConverter.Deserialize<T>(x.Value));
+                return r;
+            });
         }
 
         /// <summary>
         /// HKEYS http://redis.io/commands/hkeys
         /// </summary>
-        public async Task<string[]> GetKeys(bool queueJump = false)
+        public Task<string[]> GetKeys(bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordReceive(Settings, Key, CallType, () =>
             {
-                return await Command.GetKeys(Settings.Db, Key, queueJump).ConfigureAwait(false);
-            }
+                return Command.GetKeys(Settings.Db, Key, queueJump);
+            });
         }
 
         /// <summary>
         /// HLEN http://redis.io/commands/hlen
         /// </summary>
-        public async Task<long> GetLength(bool queueJump = false)
+        public Task<long> GetLength(bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordReceive(Settings, Key, CallType, () =>
             {
-                return await Command.GetLength(Settings.Db, Key, queueJump).ConfigureAwait(false);
-            }
+                return Command.GetLength(Settings.Db, Key, queueJump);
+            });
         }
 
         /// <summary>
         /// HVALS http://redis.io/commands/hvals
         /// </summary>
-        public async Task<T[]> GetValues<T>(bool queueJump = false)
+        public Task<T[]> GetValues<T>(bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordReceive(Settings, Key, CallType, async () =>
             {
                 var v = await Command.GetValues(Settings.Db, Key, queueJump).ConfigureAwait(false);
                 return v.Select(Settings.ValueConverter.Deserialize<T>).ToArray();
-            }
+            });
         }
 
         /// <summary>
         /// HINCRBY http://redis.io/commands/hincrby
         /// </summary>
-        public async Task<long> Increment(string field, int value = 1, bool queueJump = false)
+        public Task<long> Increment(string field, int value = 1, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                return await Command.Increment(Settings.Db, Key, field, value, queueJump).ConfigureAwait(false);
-            }
+                var r = await Command.Increment(Settings.Db, Key, field, value, queueJump).ConfigureAwait(false);
+                return Pair.Create(new { field, value }, r);
+            });
         }
 
         /// <summary>
         /// HINCRBYFLOAT http://redis.io/commands/hincrbyfloat
         /// </summary>
-        public async Task<double> Increment(string field, double value, bool queueJump = false)
+        public Task<double> Increment(string field, double value, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                return await Command.Increment(Settings.Db, Key, field, value, queueJump).ConfigureAwait(false);
-            }
+                var r = await Command.Increment(Settings.Db, Key, field, value, queueJump).ConfigureAwait(false);
+                return Pair.Create(new { field, value }, r);
+            });
         }
 
-        public async Task<long> IncrementLimitByMax(string field, int value, int max, bool queueJump = false)
+        public Task<long> IncrementLimitByMax(string field, int value, int max, bool queueJump = false)
         {
-
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
                 var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementLimitByMax, new[] { Key, field }, new object[] { value, max }, useCache: true, inferStrings: true, queueJump: queueJump);
-                return (long)(await v.ConfigureAwait(false));
-            }
+                var r = (long)(await v.ConfigureAwait(false));
+                return Pair.Create(new { field, value, max }, r);
+            });
         }
 
-        public async Task<double> IncrementLimitByMax(string field, double value, double max, bool queueJump = false)
+        public Task<double> IncrementLimitByMax(string field, double value, double max, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
                 var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementFloatLimitByMax, new[] { Key, field }, new object[] { value, max }, useCache: true, inferStrings: true, queueJump: queueJump);
-
-                return double.Parse((string)(await v.ConfigureAwait(false)));
-            }
+                var r = double.Parse((string)(await v.ConfigureAwait(false)));
+                return Pair.Create(new { field, value, max }, r);
+            });
         }
 
-        public async Task<long> IncrementLimitByMin(string field, int value, int min, bool queueJump = false)
+        public Task<long> IncrementLimitByMin(string field, int value, int min, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
                 var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementLimitByMin, new[] { Key, field }, new object[] { value, min }, useCache: true, inferStrings: true, queueJump: queueJump);
-                return (long)(await v.ConfigureAwait(false));
-            }
+                var r = (long)(await v.ConfigureAwait(false));
+                return Pair.Create(new { field, value, min }, r);
+            });
         }
 
-        public async Task<double> IncrementLimitByMin(string field, double value, double min, bool queueJump = false)
+        public Task<double> IncrementLimitByMin(string field, double value, double min, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
                 var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementFloatLimitByMin, new[] { Key, field }, new object[] { value, min }, useCache: true, inferStrings: true, queueJump: queueJump);
-
-                return double.Parse((string)(await v.ConfigureAwait(false)));
-            }
+                var r = double.Parse((string)(await v.ConfigureAwait(false)));
+                return Pair.Create(new { field, value, min }, r);
+            });
         }
 
         /// <summary>
         /// HDEL http://redis.io/commands/hdel
         /// </summary>
-        public async Task<bool> Remove(string field, bool queueJump = false)
+        public Task<bool> Remove(string field, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                return await Command.Remove(Settings.Db, Key, field, queueJump);
-            }
+                var r = await Command.Remove(Settings.Db, Key, field, queueJump);
+                return Pair.Create(new { field }, r);
+            });
         }
         /// <summary>
         /// HDEL http://redis.io/commands/hdel
         /// </summary>
-        public async Task<long> Remove(string[] fields, bool queueJump = false)
+        public Task<long> Remove(string[] fields, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                return await Command.Remove(Settings.Db, Key, fields, queueJump);
-            }
+                var r = await Command.Remove(Settings.Db, Key, fields, queueJump);
+                return Pair.Create(new { fields }, r);
+            });
         }
 
         /// <summary>
         /// HMSET http://redis.io/commands/hmset
         /// </summary>
-        public async Task Set(Dictionary<string, object> values, bool queueJump = false)
+        public Task Set(Dictionary<string, object> values, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordSend(Settings, Key, CallType, async () =>
             {
                 var v = values.ToDictionary(x => x.Key, x => Settings.ValueConverter.Serialize(x.Value));
                 await Command.Set(Settings.Db, Key, v, queueJump);
-            }
+                return new { values };
+            });
         }
 
         /// <summary>
         /// HSET http://redis.io/commands/hset
         /// </summary>
-        public async Task<bool> Set(string field, object value, bool queueJump = false)
+        public Task<bool> Set(string field, object value, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                return await Command.Set(Settings.Db, Key, field, Settings.ValueConverter.Serialize(value), queueJump);
-            }
+                var r = await Command.Set(Settings.Db, Key, field, Settings.ValueConverter.Serialize(value), queueJump);
+                return Pair.Create(new { field, value }, r);
+            });
         }
 
         /// <summary>
         /// HSETNX http://redis.io/commands/hsetnx
         /// </summary>
-        public async Task<bool> SetIfNotExists(string field, object value, bool queueJump = false)
+        public Task<bool> SetIfNotExists(string field, object value, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                return await Command.SetIfNotExists(Settings.Db, Key, field, Settings.ValueConverter.Serialize(value), queueJump);
-            }
+                var r = await Command.SetIfNotExists(Settings.Db, Key, field, Settings.ValueConverter.Serialize(value), queueJump);
+                return Pair.Create(new { field, value }, r);
+            });
         }
 
         /// <summary>
@@ -565,28 +591,29 @@ return tostring(x)";
             return SetExpire((int)expire.TotalSeconds, queueJump);
         }
 
-        public async Task<bool> SetExpire(int seconds, bool queueJump = false)
+        public Task<bool> SetExpire(int seconds, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                return await Connection.Keys.Expire(Settings.Db, Key, seconds, queueJump).ConfigureAwait(false);
-            }
+                var r = await Connection.Keys.Expire(Settings.Db, Key, seconds, queueJump).ConfigureAwait(false);
+                return Pair.Create(new { seconds }, r);
+            });
         }
 
-        public async Task<bool> KeyExists(bool queueJump = false)
+        public Task<bool> KeyExists(bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordReceive(Settings, Key, CallType, () =>
             {
-                return await Connection.Keys.Exists(Settings.Db, Key, queueJump).ConfigureAwait(false);
-            }
+                return Connection.Keys.Exists(Settings.Db, Key, queueJump);
+            });
         }
 
-        public async Task<bool> Clear(bool queueJump = false)
+        public Task<bool> Clear(bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordReceive(Settings, Key, CallType, () =>
             {
-                return await Connection.Keys.Remove(Settings.Db, Key, queueJump);
-            }
+                return Connection.Keys.Remove(Settings.Db, Key, queueJump);
+            });
         }
     }
 
@@ -628,9 +655,9 @@ return tostring(x)";
             }
         }
 
-        public async Task<T> GetValue(bool queueJump = false)
+        public Task<T> GetValue(bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordReceive(Settings, Key, CallType, async () =>
             {
                 var data = await Command.GetAll(Settings.Db, Key, queueJump).ConfigureAwait(false);
                 if (data == null || data.Count == 0)
@@ -651,7 +678,7 @@ return tostring(x)";
                 }
 
                 return result;
-            }
+            });
         }
 
         /// <summary>
@@ -703,10 +730,10 @@ return tostring(x)";
 
         public async Task<T> GetValueOrSet(Func<Task<T>> valueFactory, int? expirySeconds = null, bool configureAwait = true, bool queueJump = false)
         {
-            var value = await GetValue(queueJump).ConfigureAwait(configureAwait);
+            var value = await GetValue(queueJump).ConfigureAwait(configureAwait); // keep valueFactory synchronization context
             if (value == null)
             {
-                value = await valueFactory().ConfigureAwait(false);
+                value = await valueFactory().ConfigureAwait(configureAwait);
                 if (expirySeconds != null)
                 {
                     var a = SetValue(value);
@@ -722,9 +749,9 @@ return tostring(x)";
             return value;
         }
 
-        public async Task SetValue(T value, bool queueJump = false)
+        public Task SetValue(T value, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordSend(Settings, Key, CallType, async () =>
             {
                 var accessor = FastMember.TypeAccessor.Create(typeof(T), allowNonPublicAccessors: false);
                 var members = accessor.GetMembers();
@@ -735,88 +762,98 @@ return tostring(x)";
                 }
 
                 await Command.Set(Settings.Db, Key, values, queueJump).ConfigureAwait(false);
-            }
+
+                return new { value };
+            });
         }
 
-        public async Task<bool> SetField(string field, object value, bool queueJump = false)
+        public Task<bool> SetField(string field, object value, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                return await Command.Set(Settings.Db, Key, field, Settings.ValueConverter.Serialize(value), queueJump).ConfigureAwait(false);
-            }
+                var r = await Command.Set(Settings.Db, Key, field, Settings.ValueConverter.Serialize(value), queueJump).ConfigureAwait(false);
+                return Pair.Create(new { field, value }, r);
+            });
         }
 
-        public async Task SetFields(IEnumerable<KeyValuePair<string, object>> fields, bool queueJump = false)
+        public Task SetFields(IEnumerable<KeyValuePair<string, object>> fields, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordSend(Settings, Key, CallType, async () =>
             {
                 var values = fields.ToDictionary(x => x.Key, x => Settings.ValueConverter.Serialize(x.Value));
-
                 await Command.Set(Settings.Db, Key, values, queueJump).ConfigureAwait(false);
-            }
+
+                return new { fields };
+            });
         }
 
-        public async Task<TField> GetField<TField>(string field, bool queueJump = false)
+        public Task<TField> GetField<TField>(string field, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
                 var v = await Command.Get(Settings.Db, Key, field, queueJump).ConfigureAwait(false);
-                return Settings.ValueConverter.Deserialize<TField>(v);
-            }
+                var r = Settings.ValueConverter.Deserialize<TField>(v);
+                return Pair.Create(new { field }, r);
+            });
         }
 
-        public async Task<long> Increment(string field, int value = 1, bool queueJump = false)
+        public Task<long> Increment(string field, int value = 1, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                return await Command.Increment(Settings.Db, Key, field, value, queueJump).ConfigureAwait(false);
-            }
+                var r = await Command.Increment(Settings.Db, Key, field, value, queueJump).ConfigureAwait(false);
+                return Pair.Create(new { field, value }, r);
+            });
         }
 
-        public async Task<double> Increment(string field, double value, bool queueJump = false)
+        public Task<double> Increment(string field, double value, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                return await Command.Increment(Settings.Db, Key, field, value, queueJump).ConfigureAwait(false);
-            }
+                var r = await Command.Increment(Settings.Db, Key, field, value, queueJump).ConfigureAwait(false);
+                return Pair.Create(new { field, value }, r);
+            });
         }
 
-        public async Task<long> IncrementLimitByMax(string field, int value, int max, bool queueJump = false)
+        public Task<long> IncrementLimitByMax(string field, int value, int max, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
                 var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementLimitByMax, new[] { Key, field }, new object[] { value, max }, useCache: true, inferStrings: true, queueJump: queueJump);
-                return (long)(await v.ConfigureAwait(false));
-            }
+                var r = (long)(await v.ConfigureAwait(false));
+                return Pair.Create(new { field, value, max }, r);
+            });
         }
 
-        public async Task<double> IncrementLimitByMax(string field, double value, double max, bool queueJump = false)
+        public Task<double> IncrementLimitByMax(string field, double value, double max, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
                 var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementFloatLimitByMax, new[] { Key, field }, new object[] { value, max }, useCache: true, inferStrings: true, queueJump: queueJump);
-
-                return double.Parse((string)(await v.ConfigureAwait(false)));
-            }
+                var r = double.Parse((string)(await v.ConfigureAwait(false)));
+                return Pair.Create(new { field, value, max }, r);
+            });
         }
 
-        public async Task<long> IncrementLimitByMin(string field, int value, int min, bool queueJump = false)
+        public Task<long> IncrementLimitByMin(string field, int value, int min, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
                 var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementLimitByMin, new[] { Key, field }, new object[] { value, min }, useCache: true, inferStrings: true, queueJump: queueJump);
-                return (long)(await v.ConfigureAwait(false));
-            }
+                var r = (long)(await v.ConfigureAwait(false));
+
+                return Pair.Create(new { field, value, min }, r);
+            });
         }
 
-        public async Task<double> IncrementLimitByMin(string field, double value, double min, bool queueJump = false)
+        public Task<double> IncrementLimitByMin(string field, double value, double min, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
                 var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementFloatLimitByMin, new[] { Key, field }, new object[] { value, min }, useCache: true, inferStrings: true, queueJump: queueJump);
-
-                return double.Parse((string)(await v.ConfigureAwait(false)));
-            }
+                var r = double.Parse((string)(await v.ConfigureAwait(false)));
+                return Pair.Create(new { field, value, min }, r);
+            });
         }
 
         /// <summary>
@@ -832,28 +869,29 @@ return tostring(x)";
             return SetExpire((int)expire.TotalSeconds, queueJump);
         }
 
-        public async Task<bool> SetExpire(int seconds, bool queueJump = false)
+        public Task<bool> SetExpire(int seconds, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                return await Connection.Keys.Expire(Settings.Db, Key, seconds, queueJump).ConfigureAwait(false);
-            }
+                var r = await Connection.Keys.Expire(Settings.Db, Key, seconds, queueJump).ConfigureAwait(false);
+                return Pair.Create(new { seconds }, r);
+            });
         }
 
-        public async Task<bool> KeyExists(bool queueJump = false)
+        public Task<bool> KeyExists(bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordReceive(Settings, Key, CallType, () =>
             {
-                return await Connection.Keys.Exists(Settings.Db, Key, queueJump).ConfigureAwait(false);
-            }
+                return Connection.Keys.Exists(Settings.Db, Key, queueJump);
+            });
         }
 
-        public async Task<bool> Clear(bool queueJump = false)
+        public Task<bool> Clear(bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordReceive(Settings, Key, CallType, () =>
             {
-                return await Connection.Keys.Remove(Settings.Db, Key, queueJump).ConfigureAwait(false);
-            }
+                return Connection.Keys.Remove(Settings.Db, Key, queueJump);
+            });
         }
     }
 }

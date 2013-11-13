@@ -42,118 +42,126 @@ namespace CloudStructures.Redis
         /// <summary>
         /// SADD http://redis.io/commands/sadd
         /// </summary>
-        public async Task<bool> Add(T value, bool queueJump = false)
+        public Task<bool> Add(T value, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                return await Command.Add(Settings.Db, Key, Settings.ValueConverter.Serialize(value), queueJump).ConfigureAwait(false);
-            }
+                var r = await Command.Add(Settings.Db, Key, Settings.ValueConverter.Serialize(value), queueJump).ConfigureAwait(false);
+                return Pair.Create(new { value }, r);
+            });
         }
 
         /// <summary>
         /// SADD http://redis.io/commands/sadd
         /// </summary>
-        public async Task<long> Add(T[] values, bool queueJump = false)
+        public Task<long> Add(T[] values, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
                 var v = values.Select(x => Settings.ValueConverter.Serialize(x)).ToArray();
-                return await Command.Add(Settings.Db, Key, v, queueJump).ConfigureAwait(false);
-            }
+                var r = await Command.Add(Settings.Db, Key, v, queueJump).ConfigureAwait(false);
+                return Pair.Create(new { values }, r);
+            });
         }
 
         /// <summary>
         /// SISMEMBER http://redis.io/commands/sismember
         /// </summary>
-        public async Task<bool> Contains(T value, bool queueJump = false)
+        public Task<bool> Contains(T value, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                return await Command.Contains(Settings.Db, Key, Settings.ValueConverter.Serialize(value), queueJump).ConfigureAwait(false);
-            }
+                var r = await Command.Contains(Settings.Db, Key, Settings.ValueConverter.Serialize(value), queueJump).ConfigureAwait(false);
+                return Pair.Create(new { value }, r);
+            });
         }
 
 
         /// <summary>
         /// SMEMBERS http://redis.io/commands/smembers
         /// </summary>
-        public async Task<T[]> GetAll(bool queueJump = false)
+        public Task<T[]> GetAll(bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordReceive(Settings, Key, CallType, async () =>
             {
                 var v = await Command.GetAll(Settings.Db, Key, queueJump).ConfigureAwait(false);
-                return v.Select(Settings.ValueConverter.Deserialize<T>).ToArray();
-            }
+                var r = v.Select(Settings.ValueConverter.Deserialize<T>).ToArray();
+                return r;
+            });
         }
 
         /// <summary>
         /// SCARD http://redis.io/commands/scard
         /// </summary>
-        public async Task<long> GetLength(bool queueJump = false)
+        public Task<long> GetLength(bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordReceive(Settings, Key, CallType,  () =>
             {
-                return await Command.GetLength(Settings.Db, Key, queueJump).ConfigureAwait(false);
-            }
+                return Command.GetLength(Settings.Db, Key, queueJump);
+            });
         }
 
         /// <summary>
         /// SRANDMEMBER http://redis.io/commands/srandmember
         /// </summary>
-        public async Task<T> GetRandom(bool queueJump = false)
+        public Task<T> GetRandom(bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordReceive(Settings, Key, CallType, async () =>
             {
                 var v = await Command.GetRandom(Settings.Db, Key, queueJump).ConfigureAwait(false);
                 return Settings.ValueConverter.Deserialize<T>(v);
-            }
+            });
         }
 
         /// <summary>
         /// SRANDMEMBER http://redis.io/commands/srandmember
         /// </summary>
-        public async Task<T[]> GetRandom(int count, bool queueJump = false)
+        public Task<T[]> GetRandom(int count, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
                 var v = await Command.GetRandom(Settings.Db, Key, count, queueJump).ConfigureAwait(false);
-                return v.Select(Settings.ValueConverter.Deserialize<T>).ToArray();
-            }
+                var r = v.Select(Settings.ValueConverter.Deserialize<T>).ToArray();
+                return Pair.Create(new { count }, r);
+            });
         }
 
         /// <summary>
         /// SREM http://redis.io/commands/srem
         /// </summary>
-        public async Task<bool> Remove(T member, bool queueJump = false)
+        public Task<bool> Remove(T member, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                return await Command.Remove(Settings.Db, Key, Settings.ValueConverter.Serialize(member), queueJump).ConfigureAwait(false);
-            }
+                var r = await Command.Remove(Settings.Db, Key, Settings.ValueConverter.Serialize(member), queueJump).ConfigureAwait(false);
+                return Pair.Create(new { member }, r);
+            });
         }
 
         /// <summary>
         /// SREM http://redis.io/commands/srem
         /// </summary>
-        public async Task<long> Remove(T[] members, bool queueJump = false)
+        public Task<long> Remove(T[] members, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
                 var v = members.Select(x => Settings.ValueConverter.Serialize(x)).ToArray();
-                return await Command.Remove(Settings.Db, Key, v, queueJump).ConfigureAwait(false);
-            }
+                var r = await Command.Remove(Settings.Db, Key, v, queueJump).ConfigureAwait(false);
+
+                return Pair.Create(new { members }, r);
+            });
         }
 
         /// <summary>
         /// SPOP http://redis.io/commands/spop
         /// </summary>
-        public async Task<T> RemoveRandom(bool queueJump = false)
+        public Task<T> RemoveRandom(bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordReceive(Settings, Key, CallType, async () =>
             {
                 var v = await Command.RemoveRandom(Settings.Db, Key, queueJump).ConfigureAwait(false);
                 return Settings.ValueConverter.Deserialize<T>(v);
-            }
+            });
         }
 
         /// <summary>
@@ -169,28 +177,29 @@ namespace CloudStructures.Redis
             return SetExpire((int)expire.TotalSeconds, queueJump);
         }
 
-        public async Task<bool> SetExpire(int seconds, bool queueJump = false)
+        public Task<bool> SetExpire(int seconds, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                return await Connection.Keys.Expire(Settings.Db, Key, seconds, queueJump).ConfigureAwait(false);
-            }
+                var r = await Connection.Keys.Expire(Settings.Db, Key, seconds, queueJump).ConfigureAwait(false);
+                return Pair.Create(new { seconds }, r);
+            });
         }
 
-        public async Task<bool> KeyExists(bool queueJump = false)
+        public Task<bool> KeyExists(bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordReceive(Settings, Key, CallType,  () =>
             {
-                return await Connection.Keys.Exists(Settings.Db, Key, queueJump).ConfigureAwait(false);
-            }
+                return  Connection.Keys.Exists(Settings.Db, Key, queueJump);
+            });
         }
 
-        public async Task<bool> Clear(bool queueJump = false)
+        public Task<bool> Clear(bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordReceive(Settings, Key, CallType, () =>
             {
-                return await Connection.Keys.Remove(Settings.Db, Key, queueJump).ConfigureAwait(false);
-            }
+                return Connection.Keys.Remove(Settings.Db, Key, queueJump);
+            });
         }
     }
 }

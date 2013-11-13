@@ -1,9 +1,8 @@
 ﻿using BookSleeve;
 using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Diagnostics;
 using System.Text;
-using System.Threading.Tasks;
+using System.Threading;
 
 namespace CloudStructures.Redis
 {
@@ -11,7 +10,6 @@ namespace CloudStructures.Redis
     {
         public string Host { get; private set; }
         public int Port { get; private set; }
-        public int Timeout { get; private set; }
         public int IoTimeout { get; private set; }
         public string Password { get; private set; }
         public int MaxUnsent { get; private set; }
@@ -20,6 +18,11 @@ namespace CloudStructures.Redis
         public int Db { get; private set; }
         public IRedisValueConverter ValueConverter { get; private set; }
         public Func<ICommandTracer> CommandTracerFactory { get; private set; }
+
+        public Action<RedisSettings, OpenConnectionEventArgs> OnConnectionOpen { private get; set; }
+        public Action<RedisConnectionBase, ErrorEventArgs> OnConnectionError { private get; set; }
+        public Action<RedisConnectionBase, EventArgs> OnConnectionClosed { private get; set; }
+        public Action<RedisConnectionBase, ErrorEventArgs> OnConnectionShutdown { private get; set; }
 
         public RedisSettings(string host, int port = 6379, int ioTimeout = -1, string password = null, int maxUnsent = 2147483647, bool allowAdmin = false, int syncTimeout = 10000, int db = 0, IRedisValueConverter converter = null, Func<ICommandTracer> tracerFactory = null)
         {
@@ -51,10 +54,48 @@ namespace CloudStructures.Redis
                     || ((connection.State != RedisConnectionBase.ConnectionState.Open) && (connection.State != RedisConnectionBase.ConnectionState.Opening)))
                     {
                         connection = new RedisConnection(Host, Port, IoTimeout, Password, MaxUnsent, AllowAdmin, SyncTimeout);
-                        var open = connection.Open();
+
+                        // attach events
+                        connection.Error += connection_Error;
+                        connection.Closed += connection_Closed;
+                        connection.Shutdown += connection_Shutdown;
+
+                        // tracing
+                        var sw = Stopwatch.StartNew();
+                        var traceEntered = -1; // not entered
+
+                        var open = connection.Open() // open connection!
+                            .ContinueWith((x) =>
+                            {
+                                if (Interlocked.Increment(ref traceEntered) == 0)
+                                {
+                                    sw.Stop();
+                                    var ev = OnConnectionOpen;
+                                    if (ev != null)
+                                    {
+                                        OnConnectionOpen(this, new OpenConnectionEventArgs(sw.Elapsed, isFatal: !x.IsCompleted, exception: x.Exception));
+                                    }
+                                }
+                            });
+
                         if (waitOpen)
                         {
-                            open.Wait();
+                            try
+                            {
+                                connection.Wait(open); // wait with SyncTimeout, if timeout throw TimeoutException
+                            }
+                            catch (Exception ex)
+                            {
+                                if (Interlocked.Increment(ref traceEntered) == 0)
+                                {
+                                    sw.Stop();
+                                    var ev = OnConnectionOpen;
+                                    if (ev != null)
+                                    {
+                                        OnConnectionOpen(this, new OpenConnectionEventArgs(sw.Elapsed, isFatal: true, exception: ex));
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -63,11 +104,94 @@ namespace CloudStructures.Redis
             return connection;
         }
 
+        void connection_Shutdown(object sender, ErrorEventArgs e)
+        {
+            var ev = OnConnectionShutdown;
+            if (ev != null)
+            {
+                ev(sender as RedisConnectionBase, e);
+            }
+        }
+
+        void connection_Error(object sender, ErrorEventArgs e)
+        {
+            var ev = OnConnectionError;
+            if (ev != null)
+            {
+                ev(sender as RedisConnectionBase, e);
+            }
+        }
+        void connection_Closed(object sender, EventArgs e)
+        {
+            var ev = OnConnectionClosed;
+            if (ev != null)
+            {
+                ev(sender as RedisConnectionBase, e);
+            }
+        }
+
         public void Dispose()
         {
             if (connection != null)
             {
                 connection.Dispose();
+            }
+        }
+
+        // shortcut
+
+        /// <summary>Create RedisString used by this settings.</summary>
+        public RedisString<T> String<T>(string key)
+        {
+            return new RedisString<T>(this, key);
+        }
+
+        /// <summary>Create RedisList used by this settings.</summary>
+        public RedisList<T> List<T>(string key)
+        {
+            return new RedisList<T>(this, key);
+        }
+        /// <summary>Create RedisSet used by this settings.</summary>
+        public RedisSet<T> Set<T>(string key)
+        {
+            return new RedisSet<T>(this, key);
+        }
+
+        /// <summary>Create RedisSortedSet used by this settings.</summary>
+        public RedisSortedSet<T> SortedSet<T>(string key)
+        {
+            return new RedisSortedSet<T>(this, key);
+        }
+
+        /// <summary>Create RedisHash used by this settings.</summary>
+        public RedisHash Hash(string key)
+        {
+            return new RedisHash(this, key);
+        }
+
+        /// <summary>Create RedisDictionary used by this settings.</summary>
+        public RedisDictionary<T> Dictionary<T>(string key)
+        {
+            return new RedisDictionary<T>(this, key);
+        }
+
+        /// <summary>Create RedisClass used by this settings.</summary>
+        public RedisClass<T> Class<T>(string key) where T : class, new()
+        {
+            return new RedisClass<T>(this, key);
+        }
+
+        public class OpenConnectionEventArgs : EventArgs
+        {
+            public TimeSpan Duration { get; private set; }
+            public Exception Exception { get; private set; }
+            public bool IsFatal { get; private set; }
+
+            public OpenConnectionEventArgs(TimeSpan duration, bool isFatal, Exception exception)
+            {
+                this.Duration = duration;
+                this.IsFatal = isFatal;
+                this.Exception = exception;
             }
         }
     }
@@ -88,6 +212,49 @@ namespace CloudStructures.Redis
         public RedisSettings GetSettings(string key)
         {
             return serverSelector.Select(Settings, key);
+        }
+
+        // shortcut
+
+        /// <summary>Create RedisString used by this group.</summary>
+        public RedisString<T> String<T>(string key)
+        {
+            return new RedisString<T>(this, key);
+        }
+
+        /// <summary>Create RedisList used by this group.</summary>
+        public RedisList<T> List<T>(string key)
+        {
+            return new RedisList<T>(this, key);
+        }
+        /// <summary>Create RedisSet used by this group.</summary>
+        public RedisSet<T> Set<T>(string key)
+        {
+            return new RedisSet<T>(this, key);
+        }
+
+        /// <summary>Create RedisSortedSet used by this group.</summary>
+        public RedisSortedSet<T> SortedSet<T>(string key)
+        {
+            return new RedisSortedSet<T>(this, key);
+        }
+
+        /// <summary>Create RedisHash used by this group.</summary>
+        public RedisHash Hash(string key)
+        {
+            return new RedisHash(this, key);
+        }
+
+        /// <summary>Create RedisDictionary used by this group.</summary>
+        public RedisDictionary<T> Dictionary<T>(string key)
+        {
+            return new RedisDictionary<T>(this, key);
+        }
+
+        /// <summary>Create RedisClass used by this group.</summary>
+        public RedisClass<T> Class<T>(string key) where T : class, new()
+        {
+            return new RedisClass<T>(this, key);
         }
     }
 

@@ -44,44 +44,44 @@ namespace CloudStructures.Redis
         /// <summary>
         /// LPUSH http://redis.io/commands/lpush
         /// </summary>
-        public async Task<long> AddFirst(T value, bool queueJump = false)
+        public Task<long> AddFirst(T value, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
                 var v = Settings.ValueConverter.Serialize(value);
-                return await Command.AddFirst(Settings.Db, Key, v, createIfMissing: true, queueJump: queueJump).ConfigureAwait(false);
-            }
+                var vr = await Command.AddFirst(Settings.Db, Key, v, createIfMissing: true, queueJump: queueJump).ConfigureAwait(false);
+                return Pair.Create(new { value }, vr);
+            });
         }
 
         /// <summary>
         /// RPUSH http://redis.io/commands/rpush
         /// </summary>
-        public async Task<long> AddLast(T value, bool queueJump = false)
+        public Task<long> AddLast(T value, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
                 var v = Settings.ValueConverter.Serialize(value);
-                return await Command.AddLast(Settings.Db, Key, v, createIfMissing: true, queueJump: queueJump).ConfigureAwait(false);
-            }
+                var vr = await Command.AddLast(Settings.Db, Key, v, createIfMissing: true, queueJump: queueJump).ConfigureAwait(false);
+                return Pair.Create(new { value }, vr);
+            });
         }
 
         /// <summary>
         /// LINDEX http://redis.io/commands/lindex
         /// </summary>
-        public async Task<Tuple<bool, T>> TryGet(int index, bool queueJump = false)
+        public Task<Tuple<bool, T>> TryGet(int index, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
                 var value = await Command.Get(Settings.Db, Key, index, queueJump).ConfigureAwait(false);
-                return (value == null)
+                var result = (value == null)
                     ? Tuple.Create(false, default(T))
                     : Tuple.Create(true, Settings.ValueConverter.Deserialize<T>(value));
-            }
+                return Pair.Create(new { index }, result);
+            });
         }
 
-        /// <summary>
-        /// LINDEX http://redis.io/commands/lindex
-        /// </summary>
         public async Task<T> GetOrDefault(int index, T defaultValue = default(T), bool queueJump = false)
         {
             var result = await TryGet(index, queueJump).ConfigureAwait(false);
@@ -91,112 +91,119 @@ namespace CloudStructures.Redis
         /// <summary>
         /// LLEN http://redis.io/commands/llen
         /// </summary>
-        public async Task<long> GetLength(bool queueJump = false)
+        public Task<long> GetLength(bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordReceive(Settings, Key, CallType, () =>
             {
-                return await Command.GetLength(Settings.Db, Key, queueJump).ConfigureAwait(false);
-            }
+                return Command.GetLength(Settings.Db, Key, queueJump);
+            });
         }
 
         /// <summary>
         /// LRANGE http://redis.io/commands/lrange
         /// </summary>
-        public async Task<T[]> Range(int start, int stop, bool queueJump = false)
+        public Task<T[]> Range(int start, int stop, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
                 var results = await Command.Range(Settings.Db, Key, start, stop, queueJump).ConfigureAwait(false);
-                return results.Select(Settings.ValueConverter.Deserialize<T>).ToArray();
-            }
+                var resultArray = results.Select(Settings.ValueConverter.Deserialize<T>).ToArray();
+                return Pair.Create(new { start, stop }, resultArray);
+            });
         }
 
         /// <summary>
         /// LREM http://redis.io/commands/lrem
         /// </summary>
-        public async Task<long> Remove(T value, int count = 1, bool queueJump = false)
+        public Task<long> Remove(T value, int count = 1, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
                 var v = Settings.ValueConverter.Serialize(value);
-                return await Command.Remove(Settings.Db, Key, v, count, queueJump).ConfigureAwait(false);
-            }
+                var r = await Command.Remove(Settings.Db, Key, v, count, queueJump).ConfigureAwait(false);
+
+                return Pair.Create(new { value, count }, r);
+            });
         }
 
         /// <summary>
         /// LPOP http://redis.io/commands/lpop
         /// </summary>
-        public async Task<T> RemoveFirst(bool queueJump = false)
+        public Task<T> RemoveFirst(bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordReceive(Settings, Key, CallType, async () =>
             {
                 var result = await Command.RemoveFirst(Settings.Db, Key, queueJump).ConfigureAwait(false);
                 return Settings.ValueConverter.Deserialize<T>(result);
-            }
+            });
         }
 
         /// <summary>
         /// RPOP http://redis.io/commands/rpop
         /// </summary>
-        public async Task<T> RemoveLast(bool queueJump = false)
+        public Task<T> RemoveLast(bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordReceive(Settings, Key, CallType, async () =>
             {
                 var result = await Command.RemoveLast(Settings.Db, Key, queueJump).ConfigureAwait(false);
                 return Settings.ValueConverter.Deserialize<T>(result);
-            }
+            });
         }
 
         /// <summary>
         /// LSET http://redis.io/commands/lset
         /// </summary>
-        public async Task Set(int index, T value, bool queueJump = false)
+        public Task Set(int index, T value, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordSend(Settings, Key, CallType, async () =>
             {
                 var v = Settings.ValueConverter.Serialize(value);
                 await Command.Set(Settings.Db, Key, index, v, queueJump).ConfigureAwait(false);
-            }
+                return new { index, value };
+            });
         }
 
         /// <summary>
         /// LTRIM http://redis.io/commands/ltrim
         /// </summary>
-        public async Task Trim(int count, bool queueJump = false)
+        public Task Trim(int count, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordSend(Settings, Key, CallType, async () =>
             {
-                await Command.Trim(Settings.Db, Key, count, queueJump).ConfigureAwait(false);
-            }
+                await Command.Trim(Settings.Db, Key, count, queueJump);
+                return new { count };
+            });
         }
 
         /// <summary>
         /// LTRIM http://redis.io/commands/ltrim
         /// </summary>
-        public async Task Trim(int start, int stop, bool queueJump = false)
+        public Task Trim(int start, int stop, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordSend(Settings, Key, CallType, async () =>
             {
                 await Command.Trim(Settings.Db, Key, start, stop, queueJump).ConfigureAwait(false);
-            }
+                return new { start, stop };
+            });
         }
 
         // additional commands
 
-        public async Task<long> AddFirstAndFixLength(T value, int fixLength, bool queueJump = false)
+        public Task<long> AddFirstAndFixLength(T value, int fixLength, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
                 var v = Settings.ValueConverter.Serialize(value);
                 using (var tx = Settings.GetConnection().CreateTransaction())
                 {
                     var addResult = tx.Lists.AddFirst(Settings.Db, Key, v, createIfMissing: true, queueJump: queueJump);
-                    var trimResult = tx.Lists.Trim(Settings.Db, Key, fixLength - 1, queueJump);
+                    var trimResult = tx.Lists.Trim(Settings.Db, Key, count: fixLength, queueJump: queueJump);
 
                     await tx.Execute(queueJump).ConfigureAwait(false);
-                    return await addResult.ConfigureAwait(false);
+                    var result = await addResult.ConfigureAwait(false);
+                    return Pair.Create(new { value, fixLength }, result);
                 }
-            }
+            });
         }
 
         /// <summary>
@@ -212,37 +219,37 @@ namespace CloudStructures.Redis
             return SetExpire((int)expire.TotalSeconds, queueJump);
         }
 
-        public async Task<bool> SetExpire(int seconds, bool queueJump = false)
+        public Task<bool> SetExpire(int seconds, bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                return await Connection.Keys.Expire(Settings.Db, Key, seconds, queueJump).ConfigureAwait(false);
-            }
+                var r = await Connection.Keys.Expire(Settings.Db, Key, seconds, queueJump);
+                return Pair.Create(new { seconds }, r);
+            });
         }
 
-        public async Task<bool> KeyExists(bool queueJump = false)
+        public Task<bool> KeyExists(bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordReceive(Settings, Key, CallType, () =>
             {
-                return await Connection.Keys.Exists(Settings.Db, Key, queueJump).ConfigureAwait(false);
-            }
+                return Connection.Keys.Exists(Settings.Db, Key, queueJump);
+            });
         }
 
-        public async Task<bool> Clear(bool queueJump = false)
+        public Task<bool> Clear(bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordReceive(Settings, Key, CallType, () =>
             {
-                return await Connection.Keys.Remove(Settings.Db, Key, queueJump).ConfigureAwait(false);
-            }
+                return Connection.Keys.Remove(Settings.Db, Key, queueJump);
+            });
         }
 
-        public async Task<T[]> ToArray(bool queueJump = false)
+        public Task<T[]> ToArray(bool queueJump = false)
         {
-            using (Monitor.Start(Settings.CommandTracerFactory, Key, CallType))
+            return TraceHelper.RecordReceive(Settings, Key, CallType, () =>
             {
-                var length = await GetLength().ConfigureAwait(false);
-                return await Range(0, (int)length, queueJump).ConfigureAwait(false);
-            }
+                return Range(0, -1, queueJump);
+            });
         }
     }
 }
