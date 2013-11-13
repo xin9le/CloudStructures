@@ -5,7 +5,6 @@ namespace Glimpse.CloudStructures.Redis
 {
     public class RedisProfiler : ICommandTracer
     {
-        HttpContext context;
         RedisInspector.TimelineRegion timelineRegion;
 
         public void CommandStart(RedisSettings usedSettings, string command, string key)
