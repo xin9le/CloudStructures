@@ -17,6 +17,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{CC9007A7-F
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CloudStructures.Rx", "CloudStructures.Rx\CloudStructures.Rx.csproj", "{D3AFBFA7-2CC9-453C-BC6A-FCAE9948C99F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Glimpse.CloudStructures.Redis", "Glimpse.CloudStructures.Redis\Glimpse.CloudStructures.Redis.csproj", "{83865273-AD59-4F7C-B146-ACD6477E1652}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CloudStructures.Demo.Mvc", "CloudStructures.Demo.Mvc\CloudStructures.Demo.Mvc.csproj", "{4720629E-8F61-4125-A561-955C3FE460D7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -35,6 +39,14 @@ Global
 		{D3AFBFA7-2CC9-453C-BC6A-FCAE9948C99F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D3AFBFA7-2CC9-453C-BC6A-FCAE9948C99F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D3AFBFA7-2CC9-453C-BC6A-FCAE9948C99F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{83865273-AD59-4F7C-B146-ACD6477E1652}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{83865273-AD59-4F7C-B146-ACD6477E1652}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{83865273-AD59-4F7C-B146-ACD6477E1652}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{83865273-AD59-4F7C-B146-ACD6477E1652}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4720629E-8F61-4125-A561-955C3FE460D7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4720629E-8F61-4125-A561-955C3FE460D7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4720629E-8F61-4125-A561-955C3FE460D7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4720629E-8F61-4125-A561-955C3FE460D7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
