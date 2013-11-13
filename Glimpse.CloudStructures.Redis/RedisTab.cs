@@ -3,6 +3,7 @@ using Glimpse.Core.Extensibility;
 using Glimpse.Core.Extensions;
 using Glimpse.Core.Tab.Assist;
 using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 
 namespace Grani.Glimpse.Tab
@@ -44,11 +45,12 @@ namespace Grani.Glimpse.Tab
         {
             var plugin = Plugin.Create("Command", "Key", "Sent", "Received", "Duration");
 
-            var duplicatedKey = new HashSet<string>();
+            // <Command, Key>
+            var duplicatedKey = new HashSet<Tuple<string, string>>();
 
             foreach (var message in context.GetMessages<RedisTimelineMessage>())
             {
-                var key = message.Command + ":" + message.Key;
+                var key = Tuple.Create(message.Command, message.Key);
 
                 var columns = plugin.AddRow()
                     .Column(message.Command)
@@ -56,9 +58,8 @@ namespace Grani.Glimpse.Tab
                     .Column((message.SendObject == null) ? null : JsonConvert.SerializeObject(message.SendObject))
                     .Column((message.ReceivedObject == null) ? null : JsonConvert.SerializeObject(message.ReceivedObject ?? ""))
                     .Column(message.Duration);
-                columns.WarnIf(duplicatedKey.Contains(key));
+                columns.WarnIf(!duplicatedKey.Add(key));
                 columns.ErrorIf(message.IsError);
-                duplicatedKey.Add(key);
             }
 
             return plugin;

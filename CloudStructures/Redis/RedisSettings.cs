@@ -73,7 +73,7 @@ namespace CloudStructures.Redis
                                     var ev = OnConnectionOpen;
                                     if (ev != null)
                                     {
-                                        OnConnectionOpen(this, new OpenConnectionEventArgs(sw.Elapsed, isFatal: !x.IsCompleted, exception: x.Exception));
+                                        OnConnectionOpen(this, new OpenConnectionEventArgs(sw.Elapsed, isFatal: (x.IsFaulted || x.IsCanceled), exception: x.Exception));
                                     }
                                 }
                             });

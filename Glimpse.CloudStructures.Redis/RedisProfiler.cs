@@ -9,8 +9,7 @@ namespace Glimpse.CloudStructures.Redis
 
         public void CommandStart(RedisSettings usedSettings, string command, string key)
         {
-            var context = HttpContext.Current;
-            this.timelineRegion = RedisInspector.Start(context, command, key);
+            this.timelineRegion = RedisInspector.Start(command, key);
         }
 
         public void CommandFinish(object sendObject, object receivedObject, bool isError)
