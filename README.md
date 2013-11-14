@@ -2,6 +2,10 @@ CloudStructures
 ===============
 Redis Client based on BookSleeve. Features: connection management, serialize/deserialize to object, key distribute and configuration. And includes Redis Profiler for Glimpse. The concept is distributed collection inspired by Cloud Collection(System.Cloud.Collections.IAsyncList[T], etc...) of [ActorFx](http://actorfx.codeplex.com/).
 
+Why use CloudStructures?
+---
+BookSleeve is pure, low level library. It is Redis driver like ADO.NET. CloudStructures is O/R(Object/Redis) Mapper like Dapper.
+
 Install
 ---
 using with NuGet, [CloudStructures](https://nuget.org/packages/CloudStructures/)
