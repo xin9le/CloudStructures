@@ -1,23 +1,24 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <metadata>
-        <id>CloudStructures-Rx</id>
-        <version>0.6.0-beta</version>
-        <title>CloudStructures-Rx</title>
+        <id>Glimpse.CloudStructures.Redis</id>
+        <version>0.6.0</version>
+        <title>Glimpse.CloudStructures.Redis</title>
         <authors>neuecc</authors>
         <owners>neuecc</owners>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
-        <description>Redis PubSub to Observable.</description>
+        <description>Redis Profiler for Glimpse. Target is CloudStructures(a Redis Client as wrapped BookSleeve).</description>
         <language>en-US</language>
         <licenseUrl>http://opensource.org/licenses/MIT</licenseUrl>
         <projectUrl>https://github.com/neuecc/CloudStructures</projectUrl>
-        <tags>Redis Rx</tags>
+        <tags>Redis, Glimpse</tags>
         <dependencies>
             <dependency id="CloudStructures" version="0.6.0" />
-            <dependency id="Rx-Main" version="2.1.30214.0" />
+            <dependency id="Newtonsoft.Json" version="5.0.8" />
+            <dependency id="Glimpse" version="1.8.0" />
         </dependencies>
     </metadata>
     <files>
-        <file src="..\CloudStructures.Rx\bin\Release\CloudStructures.Rx.dll" target="lib" />
+        <file src="..\Glimpse.CloudStructures.Redis\bin\Release\Glimpse.CloudStructures.Redis.dll" target="lib" />
     </files>
 </package>

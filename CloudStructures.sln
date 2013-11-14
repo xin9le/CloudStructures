@@ -9,6 +9,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{CC9007A7-F
 	ProjectSection(SolutionItems) = preProject
 		Docs\CloudStructures-Rx.nuspec = Docs\CloudStructures-Rx.nuspec
 		Docs\CloudStructures.nuspec = Docs\CloudStructures.nuspec
+		Docs\Glimpse.CloudStructures.Redis.nuspec = Docs\Glimpse.CloudStructures.Redis.nuspec
 		Docs\NuGet.exe = Docs\NuGet.exe
 		Docs\pack.bat = Docs\pack.bat
 		Docs\push.bat = Docs\push.bat

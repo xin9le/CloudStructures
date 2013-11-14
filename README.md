@@ -1,6 +1,6 @@
 CloudStructures
 ===============
-Redis Client based on BookSleeve. Features: connection management, serialize/deserialize to object, key distribute and configuration. The concept is distributed collection inspired by Cloud Collection(System.Cloud.Collections.IAsyncList[T], etc...) of [ActorFx](http://actorfx.codeplex.com/).
+Redis Client based on BookSleeve. Features: connection management, serialize/deserialize to object, key distribute and configuration. And includes Redis Profiler for Glimpse. The concept is distributed collection inspired by Cloud Collection(System.Cloud.Collections.IAsyncList[T], etc...) of [ActorFx](http://actorfx.codeplex.com/).
 
 Install
 ---
@@ -129,3 +129,42 @@ var groups = CloudStructuresConfigurationSection.GetSection().ToRedisGroups();
 
 group attributes are "host, port, ioTimeout, password, maxUnsent, allowAdmin, syncTimeout, db, valueConverter, commandTracer".  
 It is same as RedisSettings except commandTracer.
+
+Glimpse.CloudStructures.Redis
+---
+CloudStructures has Redis Profiler for [Glimpse](http://getglimpse.com/).
+
+```
+PM> Install-Package Glimpse.CloudStructures.Redis
+```
+
+Setup Glimpse and add config with RedisProfiler for example
+
+```xml
+<cloudStructures>
+<redis>
+    <group name="Demo">
+    <add host="127.0.0.1" db="0" commandTracer="Glimpse.CloudStructures.Redis.RedisProfiler, Glimpse.CloudStructures.Redis" />
+    </group>
+</redis>
+</cloudStructures>
+```
+
+You can see Redis Tab on Glimpse.
+
+![](http://i.imgur.com/QZ7hZu6.jpg)
+
+And Timeline, can visualise parallel access.
+
+![](http://i.imgur.com/yqzAIzk.jpg)
+
+Sample is avaliable on this Repositry, CloudStructures.Demo.Mvc.
+
+History
+---
+2013-11-15 ver 0.6.0
+* add, Glimpse.CloudStructures.Redis
+* improved, connection waitOpen use syncTimeout.
+* improved, can monitor RedisConnection event(Open/Close/Error/Shutdown) on RedisSettings.
+* fix bugs, List.AddFirstAndFixLength is always trimed right length -1.
+* breaking changes, ICommandTracer receive many extra key(settings, sentObject, receivedObject).
