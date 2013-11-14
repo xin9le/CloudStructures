@@ -176,3 +176,7 @@ History
 * improved, can monitor RedisConnection event(Open/Close/Error/Shutdown) on RedisSettings.
 * fix bugs, List.AddFirstAndFixLength is always trimed right length -1.
 * breaking changes, ICommandTracer receive many extra key(settings, sentObject, receivedObject).
+
+License
+---
+under [MIT License](http://opensource.org/licenses/MIT)
