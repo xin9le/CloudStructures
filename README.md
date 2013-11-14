@@ -132,7 +132,7 @@ It is same as RedisSettings except commandTracer.
 
 Glimpse.CloudStructures.Redis
 ---
-CloudStructures has Redis Profiler for [Glimpse](http://getglimpse.com/).
+CloudStructures has Redis Profiler for [Glimpse](http://getglimpse.com/). - [Glimpse.CloudStructures.Redis](https://nuget.org/packages/Glimpese.CloudStructures.Redis/)
 
 ```
 PM> Install-Package Glimpse.CloudStructures.Redis
@@ -154,11 +154,19 @@ You can see Redis Tab on Glimpse.
 
 ![](http://i.imgur.com/QZ7hZu6.jpg)
 
+Command, Key, Sent/Received Object as JSON, Duration. If duplicate command and key then show warn(Icon and Orange Text).
+
 And Timeline, can visualise parallel access.
 
 ![](http://i.imgur.com/yqzAIzk.jpg)
 
-Sample is avaliable on this Repositry, CloudStructures.Demo.Mvc.
+Sample is avaliable on this Repositry, [CloudStructures.Demo.Mvc](https://github.com/neuecc/CloudStructures/tree/master/CloudStructures.Demo.Mvc).
+
+Who is using this?
+---
+CloudStructures is in production use at [Grani](http://grani.jp/)  
+Grani is top social game developer at Japan(and I'm CTO at Grani).  
+The game use redis massively heavy, hundreds of thousands of message per second.
 
 History
 ---
