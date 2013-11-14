@@ -132,7 +132,7 @@ It is same as RedisSettings except commandTracer.
 
 Glimpse.CloudStructures.Redis
 ---
-CloudStructures has Redis Profiler for [Glimpse](http://getglimpse.com/). - [Glimpse.CloudStructures.Redis](https://nuget.org/packages/Glimpese.CloudStructures.Redis/)
+CloudStructures has Redis Profiler for [Glimpse](http://getglimpse.com/). - [Glimpse.CloudStructures.Redis](https://nuget.org/packages/Glimpse.CloudStructures.Redis/)
 
 ```
 PM> Install-Package Glimpse.CloudStructures.Redis
