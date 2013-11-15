@@ -175,6 +175,9 @@ The game use redis massively heavy, hundreds of thousands of message per second.
 
 History
 ---
+2013-11-16 ver 0.6.1
+* fix, Configuration's GetElementKey take uniq by Host, Port, Db.
+
 2013-11-15 ver 0.6.0
 * add, Glimpse.CloudStructures.Redis
 * improved, connection waitOpen use syncTimeout.
