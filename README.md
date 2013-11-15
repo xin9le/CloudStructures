@@ -169,7 +169,7 @@ Sample is avaliable on this Repositry, [CloudStructures.Demo.Mvc](https://github
 Who is using this?
 ---
 CloudStructures is in production use at [Grani](http://grani.jp/)  
-Grani is top social game developer at Japan(and I'm CTO at Grani).  
+Grani is top social game developer in Japan(and I'm CTO at Grani).  
 The game is developed by C# 5.0 + ASP.NET MVC 5 on AWS(Windows Server + RDS(MySQL) + Redis).  
 The game use redis massively heavy, hundreds of thousands of message per second.
 
