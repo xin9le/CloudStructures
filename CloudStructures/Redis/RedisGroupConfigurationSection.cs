@@ -81,7 +81,8 @@ namespace CloudStructures.Redis
 
         protected override object GetElementKey(ConfigurationElement element)
         {
-            return (element as RedisSettingsElement).Host;
+            var elem = (element as RedisSettingsElement);
+            return Tuple.Create(elem.Host, elem.Port, elem.Db);
         }
 
         public new IEnumerator<RedisSettingsElement> GetEnumerator()
