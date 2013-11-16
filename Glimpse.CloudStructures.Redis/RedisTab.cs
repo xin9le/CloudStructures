@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 
-namespace Grani.Glimpse.Tab
+namespace Glimpse.CloudStructures.Redis
 {
     public class RedisTab : TabBase, ITabSetup, ITabLayout, ILayoutControl
     {
