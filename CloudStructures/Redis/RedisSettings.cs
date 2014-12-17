@@ -16,6 +16,7 @@ namespace CloudStructures.Redis
         public bool AllowAdmin { get; private set; }
         public int SyncTimeout { get; private set; }
         public int Db { get; private set; }
+        public int KeepAlive { get; private set; }
         public IRedisValueConverter ValueConverter { get; private set; }
         public Func<ICommandTracer> CommandTracerFactory { get; private set; }
 
@@ -24,7 +25,7 @@ namespace CloudStructures.Redis
         public Action<RedisConnectionBase, EventArgs> OnConnectionClosed { private get; set; }
         public Action<RedisConnectionBase, ErrorEventArgs> OnConnectionShutdown { private get; set; }
 
-        public RedisSettings(string host, int port = 6379, int ioTimeout = -1, string password = null, int maxUnsent = 2147483647, bool allowAdmin = false, int syncTimeout = 10000, int db = 0, IRedisValueConverter converter = null, Func<ICommandTracer> tracerFactory = null)
+        public RedisSettings(string host, int port = 6379, int ioTimeout = -1, string password = null, int maxUnsent = 2147483647, bool allowAdmin = false, int syncTimeout = 10000, int db = 0, int keepAlive = -1, IRedisValueConverter converter = null, Func<ICommandTracer> tracerFactory = null)
         {
             this.Host = host;
             this.Port = port;
@@ -34,6 +35,7 @@ namespace CloudStructures.Redis
             this.AllowAdmin = allowAdmin;
             this.SyncTimeout = syncTimeout;
             this.Db = db;
+            this.KeepAlive = keepAlive;
             this.ValueConverter = converter ?? new JsonRedisValueConverter();
             this.CommandTracerFactory = tracerFactory;
         }
@@ -54,6 +56,7 @@ namespace CloudStructures.Redis
                     || ((connection.State != RedisConnectionBase.ConnectionState.Open) && (connection.State != RedisConnectionBase.ConnectionState.Opening)))
                     {
                         connection = new RedisConnection(Host, Port, IoTimeout, Password, MaxUnsent, AllowAdmin, SyncTimeout);
+                        connection.SetKeepAlive(KeepAlive);
 
                         // attach events
                         connection.Error += connection_Error;

@@ -105,6 +105,7 @@ namespace CloudStructures.Redis
                 x.AllowAdmin,
                 x.SyncTimeout,
                 x.Db,
+                x.KeepAlive,
                 x.ValueConverter,
                 x.CommandTracer));
             return new RedisGroup(Name, settings.ToArray(), ServerSelector);
@@ -136,6 +137,9 @@ namespace CloudStructures.Redis
 
         [ConfigurationProperty("db", DefaultValue = 0)]
         public int Db { get { return (int)base["db"]; } }
+
+        [ConfigurationProperty("keepAlive", DefaultValue = -1)]
+        public int KeepAlive { get { return (int)base["keepAlive"]; } }
 
         [ConfigurationProperty("valueConverter"), TypeConverter(typeof(TypeNameConverter))]
         public IRedisValueConverter ValueConverter
