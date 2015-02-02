@@ -15,13 +15,13 @@ namespace CloudStructures
         readonly TimeSpan timeSpan;
         readonly DateTime dateTime;
 
-        RedisExpiry(TimeSpan timeSpan)
+        public RedisExpiry(TimeSpan timeSpan)
         {
             IsTimeSpan = true;
             this.timeSpan = timeSpan;
         }
 
-        RedisExpiry(DateTime dateTime)
+        public RedisExpiry(DateTime dateTime)
         {
             IsDateTime = true;
             this.dateTime = dateTime;
