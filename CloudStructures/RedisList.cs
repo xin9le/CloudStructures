@@ -27,21 +27,21 @@ namespace CloudStructures
         /// <summary>
         /// LPUSH http://redis.io/commands/lpush
         /// </summary>
-        public Task<long> LeftPush(T value, When when = When.Always, CommandFlags commandFlags = CommandFlags.None)
+        public Task<long> LeftPush(T value, RedisExpiry expiry = null, When when = When.Always, CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
                 long sentSize;
                 var v = Settings.ValueConverter.Serialize(value, out sentSize);
-                var vr = await Command.ListLeftPushAsync(Key, v, when, commandFlags).ConfigureAwait(false);
-                return Pair.CreatePair(new { value }, sentSize, vr, sizeof(long));
+                var vr = await this.ExecuteWithKeyExpire(x => x.ListLeftPushAsync(Key, v, when, commandFlags), Key, expiry, commandFlags).ForAwait();
+                return Tracing.CreateSentAndReceived(new { value, expiry = expiry?.Value, when }, sentSize, vr, sizeof(long));
             });
         }
 
         /// <summary>
         /// LPUSH http://redis.io/commands/lpush
         /// </summary>
-        public Task<long> LeftPush(T[] values, CommandFlags commandFlags = CommandFlags.None)
+        public Task<long> LeftPush(T[] values, RedisExpiry expiry = null, CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
@@ -54,29 +54,29 @@ namespace CloudStructures
                     return rv;
                 }).ToArray();
 
-                var vr = await Command.ListLeftPushAsync(Key, redisValues, commandFlags).ConfigureAwait(false);
-                return Pair.CreatePair(new { values }, sentSize, vr, sizeof(long));
+                var vr = await this.ExecuteWithKeyExpire(x => x.ListLeftPushAsync(Key, redisValues, commandFlags), Key, expiry, commandFlags).ForAwait();
+                return Tracing.CreateSentAndReceived(new { values, expiry = expiry?.Value }, sentSize, vr, sizeof(long));
             });
         }
 
         /// <summary>
         /// RPUSH http://redis.io/commands/rpush
         /// </summary>
-        public Task<long> RightPush(T value, When when = When.Always, CommandFlags commandFlags = CommandFlags.None)
+        public Task<long> RightPush(T value, RedisExpiry expiry = null, When when = When.Always, CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
                 long sentSize;
                 var v = Settings.ValueConverter.Serialize(value, out sentSize);
-                var vr = await Command.ListRightPushAsync(Key, v, when, commandFlags).ConfigureAwait(false);
-                return Pair.CreatePair(new { value }, sentSize, vr, sizeof(long));
+                var vr = await this.ExecuteWithKeyExpire(x => x.ListRightPushAsync(Key, v, when, commandFlags), Key, expiry, commandFlags).ForAwait();
+                return Tracing.CreateSentAndReceived(new { value, expiry = expiry?.Value, when }, sentSize, vr, sizeof(long));
             });
         }
 
         /// <summary>
         /// RPUSH http://redis.io/commands/rpush
         /// </summary>
-        public Task<long> RightPush(T[] values, CommandFlags commandFlags = CommandFlags.None)
+        public Task<long> RightPush(T[] values, RedisExpiry expiry = null, CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
@@ -89,164 +89,197 @@ namespace CloudStructures
                     return rv;
                 }).ToArray();
 
-                var vr = await Command.ListRightPushAsync(Key, redisValues, commandFlags).ConfigureAwait(false);
-                return Pair.CreatePair(new { values }, sentSize, vr, sizeof(long));
+                var vr = await this.ExecuteWithKeyExpire(x => x.ListRightPushAsync(Key, redisValues, commandFlags), Key, expiry, commandFlags).ForAwait();
+                return Tracing.CreateSentAndReceived(new { values, expiry = expiry?.Value }, sentSize, vr, sizeof(long));
             });
         }
 
-        ///// <summary>
-        ///// LINDEX http://redis.io/commands/lindex
-        ///// </summary>
-        //public Task<Tuple<bool, T>> TryGet(int index, CommandFlags commandFlags = CommandFlags.None)
-        //{
-        //    return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
-        //    {
-        //        var value = await Command.Get(Settings.Db, Key, index, commandFlags).ConfigureAwait(false);
-        //        var result = (value == null)
-        //            ? Tuple.Create(false, default(T))
-        //            : Tuple.Create(true, Settings.ValueConverter.Deserialize<T>(value));
-        //        return Pair.Create(new { index }, result);
-        //    });
-        //}
+        /// <summary>
+        /// LINDEX http://redis.io/commands/lindex
+        /// </summary>
+        public Task<Tuple<bool, T>> TryGetByIndex(long index, CommandFlags commandFlags = CommandFlags.None)
+        {
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
+            {
+                var value = await Command.ListGetByIndexAsync(Key, index, commandFlags).ForAwait();
+                var valueSize = 0L;
+                var result = (value.IsNull)
+                    ? Tuple.Create(false, default(T))
+                    : Tuple.Create(true, Settings.ValueConverter.Deserialize<T>(value, out valueSize));
+                return Tracing.CreateSentAndReceived(new { index }, sizeof(long), result, valueSize);
+            });
+        }
 
-        //public async Task<T> GetOrDefault(int index, T defaultValue = default(T), CommandFlags commandFlags = CommandFlags.None)
-        //{
-        //    var result = await TryGet(index, commandFlags).ConfigureAwait(false);
-        //    return result.Item1 ? result.Item2 : defaultValue;
-        //}
+        /// <summary>
+        /// LINDEX http://redis.io/commands/lindex
+        /// </summary>
+        public async Task<T> GetByIndexOrDefault(long index, T defaultValue = default(T), CommandFlags commandFlags = CommandFlags.None)
+        {
+            var result = await TryGetByIndex(index, commandFlags).ForAwait();
+            return result.Item1 ? result.Item2 : defaultValue;
+        }
 
-        ///// <summary>
-        ///// LLEN http://redis.io/commands/llen
-        ///// </summary>
-        //public Task<long> GetLength(CommandFlags commandFlags = CommandFlags.None)
-        //{
-        //    return TraceHelper.RecordReceive(Settings, Key, CallType, () =>
-        //    {
-        //        return Command.GetLength(Settings.Db, Key, commandFlags);
-        //    });
-        //}
+        /// <summary>
+        /// LLEN http://redis.io/commands/llen
+        /// </summary>
+        public Task<long> Length(CommandFlags commandFlags = CommandFlags.None)
+        {
+            return TraceHelper.RecordReceive(Settings, Key, CallType, async () =>
+            {
+                var result = await Command.ListLengthAsync(Key, commandFlags).ForAwait();
+                return Tracing.CreateReceived(result, sizeof(long));
+            });
+        }
 
-        ///// <summary>
-        ///// LRANGE http://redis.io/commands/lrange
-        ///// </summary>
-        //public Task<T[]> Range(int start, int stop, CommandFlags commandFlags = CommandFlags.None)
-        //{
-        //    return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
-        //    {
-        //        var results = await Command.Range(Settings.Db, Key, start, stop, commandFlags).ConfigureAwait(false);
-        //        var resultArray = results.Select(Settings.ValueConverter.Deserialize<T>).ToArray();
-        //        return Pair.Create(new { start, stop }, resultArray);
-        //    });
-        //}
+        /// <summary>
+        /// LRANGE http://redis.io/commands/lrange
+        /// </summary>
+        public Task<T[]> Range(long start = 0, long stop = -1, CommandFlags commandFlags = CommandFlags.None)
+        {
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
+            {
+                var results = await Command.ListRangeAsync(Key, start, stop, commandFlags).ForAwait();
+                long receivedSize = 0;
+                var resultArray = results.Select(x =>
+                {
+                    long size;
+                    var r = Settings.ValueConverter.Deserialize<T>(x, out size);
+                    receivedSize += size;
+                    return r;
+                }).ToArray();
+                return Tracing.CreateSentAndReceived(new { start, stop }, sizeof(long) * 2, resultArray, receivedSize);
+            });
+        }
 
-        ///// <summary>
-        ///// LREM http://redis.io/commands/lrem
-        ///// </summary>
-        //public Task<long> Remove(T value, int count = 1, CommandFlags commandFlags = CommandFlags.None)
-        //{
-        //    return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
-        //    {
-        //        var v = Settings.ValueConverter.Serialize(value);
-        //        var r = await Command.Remove(Settings.Db, Key, v, count, commandFlags).ConfigureAwait(false);
+        /// <summary>
+        /// <para>LREM http://redis.io/commands/lrem</para>
+        /// <para>count &gt; 0: Remove elements equal to value moving from head to tail.</para>
+        /// <para>count &lt; 0: Remove elements equal to value moving from tail to head.</para>
+        /// <para>count = 0: Remove all elements equal to value.</para>
+        /// </summary>
+        public Task<long> Remove(T value, long count = 0, CommandFlags commandFlags = CommandFlags.None)
+        {
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
+            {
+                long size;
+                var v = Settings.ValueConverter.Serialize(value, out size);
+                var r = await Command.ListRemoveAsync(Key, v, count, commandFlags).ForAwait();
 
-        //        return Pair.Create(new { value, count }, r);
-        //    });
-        //}
+                return Tracing.CreateSentAndReceived(new { value, count }, sizeof(long), r, sizeof(long));
+            });
+        }
 
-        ///// <summary>
-        ///// LPOP http://redis.io/commands/lpop
-        ///// </summary>
-        //public Task<T> RemoveFirst(CommandFlags commandFlags = CommandFlags.None)
-        //{
-        //    return TraceHelper.RecordReceive(Settings, Key, CallType, async () =>
-        //    {
-        //        var result = await Command.RemoveFirst(Settings.Db, Key, commandFlags).ConfigureAwait(false);
-        //        return Settings.ValueConverter.Deserialize<T>(result);
-        //    });
-        //}
+        /// <summary>
+        /// LPOP http://redis.io/commands/lpop
+        /// </summary>
+        public Task<T> LeftPop(CommandFlags commandFlags = CommandFlags.None)
+        {
+            return TraceHelper.RecordReceive(Settings, Key, CallType, async () =>
+            {
+                var result = await Command.ListLeftPopAsync(Key, commandFlags).ForAwait();
+                long receivedSize;
+                var r = Settings.ValueConverter.Deserialize<T>(result, out receivedSize);
+                return Tracing.CreateReceived(r, receivedSize);
+            });
+        }
 
-        ///// <summary>
-        ///// RPOP http://redis.io/commands/rpop
-        ///// </summary>
-        //public Task<T> RemoveLast(CommandFlags commandFlags = CommandFlags.None)
-        //{
-        //    return TraceHelper.RecordReceive(Settings, Key, CallType, async () =>
-        //    {
-        //        var result = await Command.RemoveLast(Settings.Db, Key, commandFlags).ConfigureAwait(false);
-        //        return Settings.ValueConverter.Deserialize<T>(result);
-        //    });
-        //}
+        /// <summary>
+        /// RPOP http://redis.io/commands/rpop
+        /// </summary>
+        public Task<T> RightPop(CommandFlags commandFlags = CommandFlags.None)
+        {
+            return TraceHelper.RecordReceive(Settings, Key, CallType, async () =>
+            {
+                var result = await Command.ListRightPopAsync(Key, commandFlags).ForAwait();
+                long receivedSize;
+                var r = Settings.ValueConverter.Deserialize<T>(result, out receivedSize);
+                return Tracing.CreateReceived(r, receivedSize);
+            });
+        }
 
-        ///// <summary>
-        ///// LSET http://redis.io/commands/lset
-        ///// </summary>
-        //public Task Set(int index, T value, CommandFlags commandFlags = CommandFlags.None)
-        //{
-        //    return TraceHelper.RecordSend(Settings, Key, CallType, async () =>
-        //    {
-        //        var v = Settings.ValueConverter.Serialize(value);
-        //        await Command.Set(Settings.Db, Key, index, v, commandFlags).ConfigureAwait(false);
-        //        return new { index, value };
-        //    });
-        //}
+        /// <summary>
+        /// LSET http://redis.io/commands/lset
+        /// </summary>
+        public Task SetByIndex(int index, T value, RedisExpiry expiry = null, CommandFlags commandFlags = CommandFlags.None)
+        {
+            return TraceHelper.RecordSend(Settings, Key, CallType, async () =>
+            {
+                long sentSize;
+                var v = Settings.ValueConverter.Serialize(value, out sentSize);
+                await this.ExecuteWithKeyExpire(x => x.ListSetByIndexAsync(Key, index, v, commandFlags), Key, expiry, commandFlags).ForAwait();
+                return Tracing.CreateSent(new { index, value }, sentSize);
+            });
+        }
 
-        ///// <summary>
-        ///// LTRIM http://redis.io/commands/ltrim
-        ///// </summary>
-        //public Task Trim(int count, CommandFlags commandFlags = CommandFlags.None)
-        //{
-        //    return TraceHelper.RecordSend(Settings, Key, CallType, async () =>
-        //    {
-        //        await Command.Trim(Settings.Db, Key, count, commandFlags);
-        //        return new { count };
-        //    });
-        //}
+        /// <summary>
+        /// LTRIM http://redis.io/commands/ltrim
+        /// </summary>
+        public Task Trim(long start, long stop, CommandFlags commandFlags = CommandFlags.None)
+        {
+            return TraceHelper.RecordSend(Settings, Key, CallType, async () =>
+            {
+                await Command.ListTrimAsync(Key, start, stop, commandFlags);
+                return Tracing.CreateSent(new { start, stop }, sizeof(long) * 2);
+            });
+        }
 
-        ///// <summary>
-        ///// LTRIM http://redis.io/commands/ltrim
-        ///// </summary>
-        //public Task Trim(int start, int stop, CommandFlags commandFlags = CommandFlags.None)
-        //{
-        //    return TraceHelper.RecordSend(Settings, Key, CallType, async () =>
-        //    {
-        //        await Command.Trim(Settings.Db, Key, start, stop, commandFlags).ConfigureAwait(false);
-        //        return new { start, stop };
-        //    });
-        //}
+        /// <summary>
+        /// LINSERT http://redis.io/commands/linsert
+        /// </summary>
+        public Task<long> InsertAfter(T pivot, T value, RedisExpiry expiry = null, CommandFlags commandFlags = CommandFlags.None)
+        {
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
+            {
+                long sentSize1;
+                long sentSize2;
+                var p = Settings.ValueConverter.Serialize(pivot, out sentSize1);
+                var v = Settings.ValueConverter.Serialize(value, out sentSize2);
 
-        //// additional commands
+                var vr = await this.ExecuteWithKeyExpire(x => x.ListInsertAfterAsync(Key, p, v, commandFlags), Key, expiry, commandFlags).ForAwait();
+                return Tracing.CreateSentAndReceived(new { pivot, value, expiry = expiry?.Value }, sentSize1 + sentSize2, vr, sizeof(long));
+            });
+        }
 
-        //public Task<long> AddFirstAndFixLength(T value, int fixLength, CommandFlags commandFlags = CommandFlags.None)
-        //{
-        //    return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
-        //    {
-        //        var v = Settings.ValueConverter.Serialize(value);
-        //        using (var tx = Settings.GetConnection().CreateTransaction())
-        //        {
-        //            var addResult = tx.Lists.AddFirst(Settings.Db, Key, v, createIfMissing: true, commandFlags);
-        //            var trimResult = tx.Lists.Trim(Settings.Db, Key, count: fixLength, commandFlags);
+        /// <summary>
+        /// LINSERT http://redis.io/commands/linsert
+        /// </summary>
+        public Task<long> InsertBefore(T pivot, T value, RedisExpiry expiry = null, CommandFlags commandFlags = CommandFlags.None)
+        {
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
+            {
+                long sentSize1;
+                long sentSize2;
+                var p = Settings.ValueConverter.Serialize(pivot, out sentSize1);
+                var v = Settings.ValueConverter.Serialize(value, out sentSize2);
 
-        //            await tx.Execute(commandFlags).ConfigureAwait(false);
-        //            var result = await addResult.ConfigureAwait(false);
-        //            return Pair.Create(new { value, fixLength }, result);
-        //        }
-        //    });
-        //}
+                var vr = await this.ExecuteWithKeyExpire(x => x.ListInsertBeforeAsync(Key, p, v, commandFlags), Key, expiry, commandFlags).ForAwait();
+                return Tracing.CreateSentAndReceived(new { pivot, value, expiry = expiry?.Value }, sentSize1 + sentSize2, vr, sizeof(long));
+            });
+        }
 
-        //public Task<T[]> ToArray(CommandFlags commandFlags = CommandFlags.None)
-        //{
-        //    return TraceHelper.RecordReceive(Settings, Key, CallType, () =>
-        //    {
-        //        return Range(0, -1, commandFlags);
-        //    });
-        //}
+        // additional commands
 
-        ///// <summary>
-        ///// Clear is alias of Delete.
-        ///// </summary>
-        //public Task<bool> Clear(CommandFlags commandFlags = CommandFlags.None)
-        //{
-        //    return Delete(commandFlags);
-        //}
+        /// <summary>
+        /// Simulate fixed size list includes LPUSH, Trim.
+        /// </summary>
+        public Task<long> LeftPushAndFixLength(T value, long fixLength, RedisExpiry expiry = null, When when = When.Always, CommandFlags commandFlags = CommandFlags.None)
+        {
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
+            {
+                long sentSize;
+                var v = Settings.ValueConverter.Serialize(value, out sentSize);
+                var tx = CreateTransaction();
+                var leftpush = tx.ListLeftPushAsync(Key, v, when, commandFlags);
+                var trim = tx.ListTrimAsync(Key, 0, fixLength - 1, commandFlags);
+                if (expiry != null)
+                {
+                    var expire = expiry.KeyExpire(tx, Key, commandFlags);
+                }
+                await tx.ExecuteAsync(commandFlags).ForAwait();
+                var r = await leftpush.ForAwait();
+
+                return Tracing.CreateSentAndReceived(new { value, fixLength, expiry = expiry?.Value, when }, sentSize, r, sizeof(long));
+            });
+        }
     }
 }

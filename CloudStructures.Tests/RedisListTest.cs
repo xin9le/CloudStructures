@@ -6,26 +6,92 @@ using System.Threading;
 
 namespace CloudStructures.Tests
 {
-    //[TestClass]
-    //public class RedisListTest
-    //{
-    //    [TestMethod]
-    //    public async Task Add()
-    //    {
-    //        //var list = new RedisList<int>(GlobalSettings.Default, "listkey1");
+    [TestClass]
+    public class RedisListTest
+    {
+        [TestMethod]
+        public async Task Push()
+        {
+            var list = new RedisList<int>(GlobalSettings.Default, "listkey1");
+            await list.Delete();
 
-    //        //await list.Clear();
+            (await list.LeftPush(1)).Is(1);
+            (await list.LeftPush(10)).Is(2);
+            (await list.LeftPush(new[] { 100, 1000, 10000 }, TimeSpan.FromMilliseconds(1000))).Is(5);
 
-    //        //(await list.AddLast(1)).Is(1);
-    //        //(await list.AddLast(10)).Is(2);
-    //        //(await list.AddFirst(100)).Is(3);
-    //        //(await list.AddFirst(1000)).Is(4);
+            (await list.Range()).Is(10000, 1000, 100, 10, 1);
 
-    //        //(await list.GetLength()).Is(4);
+            await Task.Delay(TimeSpan.FromMilliseconds(1500));
 
-    //        //(await list.Range(0, 4)).Is(1000, 100, 1, 10);
+            (await list.KeyExists()).IsFalse();
 
-    //        //(await list.Range(2, 3)).Is(1, 10);
-    //    }
-    //}
+            (await list.RightPush(1)).Is(1);
+            (await list.RightPush(10)).Is(2);
+            (await list.RightPush(new[] { 100, 1000, 10000 }, TimeSpan.FromMilliseconds(1000))).Is(5);
+
+            (await list.Range()).Is(1, 10, 100, 1000, 10000);
+
+            await Task.Delay(TimeSpan.FromMilliseconds(1500));
+
+            (await list.KeyExists()).IsFalse();
+        }
+
+        [TestMethod]
+        public async Task GetByIndexRemove()
+        {
+            var list = new RedisList<int>(GlobalSettings.Default, "listkey2");
+            await list.Delete();
+
+            await list.RightPush(new[] { 1, 2, 3, 4, 5 });
+
+            (await list.GetByIndexOrDefault(1)).Is(2);
+
+            (await list.TryGetByIndex(10)).Item1.IsFalse();
+
+            (await list.Length()).Is(5);
+
+            await list.RightPush(new[] { 1, 2, 3, 4, 5, 3 });
+
+            await list.Remove(3);
+            (await list.Range()).Is(1, 2, 4, 5, 1, 2, 4, 5);
+
+            await list.Remove(4, 1);
+            (await list.Range()).Is(1, 2, 5, 1, 2, 4, 5);
+
+            await list.Remove(5, -1);
+            (await list.Range()).Is(1, 2, 5, 1, 2, 4);
+        }
+
+        [TestMethod]
+        public async Task LeftPushAndFixLength()
+        {
+            var list = new RedisList<int>(GlobalSettings.Default, "listkey3");
+            await list.Delete();
+
+            await list.LeftPush(new[] { 1, 2, 3, 4, 5 });
+            await list.LeftPush(new[] { 6, 7, 8, 9, 10 });
+
+            (await list.Range()).Is(10, 9, 8, 7, 6, 5, 4, 3, 2, 1);
+            await list.LeftPushAndFixLength(100, 10);
+            (await list.Range()).Is(100, 10, 9, 8, 7, 6, 5, 4, 3, 2);
+            await list.LeftPushAndFixLength(1000, 3);
+            (await list.Range()).Is(1000, 100, 10);
+        }
+
+        [TestMethod]
+        public async Task Insert()
+        {
+            var list = new RedisList<int>(GlobalSettings.Default, "listkey4");
+            await list.Delete();
+
+            await list.RightPush(new[] { 1, 2, 3, 4, 5 });
+            (await list.Range()).Is(1, 2, 3, 4, 5);
+
+            (await list.InsertBefore(4, 1000)).Is(6);
+            (await list.Range()).Is(1, 2, 3, 1000, 4, 5);
+
+            (await list.InsertAfter(4, 2000)).Is(7);
+            (await list.Range()).Is(1, 2, 3, 1000, 4, 2000, 5);
+        }
+    }
 }

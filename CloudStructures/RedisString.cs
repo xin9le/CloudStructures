@@ -28,12 +28,12 @@ namespace CloudStructures
         {
             return TraceHelper.RecordReceive(Settings, Key, CallType, async () =>
             {
-                var value = await Command.StringGetAsync(Key, commandFlags).ConfigureAwait(false);
+                var value = await Command.StringGetAsync(Key, commandFlags).ForAwait();
 
                 var size = 0L;
                 return (value.IsNull)
-                    ? Pair.CreateReceived(Tuple.Create(false, default(T)), size)
-                    : Pair.CreateReceived(Tuple.Create(true, Settings.ValueConverter.Deserialize<T>(value, out size)), size);
+                    ? Tracing.CreateReceived(Tuple.Create(false, default(T)), size)
+                    : Tracing.CreateReceived(Tuple.Create(true, Settings.ValueConverter.Deserialize<T>(value, out size)), size);
             });
         }
 
@@ -42,7 +42,7 @@ namespace CloudStructures
         /// </summary>
         public async Task<T> GetValueOrDefault(T defaultValue = default(T), CommandFlags commandFlags = CommandFlags.None)
         {
-            var result = await TryGet(commandFlags).ConfigureAwait(false);
+            var result = await TryGet(commandFlags).ForAwait();
             return result.Item1 ? result.Item2 : defaultValue;
         }
 
@@ -57,10 +57,10 @@ namespace CloudStructures
                 long receivedSize;
                 var v = Settings.ValueConverter.Serialize(value, out sentSize);
 
-                var result = await this.ExecuteWithKeyExpire(x => x.StringGetSetAsync(Key, v, commandFlags), Key, expiry, commandFlags).ConfigureAwait(false);
+                var result = await this.ExecuteWithKeyExpire(x => x.StringGetSetAsync(Key, v, commandFlags), Key, expiry, commandFlags).ForAwait();
                 var r = Settings.ValueConverter.Deserialize<T>(result, out receivedSize);
 
-                return Pair.CreatePair(new { value, expiry = expiry?.Value }, sentSize, r, receivedSize);
+                return Tracing.CreateSentAndReceived(new { value, expiry = expiry?.Value }, sentSize, r, receivedSize);
             });
         }
 
@@ -77,7 +77,7 @@ namespace CloudStructures
             else
             {
                 var v = valueFactory();
-                await Set(v, expiry, When.Always, commandFlags).ConfigureAwait(false);
+                await Set(v, expiry, When.Always, commandFlags).ForAwait();
                 return v;
             }
         }
@@ -94,8 +94,8 @@ namespace CloudStructures
             }
             else
             {
-                var v = await valueFactory().ConfigureAwait(false);
-                await Set(v, expiry, When.Always, commandFlags).ConfigureAwait(false);
+                var v = await valueFactory().ForAwait();
+                await Set(v, expiry, When.Always, commandFlags).ForAwait();
                 return v;
             }
         }
@@ -109,9 +109,9 @@ namespace CloudStructures
             {
                 long sentSize;
                 var v = Settings.ValueConverter.Serialize(value, out sentSize);
-                var r = await Command.StringSetAsync(Key, v, expiry, when, CommandFlags.None).ConfigureAwait(false);
+                var r = await Command.StringSetAsync(Key, v, expiry, when, CommandFlags.None).ForAwait();
 
-                return Pair.CreatePair(new { value, expiry }, sentSize, r, sizeof(bool));
+                return Tracing.CreateSentAndReceived(new { value, expiry, when }, sentSize, r, sizeof(bool));
             });
         }
 
@@ -122,8 +122,8 @@ namespace CloudStructures
         {
             return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                var r = await this.ExecuteWithKeyExpire(x => x.StringIncrementAsync(Key, value, commandFlags), Key, expiry, commandFlags).ConfigureAwait(false);
-                return Pair.CreatePair(new { value, expiry = expiry?.Value }, sizeof(long), r, sizeof(long));
+                var r = await this.ExecuteWithKeyExpire(x => x.StringIncrementAsync(Key, value, commandFlags), Key, expiry, commandFlags).ForAwait();
+                return Tracing.CreateSentAndReceived(new { value, expiry = expiry?.Value }, sizeof(long), r, sizeof(long));
             });
         }
 
@@ -134,37 +134,43 @@ namespace CloudStructures
         {
             return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                var r = await this.ExecuteWithKeyExpire(x => x.StringIncrementAsync(Key, value, commandFlags), Key, expiry, commandFlags).ConfigureAwait(false);
-                return Pair.CreatePair(new { value, expiry = expiry?.Value }, sizeof(double), r, sizeof(double));
+                var r = await this.ExecuteWithKeyExpire(x => x.StringIncrementAsync(Key, value, commandFlags), Key, expiry, commandFlags).ForAwait();
+                return Tracing.CreateSentAndReceived(new { value, expiry = expiry?.Value }, sizeof(double), r, sizeof(double));
             });
         }
 
-        /// <summary></summary>
-        public Task<long> Decrement(long value = 1, CommandFlags commandFlags = CommandFlags.None)
+        /// <summary>
+        /// DECRBY http://redis.io/commands/decrby
+        /// </summary>
+        public Task<long> Decrement(long value = 1, RedisExpiry expiry = null, CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                var r = await Command.StringDecrementAsync(Key, value, commandFlags).ConfigureAwait(false);
-                return Pair.CreatePair(new { value }, sizeof(long), r, sizeof(long));
+                var r = await this.ExecuteWithKeyExpire(x => x.StringDecrementAsync(Key, value, commandFlags), Key, expiry, commandFlags).ForAwait();
+                return Tracing.CreateSentAndReceived(new { value, expiry = expiry?.Value }, sizeof(long), r, sizeof(long));
             });
         }
 
-        /// <summary></summary>
-        public Task<double> Decrement(double value = 1, CommandFlags commandFlags = CommandFlags.None)
+        /// <summary>
+        /// INCRBYFLOAT http://redis.io/commands/incrbyfloat
+        /// </summary>
+        public Task<double> Decrement(double value = 1, RedisExpiry expiry = null, CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                var r = await Command.StringDecrementAsync(Key, value, commandFlags).ConfigureAwait(false);
-                return Pair.CreatePair(new { value }, sizeof(double), r, sizeof(double));
+                var r = await this.ExecuteWithKeyExpire(x => x.StringDecrementAsync(Key, value, commandFlags), Key, expiry, commandFlags).ForAwait();
+                return Tracing.CreateSentAndReceived(new { value, expiry = expiry?.Value }, sizeof(double), r, sizeof(double));
             });
         }
 
-        /// <summary></summary>
-        public Task<long> IncrementLimitByMax(long value, long max, CommandFlags commandFlags = CommandFlags.None)
+        /// <summary>
+        /// LUA Script including incrby, set
+        /// </summary>
+        public Task<long> IncrementLimitByMax(long value, long max, RedisExpiry expiry = null, CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                var v = Command.ScriptEvaluateAsync(@"
+                var v = await this.ExecuteWithKeyExpire(x => x.ScriptEvaluateAsync(@"
 local inc = tonumber(ARGV[1])
 local max = tonumber(ARGV[2])
 local x = redis.call('incrby', KEYS[1], inc)
@@ -172,19 +178,21 @@ if(x > max) then
     redis.call('set', KEYS[1], max)
     x = max
 end
-return x", new[] { Key }, new RedisValue[] { value, max }, commandFlags);
-                var r = (long)(await v.ConfigureAwait(false));
+return x", new[] { Key }, new RedisValue[] { value, max }, commandFlags), Key, expiry, commandFlags).ForAwait();
+                var r = (long)v;
 
-                return Pair.CreatePair(new { value, max }, sizeof(long) * 2, r, sizeof(long));
+                return Tracing.CreateSentAndReceived(new { value, max, expiry = expiry?.Value }, sizeof(long) * 2, r, sizeof(long));
             });
         }
 
-        /// <summary></summary>
-        public Task<long> IncrementLimitByMin(long value, long min, CommandFlags commandFlags = CommandFlags.None)
+        /// <summary>
+        /// LUA Script including incrby, set
+        /// </summary>
+        public Task<long> IncrementLimitByMin(long value, long min, RedisExpiry expiry = null, CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                var v = Command.ScriptEvaluateAsync(@"
+                var v = await this.ExecuteWithKeyExpire(x => x.ScriptEvaluateAsync(@"
 local inc = tonumber(ARGV[1])
 local min = tonumber(ARGV[2])
 local x = redis.call('incrby', KEYS[1], inc)
@@ -192,19 +200,21 @@ if(x < min) then
     redis.call('set', KEYS[1], min)
     x = min
 end
-return x", new[] { Key }, new RedisValue[] { value, min }, commandFlags);
-                var r = (long)(await v.ConfigureAwait(false));
+return x", new[] { Key }, new RedisValue[] { value, min }, commandFlags), Key, expiry, commandFlags).ForAwait();
+                var r = (long)v;
 
-                return Pair.CreatePair(new { value, min }, sizeof(long) * 2, r, sizeof(long));
+                return Tracing.CreateSentAndReceived(new { value, min, expiry = expiry?.Value }, sizeof(long) * 2, r, sizeof(long));
             });
         }
 
-        /// <summary></summary>
-        public Task<double> IncrementLimitByMax(double value, double max, CommandFlags commandFlags = CommandFlags.None)
+        /// <summary>
+        /// LUA Script including incrbyfloat, set
+        /// </summary>
+        public Task<double> IncrementLimitByMax(double value, double max, RedisExpiry expiry = null, CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                var v = Command.ScriptEvaluateAsync(@"
+                var v = await this.ExecuteWithKeyExpire(x => x.ScriptEvaluateAsync(@"
 local inc = tonumber(ARGV[1])
 local max = tonumber(ARGV[2])
 local x = tonumber(redis.call('incrbyfloat', KEYS[1], inc))
@@ -212,19 +222,21 @@ if(x > max) then
     redis.call('set', KEYS[1], max)
     x = max
 end
-return tostring(x)", new[] { Key }, new RedisValue[] { value, max }, commandFlags);
-                var r = double.Parse((string)(await v.ConfigureAwait(false)));
+return tostring(x)", new[] { Key }, new RedisValue[] { value, max }, commandFlags), Key, expiry, commandFlags).ForAwait();
+                var r = double.Parse((string)v);
 
-                return Pair.CreatePair(new { value, max }, sizeof(double) * 2, r, sizeof(double));
+                return Tracing.CreateSentAndReceived(new { value, max, expiry = expiry?.Value }, sizeof(double) * 2, r, sizeof(double));
             });
         }
 
-        /// <summary></summary>
-        public Task<double> IncrementLimitByMin(double value, double min, CommandFlags commandFlags = CommandFlags.None)
+        /// <summary>
+        /// LUA Script including incrbyfloat, set
+        /// </summary>
+        public Task<double> IncrementLimitByMin(double value, double min, RedisExpiry expiry = null, CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                var v = Command.ScriptEvaluateAsync(@"
+                var v = await this.ExecuteWithKeyExpire(x => x.ScriptEvaluateAsync(@"
 local inc = tonumber(ARGV[1])
 local min = tonumber(ARGV[2])
 local x = tonumber(redis.call('incrbyfloat', KEYS[1], inc))
@@ -232,54 +244,62 @@ if(x < min) then
     redis.call('set', KEYS[1], min)
     x = min
 end
-return tostring(x)", new[] { Key }, new RedisValue[] { value, min }, commandFlags);
-                var r = double.Parse((string)(await v.ConfigureAwait(false)));
+return tostring(x)", new[] { Key }, new RedisValue[] { value, min }, commandFlags), Key, expiry, commandFlags).ForAwait();
+                var r = double.Parse((string)v);
 
-                return Pair.CreatePair(new { value, min }, sizeof(double) * 2, r, sizeof(double));
+                return Tracing.CreateSentAndReceived(new { value, min, expiry = expiry?.Value }, sizeof(double) * 2, r, sizeof(double));
             });
         }
 
-        /// <summary></summary>
-        public Task<bool> SetBit(long offset, bool bit, CommandFlags commandFlags = CommandFlags.None)
+        /// <summary>
+        /// SETBIT http://redis.io/commands/setbit
+        /// </summary>
+        public Task<bool> SetBit(long offset, bool bit, RedisExpiry expiry = null, CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                var r = await Command.StringSetBitAsync(Key, offset, bit, commandFlags).ConfigureAwait(false);
+                var r = await this.ExecuteWithKeyExpire(x => x.StringSetBitAsync(Key, offset, bit, commandFlags), Key, expiry, commandFlags).ForAwait();
 
-                return Pair.CreatePair(new { offset, bit }, sizeof(long) * 2, r, sizeof(bool));
+                return Tracing.CreateSentAndReceived(new { offset, bit, expiry = expiry?.Value }, sizeof(long) * 2, r, sizeof(bool));
             });
         }
 
-        /// <summary></summary>
+        /// <summary>
+        /// GETBIT http://redis.io/commands/getbit
+        /// </summary>
         public Task<bool> GetBit(long offset, CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                var r = await Command.StringGetBitAsync(Key, offset, commandFlags).ConfigureAwait(false);
+                var r = await Command.StringGetBitAsync(Key, offset, commandFlags).ForAwait();
 
-                return Pair.CreatePair(new { offset }, sizeof(long), r, sizeof(bool));
+                return Tracing.CreateSentAndReceived(new { offset }, sizeof(long), r, sizeof(bool));
             });
         }
 
-        /// <summary></summary>
+        /// <summary>
+        /// BITCOUNT http://redis.io/commands/bitcount
+        /// </summary>
         public Task<long> BitCount(long start = 0, long end = -1, CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                var r = await Command.StringBitCountAsync(Key, start, end, commandFlags).ConfigureAwait(false);
+                var r = await Command.StringBitCountAsync(Key, start, end, commandFlags).ForAwait();
 
-                return Pair.CreatePair(new { start, end }, sizeof(long) * 2, r, sizeof(long));
+                return Tracing.CreateSentAndReceived(new { start, end }, sizeof(long) * 2, r, sizeof(long));
             });
         }
 
-        /// <summary></summary>
+        /// <summary>
+        /// BITPOSITION http://redis.io/commands/bitpos
+        /// </summary>
         public Task<long> BitPosition(bool bit, long start = 0, long end = -1, CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                var r = await Command.StringBitPositionAsync(Key, bit, start, end, commandFlags).ConfigureAwait(false);
+                var r = await Command.StringBitPositionAsync(Key, bit, start, end, commandFlags).ForAwait();
 
-                return Pair.CreatePair(new { bit, start, end }, sizeof(bool) + sizeof(long) * 2, r, sizeof(long));
+                return Tracing.CreateSentAndReceived(new { bit, start, end }, sizeof(bool) + sizeof(long) * 2, r, sizeof(long));
             });
         }
     }

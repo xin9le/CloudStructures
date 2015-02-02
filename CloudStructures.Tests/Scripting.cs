@@ -34,6 +34,21 @@ namespace CloudStructures.Tests
             (await v.GetValueOrDefault()).Is(100);
         }
 
+
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethod]
+        public async Task StringIncrMaxWithExpiry()
+        {
+            var v = new RedisString<int>(settings, "test-incr2");
+
+            await v.Set(0);
+            (await v.IncrementLimitByMax(10, 100)).Is(10);
+            (await v.IncrementLimitByMax(30, 100)).Is(40);
+            (await v.IncrementLimitByMax(50, 100, TimeSpan.FromSeconds(1))).Is(90);
+            (await v.TryGet()).Item1.IsTrue();
+            await Task.Delay(TimeSpan.FromMilliseconds(1500));
+            (await v.TryGet()).Item1.IsFalse();
+        }
+
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethod]
         public async Task StringDecrMax()
         {

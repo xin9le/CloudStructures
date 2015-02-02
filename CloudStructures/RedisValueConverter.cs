@@ -18,8 +18,8 @@ namespace CloudStructures
     }
 
     /// <summary>
-    /// <pre>Bass class of IRedisValueConverter for object serialization.</pre>
-    /// <pre>If target is primitive type(int, double, etc), doesn't pass to core serializer.</pre>
+    /// <para>Bass class of IRedisValueConverter for object serialization.</para>
+    /// <para>If target is primitive type(int, double, etc), doesn't pass to core serializer.</para>
     /// </summary>
     public abstract class ObjectRedisValueConverterBase : IRedisValueConverter
     {

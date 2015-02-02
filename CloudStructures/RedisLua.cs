@@ -30,14 +30,14 @@ namespace CloudStructures
         {
             return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                var redisResult = await Command.ScriptEvaluateAsync(script, keys, values, flags).ConfigureAwait(false);
+                var redisResult = await Command.ScriptEvaluateAsync(script, keys, values, flags).ForAwait();
                 var result = (RedisValue)redisResult;
 
                 long receivedSize;
                 var r = Settings.ValueConverter.Deserialize<T>(result, out receivedSize);
 
                 // script size is unknown but it's cached SHA.
-                return Pair.CreatePair(new { script, keys, values }, 40, r, receivedSize);
+                return Tracing.CreateSentAndReceived(new { script, keys, values }, 40, r, receivedSize);
             });
         }
     }

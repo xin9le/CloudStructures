@@ -30,8 +30,8 @@ namespace CloudStructures
             {
                 long sentSize;
                 var v = Settings.ValueConverter.Serialize(value, out sentSize);
-                var r = await Command.HyperLogLogAddAsync(Key, v, flags).ConfigureAwait(false);
-                return Pair.CreatePair(new { value }, sentSize, r, sizeof(bool));
+                var r = await Command.HyperLogLogAddAsync(Key, v, flags).ForAwait();
+                return Tracing.CreateSentAndReceived(new { value }, sentSize, r, sizeof(bool));
             });
         }
 
@@ -53,8 +53,8 @@ namespace CloudStructures
                     })
                     .ToArray();
 
-                var r = await Command.HyperLogLogAddAsync(Key, redisValues, flags).ConfigureAwait(false);
-                return Pair.CreatePair(new { values }, sentSize, r, sizeof(bool));
+                var r = await Command.HyperLogLogAddAsync(Key, redisValues, flags).ForAwait();
+                return Tracing.CreateSentAndReceived(new { values }, sentSize, r, sizeof(bool));
             });
         }
 
@@ -65,8 +65,8 @@ namespace CloudStructures
         {
             return TraceHelper.RecordReceive(Settings, Key, CallType, async () =>
             {
-                var r = await Command.HyperLogLogLengthAsync(Key, flags).ConfigureAwait(false);
-                return Pair.CreateReceived(r, sizeof(long));
+                var r = await Command.HyperLogLogLengthAsync(Key, flags).ForAwait();
+                return Tracing.CreateReceived(r, sizeof(long));
             });
         }
         

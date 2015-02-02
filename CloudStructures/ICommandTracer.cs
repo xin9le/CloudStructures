@@ -10,7 +10,7 @@ namespace CloudStructures
         void CommandFinish(object sentObject, object receivedObject, bool isError);
     }
 
-    internal static class Pair
+    internal static class Tracing
     {
         public static MonitorSingle CreateSent(object sentObject, long sentSize)
         {
@@ -22,7 +22,7 @@ namespace CloudStructures
             return new MonitorSingle<T> { ReceivedObject = receivedObject, ReceivedSize = receivedSize };
         }
 
-        public static MonitorPair<T> CreatePair<T>(object sentObject, long sentSize, T receivedObject, long receivedSize)
+        public static MonitorPair<T> CreateSentAndReceived<T>(object sentObject, long sentSize, T receivedObject, long receivedSize)
         {
             return new MonitorPair<T> { SentObject = sentObject, SentSize = sentSize, ReceivedObject = receivedObject, ReceivedSize = receivedSize };
         }
@@ -66,7 +66,7 @@ namespace CloudStructures
             bool isError = true;
             try
             {
-                sendObject = await executeAndReturnSentObject().ConfigureAwait(false);
+                sendObject = await executeAndReturnSentObject().ForAwait();
                 isError = false;
             }
             finally
@@ -93,7 +93,7 @@ namespace CloudStructures
             bool isError = true;
             try
             {
-                receivedObject = await executeAndReturnReceivedObject().ConfigureAwait(false);
+                receivedObject = await executeAndReturnReceivedObject().ForAwait();
                 isError = false;
             }
             finally
@@ -124,7 +124,7 @@ namespace CloudStructures
             bool isError = true;
             try
             {
-                var sendAndReceivedObject = await executeAndReturnSentAndReceivedObject().ConfigureAwait(false);
+                var sendAndReceivedObject = await executeAndReturnSentAndReceivedObject().ForAwait();
                 sendObject = sendAndReceivedObject.SentObject;
                 receivedObject = sendAndReceivedObject.ReceivedObject;
                 isError = false;

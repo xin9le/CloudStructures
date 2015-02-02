@@ -67,19 +67,35 @@ namespace CloudStructures
 
     internal static class WithRedisExpiryExtensions
     {
-        public static async Task<T> ExecuteWithKeyExpire<T>(this RedisStructure redisStructure, Func<IDatabaseAsync, Task<T>> command, RedisKey key, RedisExpiry expiry, CommandFlags commandFlags)
+        public static async Task ExecuteWithKeyExpire(this RedisStructure redisStructure, Func<IDatabaseAsync, Task> command, RedisKey key, RedisExpiry expiry, CommandFlags commandFlags)
         {
             if (expiry == null)
             {
-                return await command(redisStructure.Command).ConfigureAwait(false);
+                await command(redisStructure.Command).ForAwait();
             }
             else
             {
                 var tx = redisStructure.CreateTransaction();
                 var future = command(tx);
                 var expire = expiry.KeyExpire(tx, key, commandFlags);
-                await tx.ExecuteAsync(commandFlags).ConfigureAwait(false);
-                return await future.ConfigureAwait(false);
+                await tx.ExecuteAsync(commandFlags).ForAwait();
+                await future.ForAwait();
+            }
+        }
+
+        public static async Task<T> ExecuteWithKeyExpire<T>(this RedisStructure redisStructure, Func<IDatabaseAsync, Task<T>> command, RedisKey key, RedisExpiry expiry, CommandFlags commandFlags)
+        {
+            if (expiry == null)
+            {
+                return await command(redisStructure.Command).ForAwait();
+            }
+            else
+            {
+                var tx = redisStructure.CreateTransaction();
+                var future = command(tx);
+                var expire = expiry.KeyExpire(tx, key, commandFlags);
+                await tx.ExecuteAsync(commandFlags).ForAwait();
+                return await future.ForAwait();
             }
         }
     }
