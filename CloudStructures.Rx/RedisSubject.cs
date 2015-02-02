@@ -159,17 +159,17 @@ namespace CloudStructures.Redis
 
         public void OnNext(T value)
         {
-            OnNext(value, queueJump: false).Wait();
+            OnNext(value, false).Wait();
         }
 
-        public Task<long> OnNext(T value, bool queueJump)
+        public Task<long> OnNext(T value, bool commandFlags)
         {
             if (keyType != PubSubKeyType.Normal) throw new InvalidOperationException("OnNext is supported only PubSubKeyType.Normal");
 
             using (var ms = new MemoryStream())
             {
                 RemotableNotification<T>.OnNext(value).WriteTo(ms, valueConverter);
-                return Connection.Publish(Key, ms.ToArray(), queueJump);
+                return Connection.Publish(Key, ms.ToArray(), commandFlags);
             }
         }
 
@@ -178,30 +178,30 @@ namespace CloudStructures.Redis
             OnError(error.ToString()).Wait();
         }
 
-        public Task<long> OnError(string errorMessage, bool queueJump = false)
+        public Task<long> OnError(string errorMessage, CommandFlags commandFlags = CommandFlags.None)
         {
             if (keyType != PubSubKeyType.Normal) throw new InvalidOperationException("OnError is supported only PubSubKeyType.Normal");
 
             using (var ms = new MemoryStream())
             {
                 RemotableNotification<T>.OnError(errorMessage).WriteTo(ms, valueConverter);
-                return Connection.Publish(Key, ms.ToArray(), queueJump);
+                return Connection.Publish(Key, ms.ToArray(), commandFlags);
             }
         }
 
         public void OnCompleted()
         {
-            OnCompleted(queueJump: false).Wait();
+            OnCompleted(false).Wait();
         }
 
-        public Task<long> OnCompleted(bool queueJump)
+        public Task<long> OnCompleted(bool commandFlags)
         {
             if (keyType != PubSubKeyType.Normal) throw new InvalidOperationException("OnCompleted is supported only PubSubKeyType.Normal");
 
             using (var ms = new MemoryStream())
             {
                 RemotableNotification<T>.OnCompleted().WriteTo(ms, valueConverter);
-                return Connection.Publish(Key, ms.ToArray(), queueJump);
+                return Connection.Publish(Key, ms.ToArray(), commandFlags);
             }
         }
 

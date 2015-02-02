@@ -89,11 +89,11 @@ return tostring(x)";
         /// <summary>
         /// HEXISTS http://redis.io/commands/hexists
         /// </summary>
-        public Task<bool> Exists(string field, bool queueJump = false)
+        public Task<bool> Exists(string field, CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                var r = await Command.Exists(Settings.Db, Key, field, queueJump).ConfigureAwait(false);
+                var r = await Command.Exists(Settings.Db, Key, field, commandFlags).ConfigureAwait(false);
                 return Pair.Create(new { field }, r);
             });
         }
@@ -101,11 +101,11 @@ return tostring(x)";
         /// <summary>
         /// HGET http://redis.io/commands/hget
         /// </summary>
-        public Task<T> Get(string field, bool queueJump = false)
+        public Task<T> Get(string field, CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                var v = await Command.Get(Settings.Db, Key, field, queueJump).ConfigureAwait(false);
+                var v = await Command.Get(Settings.Db, Key, field, commandFlags).ConfigureAwait(false);
                 var r = Settings.ValueConverter.Deserialize<T>(v);
                 return Pair.Create(new { field }, r);
             });
@@ -114,11 +114,11 @@ return tostring(x)";
         /// <summary>
         /// HMGET http://redis.io/commands/hmget
         /// </summary>
-        public Task<T[]> Get(string[] fields, bool queueJump = false)
+        public Task<T[]> Get(string[] fields, CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                var v = await Command.Get(Settings.Db, Key, fields, queueJump).ConfigureAwait(false);
+                var v = await Command.Get(Settings.Db, Key, fields, commandFlags).ConfigureAwait(false);
                 var r = v.Select(Settings.ValueConverter.Deserialize<T>).ToArray();
                 return Pair.Create(new { fields }, r);
             });
@@ -127,11 +127,11 @@ return tostring(x)";
         /// <summary>
         /// HGETALL http://redis.io/commands/hgetall
         /// </summary>
-        public Task<Dictionary<string, T>> GetAll(bool queueJump = false)
+        public Task<Dictionary<string, T>> GetAll(CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordReceive(Settings, Key, CallType, async () =>
             {
-                var v = await Command.GetAll(Settings.Db, Key, queueJump).ConfigureAwait(false);
+                var v = await Command.GetAll(Settings.Db, Key, commandFlags).ConfigureAwait(false);
                 var r = v.ToDictionary(x => x.Key, x => Settings.ValueConverter.Deserialize<T>(x.Value));
                 return r;
             });
@@ -140,33 +140,33 @@ return tostring(x)";
         /// <summary>
         /// HKEYS http://redis.io/commands/hkeys
         /// </summary>
-        public Task<string[]> GetKeys(bool queueJump = false)
+        public Task<string[]> GetKeys(CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordReceive(Settings, Key, CallType, () =>
             {
-                return Command.GetKeys(Settings.Db, Key, queueJump);
+                return Command.GetKeys(Settings.Db, Key, commandFlags);
             });
         }
 
         /// <summary>
         /// HLEN http://redis.io/commands/hlen
         /// </summary>
-        public Task<long> GetLength(bool queueJump = false)
+        public Task<long> GetLength(CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordReceive(Settings, Key, CallType, () =>
             {
-                return Command.GetLength(Settings.Db, Key, queueJump);
+                return Command.GetLength(Settings.Db, Key, commandFlags);
             });
         }
 
         /// <summary>
         /// HVALS http://redis.io/commands/hvals
         /// </summary>
-        public Task<T[]> GetValues(bool queueJump = false)
+        public Task<T[]> GetValues(CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordReceive(Settings, Key, CallType, async () =>
             {
-                var v = await Command.GetValues(Settings.Db, Key, queueJump).ConfigureAwait(false);
+                var v = await Command.GetValues(Settings.Db, Key, commandFlags).ConfigureAwait(false);
                 return v.Select(Settings.ValueConverter.Deserialize<T>).ToArray();
             });
         }
@@ -174,20 +174,20 @@ return tostring(x)";
         /// <summary>
         /// HINCRBY http://redis.io/commands/hincrby
         /// </summary>
-        public Task<long> Increment(string field, int value = 1, bool queueJump = false)
+        public Task<long> Increment(string field, int value = 1, CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                var r = await Command.Increment(Settings.Db, Key, field, value, queueJump).ConfigureAwait(false);
+                var r = await Command.Increment(Settings.Db, Key, field, value, commandFlags).ConfigureAwait(false);
                 return Pair.Create(new { field, value }, r);
             });
         }
 
-        public Task<long> IncrementLimitByMax(string field, int value, int max, bool queueJump = false)
+        public Task<long> IncrementLimitByMax(string field, int value, int max, CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementLimitByMax, new[] { Key, field }, new object[] { value, max }, useCache: true, inferStrings: true, queueJump: queueJump);
+                var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementLimitByMax, new[] { Key, field }, new object[] { value, max }, useCache: true, inferStrings: true, commandFlags);
                 var r = (long)(await v.ConfigureAwait(false));
                 return Pair.Create(new { field, value, max }, r);
             });
@@ -196,40 +196,40 @@ return tostring(x)";
         /// <summary>
         /// HINCRBYFLOAT http://redis.io/commands/hincrbyfloat
         /// </summary>
-        public Task<double> Increment(string field, double value, bool queueJump = false)
+        public Task<double> Increment(string field, double value, CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                var r = await Command.Increment(Settings.Db, Key, field, value, queueJump).ConfigureAwait(false);
+                var r = await Command.Increment(Settings.Db, Key, field, value, commandFlags).ConfigureAwait(false);
                 return Pair.Create(new { field, value }, r);
             });
         }
 
-        public Task<double> IncrementLimitByMax(string field, double value, double max, bool queueJump = false)
+        public Task<double> IncrementLimitByMax(string field, double value, double max, CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementFloatLimitByMax, new[] { Key, field }, new object[] { value, max }, useCache: true, inferStrings: true, queueJump: queueJump);
+                var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementFloatLimitByMax, new[] { Key, field }, new object[] { value, max }, useCache: true, inferStrings: true, commandFlags);
                 var r = double.Parse((string)(await v.ConfigureAwait(false)));
                 return Pair.Create(new { field, value, max }, r);
             });
         }
 
-        public Task<long> IncrementLimitByMin(string field, int value, int min, bool queueJump = false)
+        public Task<long> IncrementLimitByMin(string field, int value, int min, CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementLimitByMin, new[] { Key, field }, new object[] { value, min }, useCache: true, inferStrings: true, queueJump: queueJump);
+                var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementLimitByMin, new[] { Key, field }, new object[] { value, min }, useCache: true, inferStrings: true, commandFlags);
                 var r = (long)(await v.ConfigureAwait(false));
                 return Pair.Create(new { field, value, min }, r);
             });
         }
 
-        public Task<double> IncrementLimitByMin(string field, double value, double min, bool queueJump = false)
+        public Task<double> IncrementLimitByMin(string field, double value, double min, CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementFloatLimitByMin, new[] { Key, field }, new object[] { value, min }, useCache: true, inferStrings: true, queueJump: queueJump);
+                var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementFloatLimitByMin, new[] { Key, field }, new object[] { value, min }, useCache: true, inferStrings: true, commandFlags);
                 var r = double.Parse((string)(await v.ConfigureAwait(false)));
                 return Pair.Create(new { field, value, min }, r);
             });
@@ -238,11 +238,11 @@ return tostring(x)";
         /// <summary>
         /// HDEL http://redis.io/commands/hdel
         /// </summary>
-        public Task<bool> Remove(string field, bool queueJump = false)
+        public Task<bool> Remove(string field, CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                var r = await Command.Remove(Settings.Db, Key, field, queueJump).ConfigureAwait(false);
+                var r = await Command.Remove(Settings.Db, Key, field, commandFlags).ConfigureAwait(false);
                 return Pair.Create(new { field }, r);
             });
         }
@@ -250,11 +250,11 @@ return tostring(x)";
         /// <summary>
         /// HDEL http://redis.io/commands/hdel
         /// </summary>
-        public Task<long> Remove(string[] fields, bool queueJump = false)
+        public Task<long> Remove(string[] fields, CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                var r = await Command.Remove(Settings.Db, Key, fields, queueJump).ConfigureAwait(false);
+                var r = await Command.Remove(Settings.Db, Key, fields, commandFlags).ConfigureAwait(false);
                 return Pair.Create(new { fields }, r);
             });
         }
@@ -262,12 +262,12 @@ return tostring(x)";
         /// <summary>
         /// HMSET http://redis.io/commands/hmset
         /// </summary>
-        public Task Set(Dictionary<string, T> values, bool queueJump = false)
+        public Task Set(Dictionary<string, T> values, CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordSend(Settings, Key, CallType, async () =>
             {
                 var v = values.ToDictionary(x => x.Key, x => Settings.ValueConverter.Serialize(x.Value));
-                await Command.Set(Settings.Db, Key, v, queueJump).ConfigureAwait(false);
+                await Command.Set(Settings.Db, Key, v, commandFlags).ConfigureAwait(false);
                 return new { values };
             });
         }
@@ -275,11 +275,11 @@ return tostring(x)";
         /// <summary>
         /// HSET http://redis.io/commands/hset
         /// </summary>
-        public Task<bool> Set(string field, T value, bool queueJump = false)
+        public Task<bool> Set(string field, T value, CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                var r = await Command.Set(Settings.Db, Key, field, Settings.ValueConverter.Serialize(value), queueJump).ConfigureAwait(false);
+                var r = await Command.Set(Settings.Db, Key, field, Settings.ValueConverter.Serialize(value), commandFlags).ConfigureAwait(false);
                 return Pair.Create(new { field, value }, r);
             });
         }
@@ -287,11 +287,11 @@ return tostring(x)";
         /// <summary>
         /// HSETNX http://redis.io/commands/hsetnx
         /// </summary>
-        public Task<bool> SetIfNotExists(string field, T value, bool queueJump = false)
+        public Task<bool> SetIfNotExists(string field, T value, CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                var r = await Command.SetIfNotExists(Settings.Db, Key, field, Settings.ValueConverter.Serialize(value), queueJump).ConfigureAwait(false);
+                var r = await Command.SetIfNotExists(Settings.Db, Key, field, Settings.ValueConverter.Serialize(value), commandFlags).ConfigureAwait(false);
                 return Pair.Create(new { field, value }, r);
             });
         }
@@ -299,38 +299,38 @@ return tostring(x)";
         /// <summary>
         /// expire subtract Datetime.Now
         /// </summary>
-        public Task<bool> SetExpire(DateTime expire, bool queueJump = false)
+        public Task<bool> SetExpire(DateTime expire, CommandFlags commandFlags = CommandFlags.None)
         {
-            return SetExpire(expire - DateTime.Now, queueJump);
+            return SetExpire(expire - DateTime.Now, commandFlags);
         }
 
-        public Task<bool> SetExpire(TimeSpan expire, bool queueJump = false)
+        public Task<bool> SetExpire(TimeSpan expire, CommandFlags commandFlags = CommandFlags.None)
         {
-            return SetExpire((int)expire.TotalSeconds, queueJump);
+            return SetExpire((int)expire.TotalSeconds, commandFlags);
         }
 
-        public Task<bool> SetExpire(int seconds, bool queueJump = false)
+        public Task<bool> SetExpire(int seconds, CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                var r = await Connection.Keys.Expire(Settings.Db, Key, seconds, queueJump).ConfigureAwait(false);
+                var r = await Connection.Keys.Expire(Settings.Db, Key, seconds, commandFlags).ConfigureAwait(false);
                 return Pair.Create(new { seconds }, r);
             });
         }
 
-        public Task<bool> KeyExists(bool queueJump = false)
+        public Task<bool> KeyExists(CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordReceive(Settings, Key, CallType, () =>
             {
-                return Connection.Keys.Exists(Settings.Db, Key, queueJump);
+                return Connection.Keys.Exists(Settings.Db, Key, commandFlags);
             });
         }
 
-        public Task<bool> Clear(bool queueJump = false)
+        public Task<bool> Clear(CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordReceive(Settings, Key, CallType, () =>
             {
-                return Connection.Keys.Remove(Settings.Db, Key, queueJump);
+                return Connection.Keys.Remove(Settings.Db, Key, commandFlags);
             });
         }
     }
@@ -372,11 +372,11 @@ return tostring(x)";
         /// <summary>
         /// HEXISTS http://redis.io/commands/hexists
         /// </summary>
-        public Task<bool> Exists(string field, bool queueJump = false)
+        public Task<bool> Exists(string field, CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                var r = await Command.Exists(Settings.Db, Key, field, queueJump).ConfigureAwait(false);
+                var r = await Command.Exists(Settings.Db, Key, field, commandFlags).ConfigureAwait(false);
                 return Pair.Create(new { field }, r);
             });
         }
@@ -384,11 +384,11 @@ return tostring(x)";
         /// <summary>
         /// HGET http://redis.io/commands/hget
         /// </summary>
-        public Task<T> Get<T>(string field, bool queueJump = false)
+        public Task<T> Get<T>(string field, CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                var v = await Command.Get(Settings.Db, Key, field, queueJump).ConfigureAwait(false);
+                var v = await Command.Get(Settings.Db, Key, field, commandFlags).ConfigureAwait(false);
                 var r = Settings.ValueConverter.Deserialize<T>(v);
                 return Pair.Create(new { field }, r);
             });
@@ -397,11 +397,11 @@ return tostring(x)";
         /// <summary>
         /// HMGET http://redis.io/commands/hmget
         /// </summary>
-        public Task<T[]> Get<T>(string[] fields, bool queueJump = false)
+        public Task<T[]> Get<T>(string[] fields, CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                var v = await Command.Get(Settings.Db, Key, fields, queueJump).ConfigureAwait(false);
+                var v = await Command.Get(Settings.Db, Key, fields, commandFlags).ConfigureAwait(false);
                 var r = v.Select(Settings.ValueConverter.Deserialize<T>).ToArray();
                 return Pair.Create(new { fields }, r);
             });
@@ -410,11 +410,11 @@ return tostring(x)";
         /// <summary>
         /// HGETALL http://redis.io/commands/hgetall
         /// </summary>
-        public Task<Dictionary<string, T>> GetAll<T>(bool queueJump = false)
+        public Task<Dictionary<string, T>> GetAll<T>(CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordReceive(Settings, Key, CallType, async () =>
             {
-                var v = await Command.GetAll(Settings.Db, Key, queueJump).ConfigureAwait(false);
+                var v = await Command.GetAll(Settings.Db, Key, commandFlags).ConfigureAwait(false);
                 var r = v.ToDictionary(x => x.Key, x => Settings.ValueConverter.Deserialize<T>(x.Value));
                 return r;
             });
@@ -423,33 +423,33 @@ return tostring(x)";
         /// <summary>
         /// HKEYS http://redis.io/commands/hkeys
         /// </summary>
-        public Task<string[]> GetKeys(bool queueJump = false)
+        public Task<string[]> GetKeys(CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordReceive(Settings, Key, CallType, () =>
             {
-                return Command.GetKeys(Settings.Db, Key, queueJump);
+                return Command.GetKeys(Settings.Db, Key, commandFlags);
             });
         }
 
         /// <summary>
         /// HLEN http://redis.io/commands/hlen
         /// </summary>
-        public Task<long> GetLength(bool queueJump = false)
+        public Task<long> GetLength(CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordReceive(Settings, Key, CallType, () =>
             {
-                return Command.GetLength(Settings.Db, Key, queueJump);
+                return Command.GetLength(Settings.Db, Key, commandFlags);
             });
         }
 
         /// <summary>
         /// HVALS http://redis.io/commands/hvals
         /// </summary>
-        public Task<T[]> GetValues<T>(bool queueJump = false)
+        public Task<T[]> GetValues<T>(CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordReceive(Settings, Key, CallType, async () =>
             {
-                var v = await Command.GetValues(Settings.Db, Key, queueJump).ConfigureAwait(false);
+                var v = await Command.GetValues(Settings.Db, Key, commandFlags).ConfigureAwait(false);
                 return v.Select(Settings.ValueConverter.Deserialize<T>).ToArray();
             });
         }
@@ -457,11 +457,11 @@ return tostring(x)";
         /// <summary>
         /// HINCRBY http://redis.io/commands/hincrby
         /// </summary>
-        public Task<long> Increment(string field, int value = 1, bool queueJump = false)
+        public Task<long> Increment(string field, int value = 1, CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                var r = await Command.Increment(Settings.Db, Key, field, value, queueJump).ConfigureAwait(false);
+                var r = await Command.Increment(Settings.Db, Key, field, value, commandFlags).ConfigureAwait(false);
                 return Pair.Create(new { field, value }, r);
             });
         }
@@ -469,50 +469,50 @@ return tostring(x)";
         /// <summary>
         /// HINCRBYFLOAT http://redis.io/commands/hincrbyfloat
         /// </summary>
-        public Task<double> Increment(string field, double value, bool queueJump = false)
+        public Task<double> Increment(string field, double value, CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                var r = await Command.Increment(Settings.Db, Key, field, value, queueJump).ConfigureAwait(false);
+                var r = await Command.Increment(Settings.Db, Key, field, value, commandFlags).ConfigureAwait(false);
                 return Pair.Create(new { field, value }, r);
             });
         }
 
-        public Task<long> IncrementLimitByMax(string field, int value, int max, bool queueJump = false)
+        public Task<long> IncrementLimitByMax(string field, int value, int max, CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementLimitByMax, new[] { Key, field }, new object[] { value, max }, useCache: true, inferStrings: true, queueJump: queueJump);
+                var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementLimitByMax, new[] { Key, field }, new object[] { value, max }, useCache: true, inferStrings: true, commandFlags);
                 var r = (long)(await v.ConfigureAwait(false));
                 return Pair.Create(new { field, value, max }, r);
             });
         }
 
-        public Task<double> IncrementLimitByMax(string field, double value, double max, bool queueJump = false)
+        public Task<double> IncrementLimitByMax(string field, double value, double max, CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementFloatLimitByMax, new[] { Key, field }, new object[] { value, max }, useCache: true, inferStrings: true, queueJump: queueJump);
+                var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementFloatLimitByMax, new[] { Key, field }, new object[] { value, max }, useCache: true, inferStrings: true, commandFlags);
                 var r = double.Parse((string)(await v.ConfigureAwait(false)));
                 return Pair.Create(new { field, value, max }, r);
             });
         }
 
-        public Task<long> IncrementLimitByMin(string field, int value, int min, bool queueJump = false)
+        public Task<long> IncrementLimitByMin(string field, int value, int min, CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementLimitByMin, new[] { Key, field }, new object[] { value, min }, useCache: true, inferStrings: true, queueJump: queueJump);
+                var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementLimitByMin, new[] { Key, field }, new object[] { value, min }, useCache: true, inferStrings: true, commandFlags);
                 var r = (long)(await v.ConfigureAwait(false));
                 return Pair.Create(new { field, value, min }, r);
             });
         }
 
-        public Task<double> IncrementLimitByMin(string field, double value, double min, bool queueJump = false)
+        public Task<double> IncrementLimitByMin(string field, double value, double min, CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementFloatLimitByMin, new[] { Key, field }, new object[] { value, min }, useCache: true, inferStrings: true, queueJump: queueJump);
+                var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementFloatLimitByMin, new[] { Key, field }, new object[] { value, min }, useCache: true, inferStrings: true, commandFlags);
                 var r = double.Parse((string)(await v.ConfigureAwait(false)));
                 return Pair.Create(new { field, value, min }, r);
             });
@@ -521,22 +521,22 @@ return tostring(x)";
         /// <summary>
         /// HDEL http://redis.io/commands/hdel
         /// </summary>
-        public Task<bool> Remove(string field, bool queueJump = false)
+        public Task<bool> Remove(string field, CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                var r = await Command.Remove(Settings.Db, Key, field, queueJump);
+                var r = await Command.Remove(Settings.Db, Key, field, commandFlags);
                 return Pair.Create(new { field }, r);
             });
         }
         /// <summary>
         /// HDEL http://redis.io/commands/hdel
         /// </summary>
-        public Task<long> Remove(string[] fields, bool queueJump = false)
+        public Task<long> Remove(string[] fields, CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                var r = await Command.Remove(Settings.Db, Key, fields, queueJump);
+                var r = await Command.Remove(Settings.Db, Key, fields, commandFlags);
                 return Pair.Create(new { fields }, r);
             });
         }
@@ -544,12 +544,12 @@ return tostring(x)";
         /// <summary>
         /// HMSET http://redis.io/commands/hmset
         /// </summary>
-        public Task Set(Dictionary<string, object> values, bool queueJump = false)
+        public Task Set(Dictionary<string, object> values, CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordSend(Settings, Key, CallType, async () =>
             {
                 var v = values.ToDictionary(x => x.Key, x => Settings.ValueConverter.Serialize(x.Value));
-                await Command.Set(Settings.Db, Key, v, queueJump);
+                await Command.Set(Settings.Db, Key, v, commandFlags);
                 return new { values };
             });
         }
@@ -557,11 +557,11 @@ return tostring(x)";
         /// <summary>
         /// HSET http://redis.io/commands/hset
         /// </summary>
-        public Task<bool> Set(string field, object value, bool queueJump = false)
+        public Task<bool> Set(string field, object value, CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                var r = await Command.Set(Settings.Db, Key, field, Settings.ValueConverter.Serialize(value), queueJump);
+                var r = await Command.Set(Settings.Db, Key, field, Settings.ValueConverter.Serialize(value), commandFlags);
                 return Pair.Create(new { field, value }, r);
             });
         }
@@ -569,11 +569,11 @@ return tostring(x)";
         /// <summary>
         /// HSETNX http://redis.io/commands/hsetnx
         /// </summary>
-        public Task<bool> SetIfNotExists(string field, object value, bool queueJump = false)
+        public Task<bool> SetIfNotExists(string field, object value, CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                var r = await Command.SetIfNotExists(Settings.Db, Key, field, Settings.ValueConverter.Serialize(value), queueJump);
+                var r = await Command.SetIfNotExists(Settings.Db, Key, field, Settings.ValueConverter.Serialize(value), commandFlags);
                 return Pair.Create(new { field, value }, r);
             });
         }
@@ -581,38 +581,38 @@ return tostring(x)";
         /// <summary>
         /// expire subtract Datetime.Now
         /// </summary>
-        public Task<bool> SetExpire(DateTime expire, bool queueJump = false)
+        public Task<bool> SetExpire(DateTime expire, CommandFlags commandFlags = CommandFlags.None)
         {
-            return SetExpire(expire - DateTime.Now, queueJump);
+            return SetExpire(expire - DateTime.Now, commandFlags);
         }
 
-        public Task<bool> SetExpire(TimeSpan expire, bool queueJump = false)
+        public Task<bool> SetExpire(TimeSpan expire, CommandFlags commandFlags = CommandFlags.None)
         {
-            return SetExpire((int)expire.TotalSeconds, queueJump);
+            return SetExpire((int)expire.TotalSeconds, commandFlags);
         }
 
-        public Task<bool> SetExpire(int seconds, bool queueJump = false)
+        public Task<bool> SetExpire(int seconds, CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                var r = await Connection.Keys.Expire(Settings.Db, Key, seconds, queueJump).ConfigureAwait(false);
+                var r = await Connection.Keys.Expire(Settings.Db, Key, seconds, commandFlags).ConfigureAwait(false);
                 return Pair.Create(new { seconds }, r);
             });
         }
 
-        public Task<bool> KeyExists(bool queueJump = false)
+        public Task<bool> KeyExists(CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordReceive(Settings, Key, CallType, () =>
             {
-                return Connection.Keys.Exists(Settings.Db, Key, queueJump);
+                return Connection.Keys.Exists(Settings.Db, Key, commandFlags);
             });
         }
 
-        public Task<bool> Clear(bool queueJump = false)
+        public Task<bool> Clear(CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordReceive(Settings, Key, CallType, () =>
             {
-                return Connection.Keys.Remove(Settings.Db, Key, queueJump);
+                return Connection.Keys.Remove(Settings.Db, Key, commandFlags);
             });
         }
     }
@@ -655,11 +655,11 @@ return tostring(x)";
             }
         }
 
-        public Task<T> GetValue(bool queueJump = false)
+        public Task<T> GetValue(CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordReceive(Settings, Key, CallType, async () =>
             {
-                var data = await Command.GetAll(Settings.Db, Key, queueJump).ConfigureAwait(false);
+                var data = await Command.GetAll(Settings.Db, Key, commandFlags).ConfigureAwait(false);
                 if (data == null || data.Count == 0)
                 {
                     return null;
@@ -684,26 +684,26 @@ return tostring(x)";
         /// <summary>
         /// expire subtract Datetime.Now
         /// </summary>
-        public Task<T> GetValueOrSet(Func<T> valueFactory, DateTime expire, bool configureAwait = true, bool queueJump = false)
+        public Task<T> GetValueOrSet(Func<T> valueFactory, DateTime expire, bool configureAwait = true, CommandFlags commandFlags = CommandFlags.None)
         {
-            return GetValueOrSet(valueFactory, expire - DateTime.Now, configureAwait, queueJump);
+            return GetValueOrSet(valueFactory, expire - DateTime.Now, configureAwait, commandFlags);
         }
 
-        public Task<T> GetValueOrSet(Func<T> valueFactory, TimeSpan expire, bool configureAwait = true, bool queueJump = false)
+        public Task<T> GetValueOrSet(Func<T> valueFactory, TimeSpan expire, bool configureAwait = true, CommandFlags commandFlags = CommandFlags.None)
         {
-            return GetValueOrSet(valueFactory, (int)expire.TotalSeconds, configureAwait, queueJump);
+            return GetValueOrSet(valueFactory, (int)expire.TotalSeconds, configureAwait, commandFlags);
         }
 
-        public async Task<T> GetValueOrSet(Func<T> valueFactory, int? expirySeconds = null, bool configureAwait = true, bool queueJump = false)
+        public async Task<T> GetValueOrSet(Func<T> valueFactory, int? expirySeconds = null, bool configureAwait = true, CommandFlags commandFlags = CommandFlags.None)
         {
-            var value = await GetValue(queueJump).ConfigureAwait(configureAwait); // keep valueFactory synchronization context
+            var value = await GetValue(commandFlags).ConfigureAwait(configureAwait); // keep valueFactory synchronization context
             if (value == null)
             {
                 value = valueFactory();
                 if (expirySeconds != null)
                 {
                     var a = SetValue(value);
-                    var b = SetExpire(expirySeconds.Value, queueJump);
+                    var b = SetExpire(expirySeconds.Value, commandFlags);
                     await Task.WhenAll(a, b).ConfigureAwait(false);
                 }
                 else
@@ -718,26 +718,26 @@ return tostring(x)";
         /// <summary>
         /// expire subtract Datetime.Now
         /// </summary>
-        public Task<T> GetValueOrSet(Func<Task<T>> valueFactory, DateTime expire, bool configureAwait = true, bool queueJump = false)
+        public Task<T> GetValueOrSet(Func<Task<T>> valueFactory, DateTime expire, bool configureAwait = true, CommandFlags commandFlags = CommandFlags.None)
         {
-            return GetValueOrSet(valueFactory, expire - DateTime.Now, configureAwait, queueJump);
+            return GetValueOrSet(valueFactory, expire - DateTime.Now, configureAwait, commandFlags);
         }
 
-        public Task<T> GetValueOrSet(Func<Task<T>> valueFactory, TimeSpan expire, bool configureAwait = true, bool queueJump = false)
+        public Task<T> GetValueOrSet(Func<Task<T>> valueFactory, TimeSpan expire, bool configureAwait = true, CommandFlags commandFlags = CommandFlags.None)
         {
-            return GetValueOrSet(valueFactory, (int)expire.TotalSeconds, configureAwait, queueJump);
+            return GetValueOrSet(valueFactory, (int)expire.TotalSeconds, configureAwait, commandFlags);
         }
 
-        public async Task<T> GetValueOrSet(Func<Task<T>> valueFactory, int? expirySeconds = null, bool configureAwait = true, bool queueJump = false)
+        public async Task<T> GetValueOrSet(Func<Task<T>> valueFactory, int? expirySeconds = null, bool configureAwait = true, CommandFlags commandFlags = CommandFlags.None)
         {
-            var value = await GetValue(queueJump).ConfigureAwait(configureAwait); // keep valueFactory synchronization context
+            var value = await GetValue(commandFlags).ConfigureAwait(configureAwait); // keep valueFactory synchronization context
             if (value == null)
             {
                 value = await valueFactory().ConfigureAwait(configureAwait);
                 if (expirySeconds != null)
                 {
                     var a = SetValue(value);
-                    var b = SetExpire(expirySeconds.Value, queueJump);
+                    var b = SetExpire(expirySeconds.Value, commandFlags);
                     await Task.WhenAll(a, b).ConfigureAwait(false);
                 }
                 else
@@ -749,7 +749,7 @@ return tostring(x)";
             return value;
         }
 
-        public Task SetValue(T value, bool queueJump = false)
+        public Task SetValue(T value, CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordSend(Settings, Key, CallType, async () =>
             {
@@ -761,96 +761,96 @@ return tostring(x)";
                     values.Add(member.Name, Settings.ValueConverter.Serialize(accessor[value, member.Name]));
                 }
 
-                await Command.Set(Settings.Db, Key, values, queueJump).ConfigureAwait(false);
+                await Command.Set(Settings.Db, Key, values, commandFlags).ConfigureAwait(false);
 
                 return new { value };
             });
         }
 
-        public Task<bool> SetField(string field, object value, bool queueJump = false)
+        public Task<bool> SetField(string field, object value, CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                var r = await Command.Set(Settings.Db, Key, field, Settings.ValueConverter.Serialize(value), queueJump).ConfigureAwait(false);
+                var r = await Command.Set(Settings.Db, Key, field, Settings.ValueConverter.Serialize(value), commandFlags).ConfigureAwait(false);
                 return Pair.Create(new { field, value }, r);
             });
         }
 
-        public Task SetFields(IEnumerable<KeyValuePair<string, object>> fields, bool queueJump = false)
+        public Task SetFields(IEnumerable<KeyValuePair<string, object>> fields, CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordSend(Settings, Key, CallType, async () =>
             {
                 var values = fields.ToDictionary(x => x.Key, x => Settings.ValueConverter.Serialize(x.Value));
-                await Command.Set(Settings.Db, Key, values, queueJump).ConfigureAwait(false);
+                await Command.Set(Settings.Db, Key, values, commandFlags).ConfigureAwait(false);
 
                 return new { fields };
             });
         }
 
-        public Task<TField> GetField<TField>(string field, bool queueJump = false)
+        public Task<TField> GetField<TField>(string field, CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                var v = await Command.Get(Settings.Db, Key, field, queueJump).ConfigureAwait(false);
+                var v = await Command.Get(Settings.Db, Key, field, commandFlags).ConfigureAwait(false);
                 var r = Settings.ValueConverter.Deserialize<TField>(v);
                 return Pair.Create(new { field }, r);
             });
         }
 
-        public Task<long> Increment(string field, int value = 1, bool queueJump = false)
+        public Task<long> Increment(string field, int value = 1, CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                var r = await Command.Increment(Settings.Db, Key, field, value, queueJump).ConfigureAwait(false);
+                var r = await Command.Increment(Settings.Db, Key, field, value, commandFlags).ConfigureAwait(false);
                 return Pair.Create(new { field, value }, r);
             });
         }
 
-        public Task<double> Increment(string field, double value, bool queueJump = false)
+        public Task<double> Increment(string field, double value, CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                var r = await Command.Increment(Settings.Db, Key, field, value, queueJump).ConfigureAwait(false);
+                var r = await Command.Increment(Settings.Db, Key, field, value, commandFlags).ConfigureAwait(false);
                 return Pair.Create(new { field, value }, r);
             });
         }
 
-        public Task<long> IncrementLimitByMax(string field, int value, int max, bool queueJump = false)
+        public Task<long> IncrementLimitByMax(string field, int value, int max, CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementLimitByMax, new[] { Key, field }, new object[] { value, max }, useCache: true, inferStrings: true, queueJump: queueJump);
+                var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementLimitByMax, new[] { Key, field }, new object[] { value, max }, useCache: true, inferStrings: true, commandFlags);
                 var r = (long)(await v.ConfigureAwait(false));
                 return Pair.Create(new { field, value, max }, r);
             });
         }
 
-        public Task<double> IncrementLimitByMax(string field, double value, double max, bool queueJump = false)
+        public Task<double> IncrementLimitByMax(string field, double value, double max, CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementFloatLimitByMax, new[] { Key, field }, new object[] { value, max }, useCache: true, inferStrings: true, queueJump: queueJump);
+                var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementFloatLimitByMax, new[] { Key, field }, new object[] { value, max }, useCache: true, inferStrings: true, commandFlags);
                 var r = double.Parse((string)(await v.ConfigureAwait(false)));
                 return Pair.Create(new { field, value, max }, r);
             });
         }
 
-        public Task<long> IncrementLimitByMin(string field, int value, int min, bool queueJump = false)
+        public Task<long> IncrementLimitByMin(string field, int value, int min, CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementLimitByMin, new[] { Key, field }, new object[] { value, min }, useCache: true, inferStrings: true, queueJump: queueJump);
+                var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementLimitByMin, new[] { Key, field }, new object[] { value, min }, useCache: true, inferStrings: true, commandFlags);
                 var r = (long)(await v.ConfigureAwait(false));
 
                 return Pair.Create(new { field, value, min }, r);
             });
         }
 
-        public Task<double> IncrementLimitByMin(string field, double value, double min, bool queueJump = false)
+        public Task<double> IncrementLimitByMin(string field, double value, double min, CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementFloatLimitByMin, new[] { Key, field }, new object[] { value, min }, useCache: true, inferStrings: true, queueJump: queueJump);
+                var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementFloatLimitByMin, new[] { Key, field }, new object[] { value, min }, useCache: true, inferStrings: true, commandFlags);
                 var r = double.Parse((string)(await v.ConfigureAwait(false)));
                 return Pair.Create(new { field, value, min }, r);
             });
@@ -859,38 +859,38 @@ return tostring(x)";
         /// <summary>
         /// expire subtract Datetime.Now
         /// </summary>
-        public Task<bool> SetExpire(DateTime expire, bool queueJump = false)
+        public Task<bool> SetExpire(DateTime expire, CommandFlags commandFlags = CommandFlags.None)
         {
-            return SetExpire(expire - DateTime.Now, queueJump);
+            return SetExpire(expire - DateTime.Now, commandFlags);
         }
 
-        public Task<bool> SetExpire(TimeSpan expire, bool queueJump = false)
+        public Task<bool> SetExpire(TimeSpan expire, CommandFlags commandFlags = CommandFlags.None)
         {
-            return SetExpire((int)expire.TotalSeconds, queueJump);
+            return SetExpire((int)expire.TotalSeconds, commandFlags);
         }
 
-        public Task<bool> SetExpire(int seconds, bool queueJump = false)
+        public Task<bool> SetExpire(int seconds, CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
-                var r = await Connection.Keys.Expire(Settings.Db, Key, seconds, queueJump).ConfigureAwait(false);
+                var r = await Connection.Keys.Expire(Settings.Db, Key, seconds, commandFlags).ConfigureAwait(false);
                 return Pair.Create(new { seconds }, r);
             });
         }
 
-        public Task<bool> KeyExists(bool queueJump = false)
+        public Task<bool> KeyExists(CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordReceive(Settings, Key, CallType, () =>
             {
-                return Connection.Keys.Exists(Settings.Db, Key, queueJump);
+                return Connection.Keys.Exists(Settings.Db, Key, commandFlags);
             });
         }
 
-        public Task<bool> Clear(bool queueJump = false)
+        public Task<bool> Clear(CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordReceive(Settings, Key, CallType, () =>
             {
-                return Connection.Keys.Remove(Settings.Db, Key, queueJump);
+                return Connection.Keys.Remove(Settings.Db, Key, commandFlags);
             });
         }
     }

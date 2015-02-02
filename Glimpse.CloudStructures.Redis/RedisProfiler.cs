@@ -1,4 +1,4 @@
-﻿using CloudStructures.Redis;
+﻿using CloudStructures;
 using System.Web;
 
 namespace Glimpse.CloudStructures.Redis

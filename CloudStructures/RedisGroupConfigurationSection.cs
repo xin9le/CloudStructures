@@ -5,7 +5,7 @@ using System.Configuration;
 using System.Linq;
 using System.Linq.Expressions;
 
-namespace CloudStructures.Redis
+namespace CloudStructures
 {
     public class CloudStructuresConfigurationSection : ConfigurationSection
     {
@@ -82,7 +82,7 @@ namespace CloudStructures.Redis
         protected override object GetElementKey(ConfigurationElement element)
         {
             var elem = (element as RedisSettingsElement);
-            return Tuple.Create(elem.Host, elem.Port, elem.Db);
+            return Tuple.Create(elem.Configuration, elem.Db);
         }
 
         public new IEnumerator<RedisSettingsElement> GetEnumerator()
@@ -97,13 +97,7 @@ namespace CloudStructures.Redis
         public RedisGroup ToRedisGroup()
         {
             var settings = this.Select(x => new RedisSettings(
-                x.Host,
-                x.Port,
-                x.IoTimeout,
-                x.Password,
-                x.MaxUnsent,
-                x.AllowAdmin,
-                x.SyncTimeout,
+                x.Configuration,
                 x.Db,
                 x.ValueConverter,
                 x.CommandTracer));
@@ -113,26 +107,8 @@ namespace CloudStructures.Redis
 
     public class RedisSettingsElement : ConfigurationElement
     {
-        [ConfigurationProperty("host", IsRequired = true)]
-        public string Host { get { return (string)base["host"]; } }
-
-        [ConfigurationProperty("port", DefaultValue = 6379)]
-        public int Port { get { return (int)base["port"]; } }
-
-        [ConfigurationProperty("ioTimeout", DefaultValue = -1)]
-        public int IoTimeout { get { return (int)base["ioTimeout"]; } }
-
-        [ConfigurationProperty("password", DefaultValue = null)]
-        public string Password { get { return (string)base["password"]; } }
-
-        [ConfigurationProperty("maxUnsent", DefaultValue = 2147483647)]
-        public int MaxUnsent { get { return (int)base["maxUnsent"]; } }
-
-        [ConfigurationProperty("allowAdmin", DefaultValue = false)]
-        public bool AllowAdmin { get { return (bool)base["allowAdmin"]; } }
-
-        [ConfigurationProperty("syncTimeout", DefaultValue = 10000)]
-        public int SyncTimeout { get { return (int)base["syncTimeout"]; } }
+        [ConfigurationProperty("configuration", IsRequired = true)]
+        public string Configuration { get { return (string)base["configuration"]; } }
 
         [ConfigurationProperty("db", DefaultValue = 0)]
         public int Db { get { return (int)base["db"]; } }

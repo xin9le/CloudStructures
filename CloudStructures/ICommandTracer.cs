@@ -1,9 +1,8 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
-namespace CloudStructures.Redis
+namespace CloudStructures
 {
     public interface ICommandTracer
     {
@@ -13,21 +12,45 @@ namespace CloudStructures.Redis
 
     internal static class Pair
     {
-        public static Pair<T> Create<T>(object sentObject, T receivedObject)
+        public static MonitorSingle CreateSent(object sentObject, long sentSize)
         {
-            return new Pair<T> { SentObject = sentObject, ReceivedObject = receivedObject };
+            return new MonitorSingle { SentObject = sentObject, SentSize = sentSize };
+        }
+
+        public static MonitorSingle<T> CreateReceived<T>(T receivedObject, long receivedSize)
+        {
+            return new MonitorSingle<T> { ReceivedObject = receivedObject, ReceivedSize = receivedSize };
+        }
+
+        public static MonitorPair<T> CreatePair<T>(object sentObject, long sentSize, T receivedObject, long receivedSize)
+        {
+            return new MonitorPair<T> { SentObject = sentObject, SentSize = sentSize, ReceivedObject = receivedObject, ReceivedSize = receivedSize };
         }
     }
 
-    internal class Pair<T>
+    internal class MonitorSingle
     {
         public object SentObject { get; set; }
+        public long SentSize { get; set; }
+    }
+
+    internal class MonitorSingle<T>
+    {
         public T ReceivedObject { get; set; }
+        public long ReceivedSize { get; set; }
+    }
+
+    internal class MonitorPair<T>
+    {
+        public object SentObject { get; set; }
+        public long SentSize { get; set; }
+        public T ReceivedObject { get; set; }
+        public long ReceivedSize { get; set; }
     }
 
     internal static class TraceHelper
     {
-        public static async Task RecordSend(RedisSettings usedSettings, string key, string callType, Func<Task<object>> executeAndReturnSentObject, [CallerMemberName]string commandName = "")
+        public static async Task RecordSend(RedisSettings usedSettings, string key, string callType, Func<Task<MonitorSingle>> executeAndReturnSentObject, [CallerMemberName]string commandName = "")
         {
             var tracerFactory = usedSettings.CommandTracerFactory;
             ICommandTracer tracer = null;
@@ -39,7 +62,7 @@ namespace CloudStructures.Redis
                 tracer.CommandStart(usedSettings, command, key); // start within context
             }
 
-            object sendObject = null;
+            MonitorSingle sendObject = null;
             bool isError = true;
             try
             {
@@ -54,7 +77,7 @@ namespace CloudStructures.Redis
                 }
             }
         }
-        public static async Task<T> RecordReceive<T>(RedisSettings usedSettings, string key, string callType, Func<Task<T>> executeAndReturnReceivedObject, [CallerMemberName]string commandName = "")
+        public static async Task<T> RecordReceive<T>(RedisSettings usedSettings, string key, string callType, Func<Task<MonitorSingle<T>>> executeAndReturnReceivedObject, [CallerMemberName]string commandName = "")
         {
             var tracerFactory = usedSettings.CommandTracerFactory;
             ICommandTracer tracer = null;
@@ -66,7 +89,7 @@ namespace CloudStructures.Redis
                 tracer.CommandStart(usedSettings, command, key); // start within context
             }
 
-            T receivedObject = default(T);
+            MonitorSingle<T> receivedObject = null;
             bool isError = true;
             try
             {
@@ -81,10 +104,10 @@ namespace CloudStructures.Redis
                 }
             }
 
-            return receivedObject;
+            return (receivedObject == null) ? default(T) : receivedObject.ReceivedObject;
         }
 
-        public static async Task<T> RecordSendAndReceive<T>(RedisSettings usedSettings, string key, string callType, Func<Task<Pair<T>>> executeAndReturnSentAndReceivedObject, [CallerMemberName]string commandName = "")
+        public static async Task<T> RecordSendAndReceive<T>(RedisSettings usedSettings, string key, string callType, Func<Task<MonitorPair<T>>> executeAndReturnSentAndReceivedObject, [CallerMemberName]string commandName = "")
         {
             var tracerFactory = usedSettings.CommandTracerFactory;
             ICommandTracer tracer = null;
