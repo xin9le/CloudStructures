@@ -71,19 +71,25 @@ namespace CloudStructures
         //    });
         //}
 
-
-        ///// <summary>
-        ///// SMEMBERS http://redis.io/commands/smembers
-        ///// </summary>
-        //public Task<T[]> GetAll(CommandFlags commandFlags = CommandFlags.None)
-        //{
-        //    return TraceHelper.RecordReceive(Settings, Key, CallType, async () =>
-        //    {
-        //        var v = await Command.GetAll(Settings.Db, Key, commandFlags).ConfigureAwait(false);
-        //        var r = v.Select(Settings.ValueConverter.Deserialize<T>).ToArray();
-        //        return r;
-        //    });
-        //}
+        /// <summary>
+        /// SMEMBERS http://redis.io/commands/smembers
+        /// </summary>
+        public Task<T[]> Members(CommandFlags commandFlags = CommandFlags.None)
+        {
+            return TraceHelper.RecordReceive(Settings, Key, CallType, async () =>
+            {
+                var v = await Command.SetMembersAsync(Key, commandFlags).ConfigureAwait(false);
+                var size = 0L;
+                var r = v.Select(x =>
+                {
+                    long s;
+                    var dr = Settings.ValueConverter.Deserialize<T>(x, out s);
+                    size += s;
+                    return dr;
+                }).ToArray();
+                return Tracing.CreateReceived(r, size);
+            });
+        }
 
         ///// <summary>
         ///// SCARD http://redis.io/commands/scard

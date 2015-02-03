@@ -7,7 +7,7 @@ namespace CloudStructures
     public interface ICommandTracer
     {
         void CommandStart(RedisSettings usedSettings, string command, string key);
-        void CommandFinish(object sentObject, object receivedObject, bool isError);
+        void CommandFinish(object sentObject, long sentSize, object receivedObject, long receivedSize, bool isError);
     }
 
     internal static class Tracing
@@ -62,18 +62,18 @@ namespace CloudStructures
                 tracer.CommandStart(usedSettings, command, key); // start within context
             }
 
-            MonitorSingle sendObject = null;
+            MonitorSingle sentObject = null;
             bool isError = true;
             try
             {
-                sendObject = await executeAndReturnSentObject().ForAwait();
+                sentObject = await executeAndReturnSentObject().ForAwait();
                 isError = false;
             }
             finally
             {
                 if (tracer != null)
                 {
-                    tracer.CommandFinish(sendObject, null, isError); // finish without context
+                    tracer.CommandFinish(sentObject?.SentObject, sentObject?.SentSize ?? 0, null, 0, isError); // finish without context
                 }
             }
         }
@@ -100,7 +100,7 @@ namespace CloudStructures
             {
                 if (tracer != null)
                 {
-                    tracer.CommandFinish(null, receivedObject, isError); // finish without context
+                    tracer.CommandFinish(null, 0, (receivedObject != null) ? receivedObject.ReceivedObject : default(T), receivedObject?.ReceivedSize ?? 0, isError); // finish without context
                 }
             }
 
@@ -119,25 +119,22 @@ namespace CloudStructures
                 tracer.CommandStart(usedSettings, command, key); // start within context
             }
 
-            object sendObject = null;
-            T receivedObject = default(T);
+            MonitorPair<T> pair = null;
             bool isError = true;
             try
             {
-                var sendAndReceivedObject = await executeAndReturnSentAndReceivedObject().ForAwait();
-                sendObject = sendAndReceivedObject.SentObject;
-                receivedObject = sendAndReceivedObject.ReceivedObject;
+                pair = await executeAndReturnSentAndReceivedObject().ForAwait();
                 isError = false;
             }
             finally
             {
                 if (tracer != null)
                 {
-                    tracer.CommandFinish(sendObject, receivedObject, isError); // finish without context
+                    tracer.CommandFinish(pair?.SentObject, pair?.SentSize ?? 0, (pair != null) ? pair.ReceivedObject : default(T), pair?.ReceivedSize ?? 0, isError); // finish without context
                 }
             }
 
-            return receivedObject;
+            return (pair == null) ? default(T) : pair.ReceivedObject;
         }
     }
 }
