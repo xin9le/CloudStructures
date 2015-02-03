@@ -28,17 +28,17 @@ namespace CloudStructures.Tests
             s.Settings.GetConnection().GetServer("127.0.0.1:6379").FlushAllDatabases();
 
             s.Set(null).Result.IsFalse();
-            s.TryGet().Result.Item1.IsFalse();
+            s.Get().Result.HasValue.IsFalse();
 
             s.Set(new MyClass()).Result.IsTrue();
-            s.GetValueOrDefault().Result.Array.IsNull();
+            s.Get().Result.Value.Array.IsNull();
 
             s.Set(new MyClass() { Array = new Nest[0] }).Result.IsTrue();
-            s.GetValueOrDefault().Result.Array.Length.Is(0);
+            s.Get().Result.Value.Array.Length.Is(0);
 
 
             s.Set(new MyClass() { Array = new Nest[] { new Nest { Huga = "hoge" } } }).Result.IsTrue();
-            s.GetValueOrDefault().Result.Array[0].Huga.Is("hoge");
+            s.Get().Result.Value.Array[0].Huga.Is("hoge");
         }
 
         [TestMethod]
@@ -48,10 +48,10 @@ namespace CloudStructures.Tests
             s.Settings.GetConnection().GetServer("127.0.0.1:6379").FlushAllDatabases();
 
             s.Set(null).Result.IsFalse();
-            s.TryGet().Result.Item1.IsFalse();
+            s.Get().Result.HasValue.IsFalse();
 
             s.Set(100).Result.IsTrue();
-            s.GetValueOrDefault().Result.Is(100);
+            s.Get().Result.Value.Is(100);
 
             s.Increment(200).Result.Is(300);
         }

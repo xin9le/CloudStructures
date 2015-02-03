@@ -24,26 +24,16 @@ namespace CloudStructures
         /// <summary>
         /// GET http://redis.io/commands/get
         /// </summary>
-        public Task<Tuple<bool, T>> TryGet(CommandFlags commandFlags = CommandFlags.None)
+        public Task<RedisResult<T>> Get(CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordReceive(Settings, Key, CallType, async () =>
             {
                 var value = await Command.StringGetAsync(Key, commandFlags).ForAwait();
 
                 var size = 0L;
-                return (value.IsNull)
-                    ? Tracing.CreateReceived(Tuple.Create(false, default(T)), size)
-                    : Tracing.CreateReceived(Tuple.Create(true, Settings.ValueConverter.Deserialize<T>(value, out size)), size);
+                var result = RedisResult.FromRedisValue<T>(value, Settings, out size);
+                return Tracing.CreateReceived(result, size);
             });
-        }
-
-        /// <summary>
-        /// GET http://redis.io/commands/get
-        /// </summary>
-        public async Task<T> GetValueOrDefault(T defaultValue = default(T), CommandFlags commandFlags = CommandFlags.None)
-        {
-            var result = await TryGet(commandFlags).ForAwait();
-            return result.Item1 ? result.Item2 : defaultValue;
         }
 
         /// <summary>
@@ -69,10 +59,10 @@ namespace CloudStructures
         /// </summary>
         public async Task<T> GetOrSet(Func<T> valueFactory, TimeSpan? expiry = null, bool keepValueFactorySynchronizationContext = false, CommandFlags commandFlags = CommandFlags.None)
         {
-            var value = await TryGet(commandFlags).ConfigureAwait(keepValueFactorySynchronizationContext); // can choose valueFactory synchronization context
-            if (value.Item1)
+            var value = await Get(commandFlags).ConfigureAwait(keepValueFactorySynchronizationContext); // can choose valueFactory synchronization context
+            if (value.HasValue)
             {
-                return value.Item2;
+                return value.Value;
             }
             else
             {
@@ -87,10 +77,10 @@ namespace CloudStructures
         /// </summary>
         public async Task<T> GetOrSet(Func<Task<T>> valueFactory, TimeSpan? expiry = null, bool keepValueFactorySynchronizationContext = false, CommandFlags commandFlags = CommandFlags.None)
         {
-            var value = await TryGet(commandFlags).ConfigureAwait(keepValueFactorySynchronizationContext); // can choose valueFactory synchronization context
-            if (value.Item1)
+            var value = await Get(commandFlags).ConfigureAwait(keepValueFactorySynchronizationContext); // can choose valueFactory synchronization context
+            if (value.HasValue)
             {
-                return value.Item2;
+                return value.Value;
             }
             else
             {

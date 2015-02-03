@@ -27,11 +27,11 @@ namespace CloudStructures.Tests
             (await v.IncrementLimitByMax(1, 100)).Is(100);
             (await v.IncrementLimitByMax(10, 100)).Is(100);
 
-            (await v.GetValueOrDefault()).Is(100);
+            (await v.Get()).Value.Is(100);
 
             await v.Set(40);
             (await v.IncrementLimitByMax(100, 100)).Is(100);
-            (await v.GetValueOrDefault()).Is(100);
+            (await v.Get()).Value.Is(100);
         }
 
 
@@ -44,9 +44,9 @@ namespace CloudStructures.Tests
             (await v.IncrementLimitByMax(10, 100)).Is(10);
             (await v.IncrementLimitByMax(30, 100)).Is(40);
             (await v.IncrementLimitByMax(50, 100, TimeSpan.FromSeconds(1))).Is(90);
-            (await v.TryGet()).Item1.IsTrue();
+            (await v.Get()).HasValue.IsTrue();
             await Task.Delay(TimeSpan.FromMilliseconds(1500));
-            (await v.TryGet()).Item1.IsFalse();
+            (await v.Get()).HasValue.IsFalse();
         }
 
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethod]
@@ -59,7 +59,7 @@ namespace CloudStructures.Tests
             (await v.IncrementLimitByMax(-50, 100)).Is(-30);
             (await v.IncrementLimitByMax(-10, 100)).Is(-40);
 
-            (await v.GetValueOrDefault()).Is(-40);
+            (await v.Get()).Value.Is(-40);
         }
 
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethod]
@@ -71,7 +71,7 @@ namespace CloudStructures.Tests
             (await v.IncrementLimitByMin(30, 100)).Is(130);
             (await v.IncrementLimitByMin(50, 100)).Is(180);
 
-            (await v.GetValueOrDefault()).Is(180);
+            (await v.Get()).Value.Is(180);
         }
 
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethod]
@@ -85,11 +85,11 @@ namespace CloudStructures.Tests
             (await v.IncrementLimitByMin(-10, 0)).Is(0);
             (await v.IncrementLimitByMin(-25, 0)).Is(0);
 
-            (await v.GetValueOrDefault()).Is(0);
+            (await v.Get()).Value.Is(0);
 
             await v.Set(50);
             (await v.IncrementLimitByMin(-100, 0)).Is(0);
-            (await v.GetValueOrDefault()).Is(0);
+            (await v.Get()).Value.Is(0);
         }
 
         // string/dopuble
@@ -104,7 +104,7 @@ namespace CloudStructures.Tests
             (await v.IncrementLimitByMax(60.5, 105.3)).Is(81.5);
             (await v.IncrementLimitByMax(25.5, 105.3)).Is(105.3);
 
-            (await v.GetValueOrDefault()).Is(105.3);
+            (await v.Get()).Value.Is(105.3);
         }
 
         [TestMethod]
@@ -117,7 +117,7 @@ namespace CloudStructures.Tests
             (await v.IncrementLimitByMin(-60.5, 0.25)).Is(18.5);
             (await v.IncrementLimitByMin(-25.5, 0.25)).Is(0.25);
 
-            (await v.GetValueOrDefault()).Is(0.25);
+            (await v.Get()).Value.Is(0.25);
         }
 
         // dictionary

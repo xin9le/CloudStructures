@@ -16,7 +16,7 @@ namespace CloudStructures.Tests
     public class RedisSetTest
     {
         [TestMethod]
-        public async Task Add()
+        public async Task SetAdd()
         {
             var set = new RedisSet<int>(GlobalSettings.Default, "set");
             await set.Delete();
@@ -25,7 +25,10 @@ namespace CloudStructures.Tests
             (await set.Add(10)).Is(true);
             (await set.Add(1)).Is(false);
 
+            (await set.Contains(1)).IsTrue();
+            (await set.Contains(1000)).IsFalse();
             (await set.Members()).OrderBy(x => x).Is(1, 10);
+            (await set.Length()).Is(2);
 
             var set2 = new RedisSet<MySetTestClass[]>(GlobalSettings.Default, "set2");
             await set2.Delete();
@@ -43,5 +46,13 @@ namespace CloudStructures.Tests
         }
 
 
+        [TestMethod]
+        public async Task Hoge()
+        {
+            var set = new RedisList<int>(GlobalSettings.Default, "l");
+            await set.Delete();
+            (await set.LeftPop()).Is(0);
+
+        }
     }
 }

@@ -33,7 +33,7 @@ namespace CloudStructures
             {
                 long sentSize;
                 var v = Settings.ValueConverter.Serialize(value, out sentSize);
-                var r = await this.ExecuteWithKeyExpire(x => x.SetAddAsync(Key, v, commandFlags), Key, expiry, commandFlags).ConfigureAwait(false);
+                var r = await this.ExecuteWithKeyExpire(x => x.SetAddAsync(Key, v, commandFlags), Key, expiry, commandFlags).ForAwait();
                 return Tracing.CreateSentAndReceived(new { value, expiry = expiry?.Value }, sentSize, r, sizeof(bool));
             });
         }
@@ -59,17 +59,19 @@ namespace CloudStructures
             });
         }
 
-        ///// <summary>
-        ///// SISMEMBER http://redis.io/commands/sismember
-        ///// </summary>
-        //public Task<bool> Contains(T value, CommandFlags commandFlags = CommandFlags.None)
-        //{
-        //    return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
-        //    {
-        //        var r = await Command.Contains(Settings.Db, Key, Settings.ValueConverter.Serialize(value), commandFlags).ConfigureAwait(false);
-        //        return Pair.Create(new { value }, r);
-        //    });
-        //}
+        /// <summary>
+        /// SISMEMBER http://redis.io/commands/sismember
+        /// </summary>
+        public Task<bool> Contains(T value, CommandFlags commandFlags = CommandFlags.None)
+        {
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
+            {
+                long s;
+                var sr = Settings.ValueConverter.Serialize(value, out s);
+                var r = await Command.SetContainsAsync(Key, sr, commandFlags).ForAwait();
+                return Tracing.CreateSentAndReceived(new { value }, s, r, sizeof(bool));
+            });
+        }
 
         /// <summary>
         /// SMEMBERS http://redis.io/commands/smembers
@@ -78,7 +80,7 @@ namespace CloudStructures
         {
             return TraceHelper.RecordReceive(Settings, Key, CallType, async () =>
             {
-                var v = await Command.SetMembersAsync(Key, commandFlags).ConfigureAwait(false);
+                var v = await Command.SetMembersAsync(Key, commandFlags).ForAwait();
                 var size = 0L;
                 var r = v.Select(x =>
                 {
@@ -91,25 +93,26 @@ namespace CloudStructures
             });
         }
 
-        ///// <summary>
-        ///// SCARD http://redis.io/commands/scard
-        ///// </summary>
-        //public Task<long> GetLength(CommandFlags commandFlags = CommandFlags.None)
-        //{
-        //    return TraceHelper.RecordReceive(Settings, Key, CallType, () =>
-        //   {
-        //       return Command.GetLength(Settings.Db, Key, commandFlags);
-        //   });
-        //}
+        /// <summary>
+        /// SCARD http://redis.io/commands/scard
+        /// </summary>
+        public Task<long> Length(CommandFlags commandFlags = CommandFlags.None)
+        {
+            return TraceHelper.RecordReceive(Settings, Key, CallType, async () =>
+           {
+               var r = await Command.SetLengthAsync(Key, commandFlags).ForAwait();
+               return Tracing.CreateReceived(r, sizeof(long));
+           });
+        }
 
         ///// <summary>
         ///// SRANDMEMBER http://redis.io/commands/srandmember
         ///// </summary>
-        //public Task<T> GetRandom(CommandFlags commandFlags = CommandFlags.None)
+        //public Task<T> RandomMember(CommandFlags commandFlags = CommandFlags.None)
         //{
         //    return TraceHelper.RecordReceive(Settings, Key, CallType, async () =>
         //    {
-        //        var v = await Command.GetRandom(Settings.Db, Key, commandFlags).ConfigureAwait(false);
+        //        var v = await Command.SetRandomMemberAsync(Settings.Db, Key, commandFlags).ForAwait();
         //        return Settings.ValueConverter.Deserialize<T>(v);
         //    });
         //}
@@ -121,7 +124,7 @@ namespace CloudStructures
         //{
         //    return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
         //    {
-        //        var v = await Command.GetRandom(Settings.Db, Key, count, commandFlags).ConfigureAwait(false);
+        //        var v = await Command.GetRandom(Settings.Db, Key, count, commandFlags).ForAwait()
         //        var r = v.Select(Settings.ValueConverter.Deserialize<T>).ToArray();
         //        return Pair.Create(new { count }, r);
         //    });
@@ -134,7 +137,7 @@ namespace CloudStructures
         //{
         //    return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
         //    {
-        //        var r = await Command.Remove(Settings.Db, Key, Settings.ValueConverter.Serialize(member), commandFlags).ConfigureAwait(false);
+        //        var r = await Command.Remove(Settings.Db, Key, Settings.ValueConverter.Serialize(member), commandFlags).ForAwait()
         //        return Pair.Create(new { member }, r);
         //    });
         //}
@@ -147,7 +150,7 @@ namespace CloudStructures
         //    return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
         //    {
         //        var v = members.Select(x => Settings.ValueConverter.Serialize(x)).ToArray();
-        //        var r = await Command.Remove(Settings.Db, Key, v, commandFlags).ConfigureAwait(false);
+        //        var r = await Command.Remove(Settings.Db, Key, v, commandFlags).ForAwait()
 
         //        return Pair.Create(new { members }, r);
         //    });
@@ -160,7 +163,7 @@ namespace CloudStructures
         //{
         //    return TraceHelper.RecordReceive(Settings, Key, CallType, async () =>
         //    {
-        //        var v = await Command.RemoveRandom(Settings.Db, Key, commandFlags).ConfigureAwait(false);
+        //        var v = await Command.RemoveRandom(Settings.Db, Key, commandFlags).ForAwait()
         //        return Settings.ValueConverter.Deserialize<T>(v);
         //    });
         //}

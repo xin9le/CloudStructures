@@ -22,11 +22,11 @@ namespace CloudStructures.Tests
             var s = new RedisString<int>(GlobalSettings.Default, "RedisStringTest.Get_Set");
             s.Settings.GetConnection().GetServer("127.0.0.1:6379").FlushAllDatabases();
 
-            s.GetValueOrDefault(-1).Result.Is(-1);
+            s.Get().Result.HasValue.IsFalse();
 
             s.Set(1000).Result.IsTrue();
 
-            s.TryGet().Result.Item2.Is(1000);
+            s.Get().Result.Value.Is(1000);
         }
 
         [TestMethod]
@@ -91,9 +91,9 @@ namespace CloudStructures.Tests
 
             s.Increment(100, TimeSpan.FromSeconds(1)).Result.Is(200);
 
-            s.TryGet().Result.Item1.IsTrue();
+            s.Get().Result.HasValue.IsTrue();
             Thread.Sleep(TimeSpan.FromSeconds(2));
-            s.TryGet().Result.Item1.IsFalse();
+            s.Get().Result.HasValue.IsFalse();
 
         }
     }

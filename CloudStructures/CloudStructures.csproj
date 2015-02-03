@@ -55,6 +55,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RedisList.cs" />
     <Compile Include="RedisLua.cs" />
+    <Compile Include="RedisResult.cs" />
     <Compile Include="RedisSet.cs" />
     <Compile Include="RedisSettings.cs" />
     <Compile Include="RedisHyperLogLog.cs" />
