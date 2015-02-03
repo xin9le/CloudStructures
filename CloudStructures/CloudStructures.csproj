@@ -59,6 +59,8 @@
     <Compile Include="RedisSet.cs" />
     <Compile Include="RedisSettings.cs" />
     <Compile Include="RedisHyperLogLog.cs" />
+    <Compile Include="RedisSortedSet.cs" />
+    <Compile Include="SortedSetResult.cs" />
     <Compile Include="RedisString.cs" />
     <Compile Include="RedisStructure.cs" />
     <Compile Include="RedisValueConverter.cs" />

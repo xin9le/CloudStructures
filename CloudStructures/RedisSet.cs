@@ -12,12 +12,12 @@ namespace CloudStructures
             get { return "RedisList"; }
         }
 
-        public RedisSet(RedisSettings settings, string setKey)
+        public RedisSet(RedisSettings settings, RedisKey setKey)
             : base(settings, setKey)
         {
         }
 
-        public RedisSet(RedisGroup connectionGroup, string setKey)
+        public RedisSet(RedisGroup connectionGroup, RedisKey setKey)
             : base(connectionGroup, setKey)
         {
         }
