@@ -45,5 +45,23 @@ namespace CloudStructures.Tests
             (await set2.KeyExists()).IsFalse();
         }
 
+
+        [TestMethod]
+        public async Task SetPop()
+        {
+            var set = new RedisSet<int>(GlobalSettings.Default, "set");
+            await set.Delete();
+
+            (await set.Add(1)).Is(true);
+            (await set.Add(10)).Is(true);
+
+            var p1 = await set.Pop();
+            p1.HasValue.IsTrue();
+            var p2 = await set.Pop();
+            p2.HasValue.IsTrue();
+            (await set.Pop()).HasValue.IsFalse();
+
+            new[] { p1.Value, p2.Value }.OrderBy(x => x).Is(1, 10);
+        }
     }
 }

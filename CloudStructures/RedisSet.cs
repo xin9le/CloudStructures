@@ -3,8 +3,6 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-// TODO:not yet complete
-
 namespace CloudStructures
 {
     public class RedisSet<T> : RedisStructure
@@ -105,67 +103,90 @@ namespace CloudStructures
            });
         }
 
-        ///// <summary>
-        ///// SRANDMEMBER http://redis.io/commands/srandmember
-        ///// </summary>
-        //public Task<T> RandomMember(CommandFlags commandFlags = CommandFlags.None)
-        //{
-        //    return TraceHelper.RecordReceive(Settings, Key, CallType, async () =>
-        //    {
-        //        var v = await Command.SetRandomMemberAsync(Settings.Db, Key, commandFlags).ForAwait();
-        //        return Settings.ValueConverter.Deserialize<T>(v);
-        //    });
-        //}
+        /// <summary>
+        /// SRANDMEMBER http://redis.io/commands/srandmember
+        /// </summary>
+        public Task<RedisResult<T>> RandomMember(CommandFlags commandFlags = CommandFlags.None)
+        {
+            return TraceHelper.RecordReceive(Settings, Key, CallType, async () =>
+            {
+                var v = await Command.SetRandomMemberAsync(Key, commandFlags).ForAwait();
+                long size;
+                var result = RedisResult.FromRedisValue<T>(v, Settings, out size);
+                return Tracing.CreateReceived(result, size);
+            });
+        }
 
-        ///// <summary>
-        ///// SRANDMEMBER http://redis.io/commands/srandmember
-        ///// </summary>
-        //public Task<T[]> GetRandom(int count, CommandFlags commandFlags = CommandFlags.None)
-        //{
-        //    return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
-        //    {
-        //        var v = await Command.GetRandom(Settings.Db, Key, count, commandFlags).ForAwait()
-        //        var r = v.Select(Settings.ValueConverter.Deserialize<T>).ToArray();
-        //        return Pair.Create(new { count }, r);
-        //    });
-        //}
+        /// <summary>
+        /// SRANDMEMBER http://redis.io/commands/srandmember
+        /// </summary>
+        public Task<T[]> RandomMembers(long count, CommandFlags commandFlags = CommandFlags.None)
+        {
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
+            {
+                var v = await Command.SetRandomMembersAsync(Key, count, commandFlags).ForAwait();
+                var size = 0L;
+                var result = v.Select(x =>
+                {
+                    long s;
+                    var r = Settings.ValueConverter.Deserialize<T>(x, out s);
+                    size += s;
+                    return r;
+                }).ToArray();
 
-        ///// <summary>
-        ///// SREM http://redis.io/commands/srem
-        ///// </summary>
-        //public Task<bool> Remove(T member, CommandFlags commandFlags = CommandFlags.None)
-        //{
-        //    return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
-        //    {
-        //        var r = await Command.Remove(Settings.Db, Key, Settings.ValueConverter.Serialize(member), commandFlags).ForAwait()
-        //        return Pair.Create(new { member }, r);
-        //    });
-        //}
+                return Tracing.CreateSentAndReceived(new { count }, sizeof(long), result, size);
+            });
+        }
 
-        ///// <summary>
-        ///// SREM http://redis.io/commands/srem
-        ///// </summary>
-        //public Task<long> Remove(T[] members, CommandFlags commandFlags = CommandFlags.None)
-        //{
-        //    return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
-        //    {
-        //        var v = members.Select(x => Settings.ValueConverter.Serialize(x)).ToArray();
-        //        var r = await Command.Remove(Settings.Db, Key, v, commandFlags).ForAwait()
+        /// <summary>
+        /// SREM http://redis.io/commands/srem
+        /// </summary>
+        public Task<bool> Remove(T member, CommandFlags commandFlags = CommandFlags.None)
+        {
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
+            {
+                long sentSize;
+                var v = Settings.ValueConverter.Serialize(member, out sentSize);
+                var r = await Command.SetRemoveAsync(Key, v, commandFlags).ForAwait();
 
-        //        return Pair.Create(new { members }, r);
-        //    });
-        //}
+                return Tracing.CreateSentAndReceived(new { member }, sentSize, r, sizeof(bool));
+            });
+        }
 
-        ///// <summary>
-        ///// SPOP http://redis.io/commands/spop
-        ///// </summary>
-        //public Task<T> RemoveRandom(CommandFlags commandFlags = CommandFlags.None)
-        //{
-        //    return TraceHelper.RecordReceive(Settings, Key, CallType, async () =>
-        //    {
-        //        var v = await Command.RemoveRandom(Settings.Db, Key, commandFlags).ForAwait()
-        //        return Settings.ValueConverter.Deserialize<T>(v);
-        //    });
-        //}
+        /// <summary>
+        /// SREM http://redis.io/commands/srem
+        /// </summary>
+        public Task<long> Remove(T[] members, CommandFlags commandFlags = CommandFlags.None)
+        {
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
+            {
+                var size = 0L;
+                var values = members.Select(x =>
+                {
+                    long s;
+                    var v = Settings.ValueConverter.Serialize(x, out s);
+                    size += s;
+                    return v;
+                }).ToArray();
+
+                var r = await Command.SetRemoveAsync(Key, values, commandFlags).ForAwait();
+
+                return Tracing.CreateSentAndReceived(new { members }, size, r, sizeof(long));
+            });
+        }
+
+        /// <summary>
+        /// SPOP http://redis.io/commands/spop
+        /// </summary>
+        public Task<RedisResult<T>> Pop(CommandFlags commandFlags = CommandFlags.None)
+        {
+            return TraceHelper.RecordReceive(Settings, Key, CallType, async () =>
+            {
+                var v = await Command.SetPopAsync(Key, commandFlags).ForAwait();
+                long size;
+                var result = RedisResult.FromRedisValue<T>(v, Settings, out size);
+                return Tracing.CreateReceived(result, size);
+            });
+        }
     }
 }
