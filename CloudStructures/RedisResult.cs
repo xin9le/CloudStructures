@@ -25,18 +25,32 @@ namespace CloudStructures
     {
         public bool HasValue { get; private set; }
 
-        public T Value { get; private set; }
+        readonly T value;
+        public T Value
+        {
+            get
+            {
+                // for serialization(use monitoring dump), don't throw exception
+                // if (!HasValue) throw new InvalidOperationException("Result no contains value");
+                return value;
+            }
+        }
 
         public RedisResult()
         {
-            HasValue = false;
-            Value = default(T);
+            this.HasValue = false;
+            this.value = default(T);
         }
 
         public RedisResult(T value)
         {
-            HasValue = true;
-            Value = value;
+            this.HasValue = true;
+            this.value = value;
+        }
+
+        public T GetValueOrDefault()
+        {
+            return (HasValue) ? Value : default(T);
         }
 
         public T GetValueOrDefault(T defaultValue)
@@ -51,7 +65,7 @@ namespace CloudStructures
 
         public override string ToString()
         {
-            return (HasValue) ? Value.ToString() : "null";
+            return (HasValue) ? Value.ToString() : "";
         }
     }
 }

@@ -45,14 +45,5 @@ namespace CloudStructures.Tests
             (await set2.KeyExists()).IsFalse();
         }
 
-
-        [TestMethod]
-        public async Task Hoge()
-        {
-            var set = new RedisList<int>(GlobalSettings.Default, "l");
-            await set.Delete();
-            (await set.LeftPop()).Is(0);
-
-        }
     }
 }

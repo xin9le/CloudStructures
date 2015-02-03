@@ -26,7 +26,7 @@ namespace CloudStructures.Tests
         {
             var s = new RedisString<MyClass>(GlobalSettings.Default, "CommandTracerTests1");
             s.Settings.GetConnection().GetServer("127.0.0.1:6379").FlushAllDatabases();
-
+            
             s.Set(null).Result.IsFalse();
             s.Get().Result.HasValue.IsFalse();
 

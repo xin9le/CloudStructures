@@ -44,9 +44,9 @@ namespace CloudStructures.Tests
 
             await list.RightPush(new[] { 1, 2, 3, 4, 5 });
 
-            (await list.GetByIndexOrDefault(1)).Is(2);
+            (await list.GetByIndex(1)).Value.Is(2);
 
-            (await list.TryGetByIndex(10)).Item1.IsFalse();
+            (await list.GetByIndex(10)).HasValue.IsFalse();
 
             (await list.Length()).Is(5);
 
@@ -92,6 +92,29 @@ namespace CloudStructures.Tests
 
             (await list.InsertAfter(4, 2000)).Is(7);
             (await list.Range()).Is(1, 2, 3, 1000, 4, 2000, 5);
+        }
+
+        [TestMethod]
+        public async Task EmptyRange()
+        {
+            var list = new RedisList<int>(GlobalSettings.Default, "listkey5");
+            await list.Delete();
+
+            (await list.Range()).Length.Is(0);
+        }
+
+        [TestMethod]
+        public async Task Pop()
+        {
+            var list = new RedisList<int>(GlobalSettings.Default, "listkey6");
+            await list.Delete();
+
+            await list.RightPush(new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9 });
+
+            (await list.LeftPop()).Value.Is(1);
+            (await list.RightPop()).Value.Is(9);
+
+            (await list.Range()).Is(2, 3, 4, 5, 6, 7, 8);
         }
     }
 }

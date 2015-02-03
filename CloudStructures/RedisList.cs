@@ -97,26 +97,16 @@ namespace CloudStructures
         /// <summary>
         /// LINDEX http://redis.io/commands/lindex
         /// </summary>
-        public Task<Tuple<bool, T>> TryGetByIndex(long index, CommandFlags commandFlags = CommandFlags.None)
+        public Task<RedisResult<T>> GetByIndex(long index, CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
                 var value = await Command.ListGetByIndexAsync(Key, index, commandFlags).ForAwait();
-                var valueSize = 0L;
-                var result = (value.IsNull)
-                    ? Tuple.Create(false, default(T))
-                    : Tuple.Create(true, Settings.ValueConverter.Deserialize<T>(value, out valueSize));
+                long valueSize;
+                var result = RedisResult.FromRedisValue<T>(value, Settings, out valueSize);
+
                 return Tracing.CreateSentAndReceived(new { index }, sizeof(long), result, valueSize);
             });
-        }
-
-        /// <summary>
-        /// LINDEX http://redis.io/commands/lindex
-        /// </summary>
-        public async Task<T> GetByIndexOrDefault(long index, T defaultValue = default(T), CommandFlags commandFlags = CommandFlags.None)
-        {
-            var result = await TryGetByIndex(index, commandFlags).ForAwait();
-            return result.Item1 ? result.Item2 : defaultValue;
         }
 
         /// <summary>
@@ -172,13 +162,13 @@ namespace CloudStructures
         /// <summary>
         /// LPOP http://redis.io/commands/lpop
         /// </summary>
-        public Task<T> LeftPop(CommandFlags commandFlags = CommandFlags.None)
+        public Task<RedisResult<T>> LeftPop(CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordReceive(Settings, Key, CallType, async () =>
             {
                 var result = await Command.ListLeftPopAsync(Key, commandFlags).ForAwait();
                 long receivedSize;
-                var r = Settings.ValueConverter.Deserialize<T>(result, out receivedSize);
+                var r = RedisResult.FromRedisValue<T>(result, Settings, out receivedSize);
                 return Tracing.CreateReceived(r, receivedSize);
             });
         }
@@ -186,13 +176,13 @@ namespace CloudStructures
         /// <summary>
         /// RPOP http://redis.io/commands/rpop
         /// </summary>
-        public Task<T> RightPop(CommandFlags commandFlags = CommandFlags.None)
+        public Task<RedisResult<T>> RightPop(CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordReceive(Settings, Key, CallType, async () =>
             {
                 var result = await Command.ListRightPopAsync(Key, commandFlags).ForAwait();
                 long receivedSize;
-                var r = Settings.ValueConverter.Deserialize<T>(result, out receivedSize);
+                var r = RedisResult.FromRedisValue<T>(result, Settings, out receivedSize);
                 return Tracing.CreateReceived(r, receivedSize);
             });
         }
