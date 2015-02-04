@@ -158,5 +158,75 @@ namespace CloudStructures.Tests
             (await set.Increment("a", -100)).Is(11);
             (await set.Increment("a", -1)).Is(10);
         }
+
+        [TestMethod]
+        public async Task RankScore()
+        {
+            var set = new RedisSortedSet<string>(GlobalSettings.Default, "set");
+            await set.Delete();
+            await set.Add("a", 10);
+            await set.Add("b", 100);
+            await set.Add("c", 1000);
+            await set.Add("d", 10000);
+            await set.Add("e", 100000);
+            await set.Add("f", 1000000);
+
+            (await set.Rank("a")).Is(0);
+            (await set.Rank("b")).Is(1);
+            (await set.Rank("c")).Is(2);
+            (await set.Rank("d")).Is(3);
+            (await set.Rank("e")).Is(4);
+            (await set.Rank("f")).Is(5);
+            (await set.Rank("f", Order.Descending)).Is(0);
+            (await set.Rank("e", Order.Descending)).Is(1);
+            (await set.Rank("d", Order.Descending)).Is(2);
+            (await set.Rank("c", Order.Descending)).Is(3);
+            (await set.Rank("b", Order.Descending)).Is(4);
+            (await set.Rank("a", Order.Descending)).Is(5);
+
+            (await set.Rank("z")).IsNull();
+
+            (await set.Score("a")).Is(10);
+            (await set.Score("b")).Is(100);
+            (await set.Score("c")).Is(1000);
+            (await set.Score("d")).Is(10000);
+            (await set.Score("e")).Is(100000);
+            (await set.Score("f")).Is(1000000);
+        }
+
+        [TestMethod]
+        public async Task Remove()
+        {
+            var set = new RedisSortedSet<string>(GlobalSettings.Default, "set");
+            await set.Delete();
+            await set.Add("a", 10);
+            await set.Add("b", 100);
+            await set.Add("c", 1000);
+            await set.Add("d", 10000);
+            await set.Add("e", 100000);
+            await set.Add("f", 1000000);
+
+            var c = await set.Get("c");
+            c.Value.Is("c");
+            c.Rank.Is(2);
+            c.Score.Is(1000);
+            (await set.Remove("c")).IsTrue();
+            (await set.Remove("c")).IsFalse();
+            (await set.Get("c")).IsNull();
+
+            await set.Add("c", 1000);
+            (await set.RemoveRangeByRank(2, 3)).Is(2);
+            (await set.RangeByRank()).Is("a", "b", "e", "f");
+
+            await set.Delete();
+            await set.Add("a", 10);
+            await set.Add("b", 100);
+            await set.Add("c", 1000);
+            await set.Add("d", 10000);
+            await set.Add("e", 100000);
+            await set.Add("f", 1000000);
+            (await set.RemoveRangeByScore(100, 10000)).Is(3);
+            (await set.RangeByRank()).Is("a", "e", "f");
+        }
     }
 }

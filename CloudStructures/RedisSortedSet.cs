@@ -74,35 +74,35 @@ namespace CloudStructures
             return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
              {
                  var r = await Command.SortedSetLengthAsync(Key, min, max, exclude, commandFlags).ForAwait();
-                 return Tracing.CreateSentAndReceived(new { min, max, exclude }, sizeof(double) * 2 + sizeof(int), r, sizeof(long));
+                 return Tracing.CreateSentAndReceived(new { min, max, exclude }, sizeof(double) * 2, r, sizeof(long));
              });
         }
 
         /// <summary>
         /// ZINCRBY http://redis.io/commands/zincrby
         /// </summary>
-        public Task<double> Increment(T member, double value, CommandFlags commandFlags = CommandFlags.None)
+        public Task<double> Increment(T member, double value, RedisExpiry expiry = null, CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
                 long size;
                 var v = Settings.ValueConverter.Serialize(member, out size);
-                var r = await Command.SortedSetIncrementAsync(Key, v, value, commandFlags).ConfigureAwait(false);
-                return Tracing.CreateSentAndReceived(new { member, value }, size, r, sizeof(double));
+                var r = await this.ExecuteWithKeyExpire(x => x.SortedSetIncrementAsync(Key, v, value, commandFlags), Key, expiry, commandFlags).ForAwait();
+                return Tracing.CreateSentAndReceived(new { member, value, expiry = expiry?.Value }, size, r, sizeof(double));
             });
         }
 
         /// <summary>
         /// ZINCRBY http://redis.io/commands/zincrby
         /// </summary>
-        public Task<double> Decrement(T member, double value, CommandFlags commandFlags = CommandFlags.None)
+        public Task<double> Decrement(T member, double value, RedisExpiry expiry = null, CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
                 long size;
                 var v = Settings.ValueConverter.Serialize(member, out size);
-                var r = await Command.SortedSetDecrementAsync(Key, v, value, commandFlags).ConfigureAwait(false);
-                return Tracing.CreateSentAndReceived(new { member, value }, size, r, sizeof(double));
+                var r = await this.ExecuteWithKeyExpire(x => x.SortedSetDecrementAsync(Key, v, value, commandFlags), Key, expiry, commandFlags).ForAwait();
+                return Tracing.CreateSentAndReceived(new { member, value, expiry = expiry?.Value }, size, r, sizeof(double));
             });
         }
 
@@ -124,7 +124,7 @@ namespace CloudStructures
                     return v;
                 }).ToArray();
 
-                return Tracing.CreateSentAndReceived(new { start, stop, order }, sizeof(long) * 2 + sizeof(int), result, size);
+                return Tracing.CreateSentAndReceived(new { start, stop, order }, sizeof(long) * 2, result, size);
             });
         }
 
@@ -145,7 +145,7 @@ namespace CloudStructures
                     return new SortedSetResult<T>(v, x.Score);
                 }).ToArray();
 
-                return Tracing.CreateSentAndReceived(new { start, stop, order }, sizeof(long) * 2 + sizeof(int), result, size);
+                return Tracing.CreateSentAndReceived(new { start, stop, order }, sizeof(long) * 2, result, size);
             });
         }
 
@@ -185,7 +185,7 @@ namespace CloudStructures
                     return new SortedSetResultWithRank<T>(v, x.Score, rank);
                 }).ToArray();
 
-                return Tracing.CreateSentAndReceived(new { start, stop, order }, sizeof(long) * 2 + sizeof(int), result, size);
+                return Tracing.CreateSentAndReceived(new { start, stop, order }, sizeof(long) * 2, result, size);
             });
         }
 
@@ -207,7 +207,7 @@ namespace CloudStructures
                     return v;
                 }).ToArray();
 
-                return Tracing.CreateSentAndReceived(new { start, stop, exclude, order, skip, take }, sizeof(long) * 2 + sizeof(int) * 2 + sizeof(double) * 2, result, size);
+                return Tracing.CreateSentAndReceived(new { start, stop, exclude, order, skip, take }, sizeof(long) * 2 + sizeof(double) * 2, result, size);
             });
         }
 
@@ -229,7 +229,7 @@ namespace CloudStructures
                     return new SortedSetResult<T>(v, x.Score);
                 }).ToArray();
 
-                return Tracing.CreateSentAndReceived(new { start, stop, exclude, order, skip, take }, sizeof(long) * 2 + sizeof(int) * 2 + sizeof(double) * 2, result, size);
+                return Tracing.CreateSentAndReceived(new { start, stop, exclude, order, skip, take }, sizeof(long) * 2 + sizeof(double) * 2, result, size);
             });
         }
 
@@ -260,78 +260,139 @@ namespace CloudStructures
             });
         }
 
+        /// <summary>
+        /// ZRANK http://redis.io/commands/zrank
+        /// </summary>
+        public Task<long?> Rank(T member, Order order = Order.Ascending, CommandFlags commandFlags = CommandFlags.None)
+        {
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
+            {
+                long size;
+                var v = Settings.ValueConverter.Serialize(member, out size);
+                var r = await Command.SortedSetRankAsync(Key, v, order, commandFlags).ForAwait();
+                return Tracing.CreateSentAndReceived(new { member, order }, size, r, (r == null) ? 0 : sizeof(long));
+            });
+        }
 
-        ///// <summary>
-        ///// ZRANK http://redis.io/commands/zrank
-        ///// </summary>
-        //public Task<long?> Rank(T member, bool ascending = true, CommandFlags commandFlags = CommandFlags.None)
-        //{
-        //    return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
-        //    {
-        //        var r = await Command.Rank(Settings.Db, Key, Settings.ValueConverter.Serialize(member), ascending, commandFlags).ConfigureAwait(false);
-        //        return Pair.Create(new { member, ascending }, r);
-        //    });
-        //}
+        /// <summary>
+        /// ZSCORE http://redis.io/commands/zscore
+        /// </summary>
+        public Task<double?> Score(T member, CommandFlags commandFlags = CommandFlags.None)
+        {
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
+            {
+                long size;
+                var v = Settings.ValueConverter.Serialize(member, out size);
+                var r = await Command.SortedSetScoreAsync(Key, v, commandFlags).ForAwait();
+                return Tracing.CreateSentAndReceived(new { member }, size, r, (r == null) ? 0 : sizeof(double));
+            });
+        }
 
-        ///// <summary>
-        ///// ZREM http://redis.io/commands/zrem
-        ///// </summary>
-        //public Task<bool> Remove(T member, CommandFlags commandFlags = CommandFlags.None)
-        //{
-        //    return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
-        //    {
-        //        var r = await Command.Remove(Settings.Db, Key, Settings.ValueConverter.Serialize(member), commandFlags).ConfigureAwait(false);
-        //        return Pair.Create(new { member }, r);
-        //    });
-        //}
+        /// <summary>
+        /// Get Rank and Score include ZRANK, ZSCORE. If not found return value is null.
+        /// </summary>
+        public Task<SortedSetResultWithRank<T>> Get(T member, Order rankOrder = Order.Ascending, CommandFlags commandFlags = CommandFlags.None)
+        {
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
+            {
+                long size;
+                var v = Settings.ValueConverter.Serialize(member, out size);
+                var tx = CreateBatch();
+                var scoreFuture = tx.SortedSetScoreAsync(Key, v, commandFlags);
+                var rankFuture = tx.SortedSetRankAsync(Key, v, rankOrder, commandFlags);
 
-        ///// <summary>
-        ///// ZREM http://redis.io/commands/zrem
-        ///// </summary>
-        //public Task<long> Remove(T[] members, CommandFlags commandFlags = CommandFlags.None)
-        //{
-        //    return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
-        //    {
-        //        var v = members.Select(x => Settings.ValueConverter.Serialize(x)).ToArray();
-        //        var r = await Command.Remove(Settings.Db, Key, v, commandFlags).ConfigureAwait(false);
-        //        return Pair.Create(new { members }, r);
-        //    });
-        //}
+                tx.Execute();
+                var score = await scoreFuture.ForAwait();
+                var rank = await rankFuture.ForAwait();
 
-        ///// <summary>
-        ///// ZREMRANGEBYRANK http://redis.io/commands/zremrangebyrank
-        ///// </summary>
-        //public Task<long> RemoveRange(long start, long stop, CommandFlags commandFlags = CommandFlags.None)
-        //{
-        //    return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
-        //    {
-        //        var r = await Command.RemoveRange(Settings.Db, Key, start, stop, commandFlags).ConfigureAwait(false);
-        //        return Pair.Create(new { start, stop }, r);
-        //    });
-        //}
+                SortedSetResultWithRank<T> result;
+                if (score == null || rank == null)
+                {
+                    result = null;
+                }
+                else
+                {
+                    result = new SortedSetResultWithRank<T>(member, score.Value, rank.Value);
+                }
 
-        ///// <summary>
-        ///// ZREMRANGEBYSCORE http://redis.io/commands/zremrangebyscore
-        ///// </summary>
-        //public Task<long> RemoveRange(double min, double max, bool minInclusive = true, bool maxInclusive = true, CommandFlags commandFlags = CommandFlags.None)
-        //{
-        //    return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
-        //    {
-        //        var r = await Command.RemoveRange(Settings.Db, Key, min, max, minInclusive, maxInclusive, commandFlags).ConfigureAwait(false);
-        //        return Pair.Create(new { min, max, minInclusive, maxInclusive }, r);
-        //    });
-        //}
+                return Tracing.CreateSentAndReceived(new { member }, size, result, sizeof(long) * 2);
+            });
+        }
 
-        ///// <summary>
-        ///// ZSCORE http://redis.io/commands/zscore
-        ///// </summary>
-        //public Task<double?> Score(T member, CommandFlags commandFlags = CommandFlags.None)
-        //{
-        //    return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
-        //    {
-        //        var r = await Command.Score(Settings.Db, Key, Settings.ValueConverter.Serialize(member), commandFlags).ConfigureAwait(false);
-        //        return Pair.Create(new { member }, r);
-        //    });
-        //}
+        /// <summary>
+        /// ZREM http://redis.io/commands/zrem
+        /// </summary>
+        public Task<bool> Remove(T member, CommandFlags commandFlags = CommandFlags.None)
+        {
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
+            {
+                long size;
+                var v = Settings.ValueConverter.Serialize(member, out size);
+                var r = await Command.SortedSetRemoveAsync(Key, v, commandFlags).ForAwait();
+                return Tracing.CreateSentAndReceived(new { member }, size, r, sizeof(bool));
+            });
+        }
+
+        /// <summary>
+        /// ZREM http://redis.io/commands/zrem
+        /// </summary>
+        public Task<long> Remove(T[] members, CommandFlags commandFlags = CommandFlags.None)
+        {
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
+            {
+                long size = 0;
+                var v = members.Select(x =>
+                {
+                    long s;
+                    var sv = Settings.ValueConverter.Serialize(x, out s);
+                    size += s;
+                    return sv;
+                }).ToArray();
+
+                var r = await Command.SortedSetRemoveAsync(Key, v, commandFlags).ForAwait();
+                return Tracing.CreateSentAndReceived(new { members }, size, r, sizeof(long));
+            });
+        }
+
+        /// <summary>
+        /// ZREMRANGEBYRANK http://redis.io/commands/zremrangebyrank
+        /// </summary>
+        public Task<long> RemoveRangeByRank(long start, long stop, CommandFlags commandFlags = CommandFlags.None)
+        {
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
+            {
+                var r = await Command.SortedSetRemoveRangeByRankAsync(Key, start, stop, commandFlags).ForAwait();
+                return Tracing.CreateSentAndReceived(new { start, stop }, sizeof(long) * 2, r, sizeof(long));
+            });
+        }
+
+        /// <summary>
+        /// ZREMRANGEBYSCORE http://redis.io/commands/zremrangebyscore
+        /// </summary>
+        public Task<long> RemoveRangeByScore(double start, double stop, Exclude exclude = Exclude.None, CommandFlags commandFlags = CommandFlags.None)
+        {
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
+            {
+                var r = await Command.SortedSetRemoveRangeByScoreAsync(Key, start, stop, exclude, commandFlags).ForAwait();
+                return Tracing.CreateSentAndReceived(new { start, stop, exclude }, sizeof(double) * 2, r, sizeof(long));
+            });
+        }
+
+        /// <summary>
+        /// ZREMRANGEBYLEX http://redis.io/commands/zremrangebylex
+        /// </summary>
+        public Task<long> RemoveRangeByScore(T min, T max, Exclude exclude = Exclude.None, CommandFlags commandFlags = CommandFlags.None)
+        {
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
+            {
+                long minSize;
+                var minValue = Settings.ValueConverter.Serialize(min, out minSize);
+                long maxSize;
+                var maxValue = Settings.ValueConverter.Serialize(max, out maxSize);
+
+                var r = await Command.SortedSetRemoveRangeByValueAsync(Key, minValue, maxValue, exclude, commandFlags).ForAwait();
+                return Tracing.CreateSentAndReceived(new { min, max, exclude }, minSize + maxSize, r, sizeof(long));
+            });
+        }
     }
 }

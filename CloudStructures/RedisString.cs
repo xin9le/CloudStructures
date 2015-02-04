@@ -57,7 +57,7 @@ namespace CloudStructures
         /// <summary>
         /// GET, SET http://redis.io/commands/get http://redis.io/commands/set
         /// </summary>
-        public async Task<T> GetOrSet(Func<T> valueFactory, TimeSpan? expiry = null, bool keepValueFactorySynchronizationContext = false, CommandFlags commandFlags = CommandFlags.None)
+        public async Task<T> GetOrSet(Func<T> valueFactory, RedisExpiry expiry = null, bool keepValueFactorySynchronizationContext = false, CommandFlags commandFlags = CommandFlags.None)
         {
             var value = await Get(commandFlags).ConfigureAwait(keepValueFactorySynchronizationContext); // can choose valueFactory synchronization context
             if (value.HasValue)
@@ -75,7 +75,7 @@ namespace CloudStructures
         /// <summary>
         /// GET, SET http://redis.io/commands/get http://redis.io/commands/set
         /// </summary>
-        public async Task<T> GetOrSet(Func<Task<T>> valueFactory, TimeSpan? expiry = null, bool keepValueFactorySynchronizationContext = false, CommandFlags commandFlags = CommandFlags.None)
+        public async Task<T> GetOrSet(Func<Task<T>> valueFactory, RedisExpiry expiry = null, bool keepValueFactorySynchronizationContext = false, CommandFlags commandFlags = CommandFlags.None)
         {
             var value = await Get(commandFlags).ConfigureAwait(keepValueFactorySynchronizationContext); // can choose valueFactory synchronization context
             if (value.HasValue)
@@ -93,13 +93,22 @@ namespace CloudStructures
         /// <summary>
         /// SET http://redis.io/commands/set
         /// </summary>
-        public Task<bool> Set(T value, TimeSpan? expiry = null, When when = When.Always, CommandFlags commandFlags = CommandFlags.None)
+        public Task<bool> Set(T value, RedisExpiry expiry = null, When when = When.Always, CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
                 long sentSize;
                 var v = Settings.ValueConverter.Serialize(value, out sentSize);
-                var r = await Command.StringSetAsync(Key, v, expiry, when, CommandFlags.None).ForAwait();
+
+                bool r;
+                if (expiry != null && expiry.IsTimeSpan)
+                {
+                    r = await Command.StringSetAsync(Key, v, (TimeSpan)expiry.Value, when, CommandFlags.None).ForAwait();
+                }
+                else
+                {
+                    r = await this.ExecuteWithKeyExpire(x => x.StringSetAsync(Key, v, expiry: null, when: when, flags: commandFlags), Key, expiry, commandFlags).ForAwait();
+                }
 
                 return Tracing.CreateSentAndReceived(new { value, expiry, when }, sentSize, r, sizeof(bool));
             });

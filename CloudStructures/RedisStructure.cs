@@ -46,6 +46,12 @@ namespace CloudStructures
             return ((IDatabase)command).CreateTransaction();
         }
 
+        internal IBatch CreateBatch()
+        {
+            var command = Command;
+            return ((IDatabase)command).CreateBatch();
+        }
+
         /// <summary>
         /// SETEX, PSETEX http://redis.io/commands/setex http://redis.io/commands/psetex
         /// </summary>
