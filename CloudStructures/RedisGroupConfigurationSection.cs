@@ -82,7 +82,7 @@ namespace CloudStructures
         protected override object GetElementKey(ConfigurationElement element)
         {
             var elem = (element as RedisSettingsElement);
-            return Tuple.Create(elem.Configuration, elem.Db);
+            return Tuple.Create(elem.ConnectionString, elem.Db);
         }
 
         public new IEnumerator<RedisSettingsElement> GetEnumerator()
@@ -97,7 +97,7 @@ namespace CloudStructures
         public RedisGroup ToRedisGroup()
         {
             var settings = this.Select(x => new RedisSettings(
-                x.Configuration,
+                x.ConnectionString,
                 x.Db,
                 x.ValueConverter,
                 x.CommandTracer));
@@ -107,8 +107,8 @@ namespace CloudStructures
 
     public class RedisSettingsElement : ConfigurationElement
     {
-        [ConfigurationProperty("configuration", IsRequired = true)]
-        public string Configuration { get { return (string)base["configuration"]; } }
+        [ConfigurationProperty("connectionString", IsRequired = true)]
+        public string ConnectionString { get { return (string)base["connectionString"]; } }
 
         [ConfigurationProperty("db", DefaultValue = 0)]
         public int Db { get { return (int)base["db"]; } }

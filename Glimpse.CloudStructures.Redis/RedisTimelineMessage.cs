@@ -1,4 +1,6 @@
-﻿using Glimpse.Core.Message;
+﻿using CloudStructures;
+using Glimpse.Core.Message;
+using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,10 +12,13 @@ namespace Glimpse.CloudStructures.Redis
     public class RedisTimelineMessage : MessageBase, ITimelineMessage
     {
         public string Command { get; set; }
-        public string Key { get; set; }
-        public object SendObject { get; set; }
+        public RedisKey Key { get; set; }
+        public object SentObject { get; set; }
+        public long SentSize { get; set; }
         public object ReceivedObject { get; set; }
+        public long ReceivedSize { get; set; }
         public bool IsError { get; set; }
+        public RedisSettings UsedSettings { get; set; }
 
         // interface property
 
@@ -24,12 +29,15 @@ namespace Glimpse.CloudStructures.Redis
         public TimeSpan Offset { get; set; }
         public DateTime StartTime { get; set; }
 
-        public RedisTimelineMessage(string command, string key, object sentObject, object receivedObject, bool isError)
+        public RedisTimelineMessage(RedisSettings usedSettings, string command, RedisKey key, object sentObject, long sentSize, object receivedObject, long receivedSize, bool isError)
         {
+            UsedSettings = usedSettings;
             Command = command;
             Key = key;
-            SendObject = sentObject;
+            SentObject = sentObject;
+            SentSize = sentSize;
             ReceivedObject = receivedObject;
+            ReceivedSize = receivedSize;
             IsError = isError;
         }
     }

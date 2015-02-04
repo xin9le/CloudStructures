@@ -1,4 +1,5 @@
-﻿using System;
+﻿using StackExchange.Redis;
+using System;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
@@ -6,7 +7,7 @@ namespace CloudStructures
 {
     public interface ICommandTracer
     {
-        void CommandStart(RedisSettings usedSettings, string command, string key);
+        void CommandStart(RedisSettings usedSettings, string command, RedisKey key);
         void CommandFinish(object sentObject, long sentSize, object receivedObject, long receivedSize, bool isError);
     }
 
@@ -50,7 +51,7 @@ namespace CloudStructures
 
     internal static class TraceHelper
     {
-        public static async Task RecordSend(RedisSettings usedSettings, string key, string callType, Func<Task<MonitorSingle>> executeAndReturnSentObject, [CallerMemberName]string commandName = "")
+        public static async Task RecordSend(RedisSettings usedSettings, RedisKey key, string callType, Func<Task<MonitorSingle>> executeAndReturnSentObject, [CallerMemberName]string commandName = "")
         {
             var tracerFactory = usedSettings.CommandTracerFactory;
             ICommandTracer tracer = null;
@@ -77,7 +78,7 @@ namespace CloudStructures
                 }
             }
         }
-        public static async Task<T> RecordReceive<T>(RedisSettings usedSettings, string key, string callType, Func<Task<MonitorSingle<T>>> executeAndReturnReceivedObject, [CallerMemberName]string commandName = "")
+        public static async Task<T> RecordReceive<T>(RedisSettings usedSettings, RedisKey key, string callType, Func<Task<MonitorSingle<T>>> executeAndReturnReceivedObject, [CallerMemberName]string commandName = "")
         {
             var tracerFactory = usedSettings.CommandTracerFactory;
             ICommandTracer tracer = null;
@@ -107,7 +108,7 @@ namespace CloudStructures
             return (receivedObject == null) ? default(T) : receivedObject.ReceivedObject;
         }
 
-        public static async Task<T> RecordSendAndReceive<T>(RedisSettings usedSettings, string key, string callType, Func<Task<MonitorPair<T>>> executeAndReturnSentAndReceivedObject, [CallerMemberName]string commandName = "")
+        public static async Task<T> RecordSendAndReceive<T>(RedisSettings usedSettings, RedisKey key, string callType, Func<Task<MonitorPair<T>>> executeAndReturnSentAndReceivedObject, [CallerMemberName]string commandName = "")
         {
             var tracerFactory = usedSettings.CommandTracerFactory;
             ICommandTracer tracer = null;

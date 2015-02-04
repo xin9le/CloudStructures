@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Text;
 using System.Threading;
 using System.Diagnostics;
+using StackExchange.Redis;
 
 namespace CloudStructures.Tests
 {
@@ -22,9 +23,9 @@ namespace CloudStructures.Tests
 
     public class MyTracer : ICommandTracer
     {
-        public void CommandStart(RedisSettings usedSettings, string command, string key)
+        public void CommandStart(RedisSettings usedSettings, string command, RedisKey key)
         {
-            Debug.WriteLine(command + " " + key);
+            Debug.WriteLine(command + " " + (string)key);
         }
 
         public void CommandFinish(object sentObject, long sentSize, object receivedObject, long receivedSize, bool isError)

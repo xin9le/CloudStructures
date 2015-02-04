@@ -1,5 +1,7 @@
-﻿using Glimpse.Core.Extensibility;
+﻿using CloudStructures;
+using Glimpse.Core.Extensibility;
 using Glimpse.Core.Message;
+using StackExchange.Redis;
 using System;
 using System.Threading;
 
@@ -17,9 +19,9 @@ namespace Glimpse.CloudStructures.Redis
             timerStrategy = context.TimerStrategy;
         }
 
-        public static TimelineRegion Start(string command, string key)
+        public static TimelineRegion Start(RedisSettings usedSettings, string command, RedisKey key)
         {
-            return new TimelineRegion(messageBroker, timerStrategy, command, key);
+            return new TimelineRegion(messageBroker, timerStrategy, command, key, usedSettings);
         }
 
         public class TimelineRegion
@@ -29,17 +31,19 @@ namespace Glimpse.CloudStructures.Redis
             const string ColorHighlight = "#55ff55";
 
             string command;
-            string key;
+            RedisKey key;
+            RedisSettings usedSettings;
 
             IExecutionTimer timer;
             IMessageBroker messageBroker;
             TimeSpan offset;
             SynchronizationContext context;
 
-            internal TimelineRegion(IMessageBroker messageBroker, Func<IExecutionTimer> timerStrategy, string command, string key)
+            internal TimelineRegion(IMessageBroker messageBroker, Func<IExecutionTimer> timerStrategy, string command, RedisKey key, RedisSettings usedSettings)
             {
                 this.command = command;
                 this.key = key;
+                this.usedSettings = usedSettings;
 
                 if (messageBroker == null || timerStrategy == null) return;
 
@@ -53,7 +57,7 @@ namespace Glimpse.CloudStructures.Redis
                 context = SynchronizationContext.Current; // capture context
             }
 
-            public void Publish(object sentObject, object receivedObject, bool isError)
+            public void Publish(object sentObject, long sentSize, object receivedObject, long receivedSize, bool isError)
             {
                 if (messageBroker != null && timer != null && context != null)
                 {
@@ -62,8 +66,8 @@ namespace Glimpse.CloudStructures.Redis
                     // Publish is called from ConfigureAwait(false) and sometimes messageBroker can't publish at doesn't have syncContext.
                     context.Post(_ =>
                     {
-                        var message = new RedisTimelineMessage(command, key, sentObject, receivedObject, isError)
-                            .AsTimelineMessage(command + ": " + key, new TimelineCategoryItem(Label, Color, ColorHighlight))
+                        var message = new RedisTimelineMessage(usedSettings, command, key, sentObject, sentSize, receivedObject, receivedSize, isError)
+                            .AsTimelineMessage(command + ": " + (string)key, new TimelineCategoryItem(Label, Color, ColorHighlight))
                             .AsTimedMessage(timerResult);
 
                         messageBroker.Publish(message);

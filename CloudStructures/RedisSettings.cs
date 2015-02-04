@@ -29,8 +29,8 @@ namespace CloudStructures
         public Action<ConnectionMultiplexer, HashSlotMovedEventArgs> OnHashSlotMoved { private get; set; }
         public Action<ConnectionMultiplexer, InternalErrorEventArgs> OnInternalError { private get; set; }
 
-        public RedisSettings(string configuration, int db = 0, IRedisValueConverter converter = null, Func<ICommandTracer> tracerFactory = null, System.IO.TextWriter connectionMultiplexerLog = null)
-            : this(ConfigurationOptions.Parse(configuration), db, converter, tracerFactory, connectionMultiplexerLog)
+        public RedisSettings(string connectionString, int db = 0, IRedisValueConverter converter = null, Func<ICommandTracer> tracerFactory = null, System.IO.TextWriter connectionMultiplexerLog = null)
+            : this(ConfigurationOptions.Parse(connectionString), db, converter, tracerFactory, connectionMultiplexerLog)
         {
         }
 

@@ -33,7 +33,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Glimpse.Core">
-      <HintPath>..\packages\Glimpse.1.8.0\lib\net45\Glimpse.Core.dll</HintPath>
+      <HintPath>..\packages\Glimpse.1.8.6\lib\net45\Glimpse.Core.dll</HintPath>
     </Reference>
     <Reference Include="Jil">
       <HintPath>..\packages\Jil.2.7.2\lib\net45\Jil.dll</HintPath>
@@ -55,6 +55,7 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="RedisInfoTab.cs" />
     <Compile Include="RedisInspector.cs" />
     <Compile Include="RedisProfiler.cs" />
     <Compile Include="RedisTab.cs" />
