@@ -80,5 +80,87 @@ namespace CloudStructures.Tests
             (await dict2.IncrementLimitByMin("hogehoge", -40.1, 100.9)).Is(110.8);
             (await dict2.IncrementLimitByMin("hogehoge", -40.3, 100.9)).Is(100.9);
         }
+
+        [TestMethod]
+        public async Task Hash()
+        {
+            var hash = new RedisHash<string>(GlobalSettings.Default, "hash");
+            await hash.Delete();
+
+            await hash.Set("foo", 100);
+            await hash.Set("bar", "aiueo!");
+
+            (await hash.Get<int>("foo")).Value.Is(100);
+            (await hash.Get<string>("bar")).Value.Is("aiueo!");
+        }
+
+
+        public class MyClass
+        {
+            public int Foo { get; set; }
+            public int Zoo { get; set; }
+            public double Doo { get; set; }
+            public string Bar { get; set; }
+            public long Zooom { get; set; }
+            public float FFFFFF { get; set; }
+        }
+
+        [TestMethod]
+        public async Task Class()
+        {
+            var klass = new RedisClass<MyClass>(GlobalSettings.Default, "class");
+            await klass.Delete();
+
+            await klass.Set(new MyClass { Foo = 1000, Bar = "hogehoge", Zoo = 300, Doo = 10.5 });
+            var mc = await klass.Get();
+            mc.Foo.Is(1000);
+            mc.Bar.Is("hogehoge");
+
+            (await klass.SetMember("Bar", "aiueo")).IsTrue();
+            (await klass.GetMember(x => x.Bar)).Value.Is("aiueo");
+            (await klass.SetMember(x => x.Foo, 10000)).IsTrue();
+            (await klass.GetMember(x => x.Foo)).Value.Is(10000);
+            (await klass.GetMember<int>("nai")).HasValue.IsFalse();
+
+            var members = await klass.GetMembers(x => new[] { x.Foo, x.Zoo });
+            members["Foo"].Is(10000);
+            members["Zoo"].Is(300);
+
+            await klass.SetMembers(new Dictionary<string, int>
+            {
+                {"Foo", 10 }, {"Zoo", 300 }
+            });
+            (await klass.GetMember(x => x.Foo)).Value.Is(10);
+            (await klass.GetMember(x => x.Zoo)).Value.Is(300);
+
+            await klass.SetMembers(x => new[] { x.Foo, x.Zoo }, new[] { 5000, 4000 });
+            (await klass.GetMember(x => x.Foo)).Value.Is(5000);
+            (await klass.GetMember(x => x.Zoo)).Value.Is(4000);
+
+            (await klass.Increment("Foo", 100)).Is(5100);
+            (await klass.Increment("Foo", 100)).Is(5200);
+            (await klass.Increment("Foo", -100)).Is(5100);
+            (await klass.GetMember<int>("Foo")).Value.Is(5100);
+            (await klass.IncrementLimitByMax("Foo", 100, 5250)).Is(5200);
+            (await klass.IncrementLimitByMax("Foo", 100, 5250)).Is(5250);
+            (await klass.IncrementLimitByMin("Foo", -3000, 100)).Is(2250);
+            (await klass.IncrementLimitByMin("Foo", -3000, 100)).Is(100);
+            (await klass.Increment(x => x.Foo, 10)).Is(110);
+            (await klass.Increment(x => x.Zooom, 10000)).Is(10000);
+            (await klass.IncrementLimitByMax(x => x.Foo, 500, 140)).Is(140);
+            (await klass.IncrementLimitByMin(x => x.Foo, -500, 30)).Is(30);
+
+            (await klass.Increment("Doo", 20.1)).Is(30.6);
+            (await klass.Increment("Doo", 20.1)).Is(50.7);
+            Math.Round(await klass.Increment("Doo", -20.3), 1).Is(30.4);
+            Math.Round((await klass.GetMember<double>("Doo")).Value, 1).Is(30.4);
+            Math.Round((await klass.IncrementLimitByMax("Doo", 50.5, 102.4)), 1).Is(80.9);
+            Math.Round((await klass.IncrementLimitByMax("Doo", 50.5, 102.3)), 1).Is(102.3);
+            Math.Round((await klass.IncrementLimitByMin("Doo", -50.4, 30.3)), 1).Is(51.9);
+            Math.Round((await klass.IncrementLimitByMin("Doo", -40.2, 30.3)), 1).Is(30.3);
+            Math.Round((await klass.Increment(x => x.Doo, 20.1)), 1).Is(50.4);
+            Math.Round((await klass.IncrementLimitByMax(x => x.Doo, 909.2, 88.8)), 1).Is(88.8);
+            Math.Round((await klass.IncrementLimitByMin(x => x.Doo, -909.2, 40.4)), 1).Is(40.4);
+        }
     }
 }

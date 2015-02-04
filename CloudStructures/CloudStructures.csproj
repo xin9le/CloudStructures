@@ -68,6 +68,7 @@
     <Compile Include="ICommandTracer.cs" />
     <Compile Include="ServerSelector.cs" />
     <Compile Include="TaskExtensions.cs" />
+    <Compile Include="TypeAccessor.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

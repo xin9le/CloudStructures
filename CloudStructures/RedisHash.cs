@@ -3,7 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 // RedisDictionary/Hash/Class
@@ -52,19 +52,14 @@ end
 return tostring(x)";
     }
 
-    public class RedisDictionary<TKey, TValue> : RedisStructure
+    public abstract class RedisHashBase<TKey> : RedisStructure
     {
-        protected override string CallType
-        {
-            get { return "RedisDictionary"; }
-        }
-
-        public RedisDictionary(RedisSettings settings, RedisKey listKey)
+        public RedisHashBase(RedisSettings settings, RedisKey listKey)
             : base(settings, listKey)
         {
         }
 
-        public RedisDictionary(RedisGroup connectionGroup, RedisKey listKey)
+        public RedisHashBase(RedisGroup connectionGroup, RedisKey listKey)
             : base(connectionGroup, listKey)
         {
         }
@@ -85,127 +80,23 @@ return tostring(x)";
         }
 
         /// <summary>
-        /// HGET http://redis.io/commands/hget
-        /// </summary>
-        public Task<RedisResult<TValue>> Get(TKey field, CommandFlags commandFlags = CommandFlags.None)
-        {
-            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
-            {
-                long keySize;
-                var rKey = Settings.ValueConverter.Serialize(field, out keySize);
-
-                var rValue = await Command.HashGetAsync(Key, rKey, commandFlags).ForAwait();
-
-                long valueSize;
-                var value = RedisResult.FromRedisValue<TValue>(rValue, Settings, out valueSize);
-
-                return Tracing.CreateSentAndReceived(new { field }, keySize, value, valueSize);
-            });
-        }
-
-        /// <summary>
-        /// HMGET http://redis.io/commands/hmget
-        /// </summary>
-        public Task<Dictionary<TKey, TValue>> Get(TKey[] fields, IEqualityComparer<TKey> dictionaryEqualityComparer = null, CommandFlags commandFlags = CommandFlags.None)
-        {
-            dictionaryEqualityComparer = dictionaryEqualityComparer ?? EqualityComparer<TKey>.Default;
-
-            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
-            {
-                long keySize = 0;
-                var hashFields = fields.Select(x =>
-                {
-                    long s;
-                    var rKey = Settings.ValueConverter.Serialize(x, out s);
-                    keySize += s;
-                    return rKey;
-                }).ToArray();
-
-                var rValues = await Command.HashGetAsync(Key, hashFields, commandFlags).ForAwait();
-
-                long valueSize = 0;
-                var result = fields
-                    .Zip(rValues, (key, x) =>
-                    {
-                        if (!x.HasValue) return new { key, rValue = default(TValue), x.HasValue };
-
-                        long s;
-                        var rValue = Settings.ValueConverter.Deserialize<TValue>(x, out s);
-                        valueSize += s;
-                        return new { key, rValue, x.HasValue };
-                    })
-                    .Where(x => x.HasValue)
-                    .ToDictionary(x => x.key, x => x.rValue, dictionaryEqualityComparer);
-
-                return Tracing.CreateSentAndReceived(new { fields }, keySize, result, valueSize);
-            });
-        }
-
-        /// <summary>
-        /// HGETALL http://redis.io/commands/hgetall
-        /// </summary>
-        public Task<Dictionary<TKey, TValue>> GetAll(IEqualityComparer<TKey> dictionaryEqualityComparer = null, CommandFlags commandFlags = CommandFlags.None)
-        {
-            dictionaryEqualityComparer = dictionaryEqualityComparer ?? EqualityComparer<TKey>.Default;
-
-            return TraceHelper.RecordReceive(Settings, Key, CallType, async () =>
-            {
-                var hashEntries = await Command.HashGetAllAsync(Key, commandFlags).ForAwait();
-                long receivedSize = 0;
-                var r = hashEntries.Select(x =>
-                {
-                    long ss;
-                    var vk = Settings.ValueConverter.Deserialize<TKey>(x.Name, out ss);
-                    long s;
-                    var v = Settings.ValueConverter.Deserialize<TValue>(x.Value, out s);
-                    receivedSize += ss;
-                    receivedSize += s;
-                    return new { key = vk, value = v };
-                }).ToDictionary(x => x.key, x => x.value, dictionaryEqualityComparer);
-
-                return Tracing.CreateReceived(r, receivedSize);
-            });
-        }
-
-        /// <summary>
         /// HKEYS http://redis.io/commands/hkeys
         /// </summary>
         public Task<TKey[]> Keys(CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordReceive(Settings, Key, CallType, async () =>
-             {
-                 var r = await Command.HashKeysAsync(Key, commandFlags).ForAwait();
-                 long keySize = 0;
-                 var keys = r.Select(x =>
-                 {
-                     long s;
-                     var key = Settings.ValueConverter.Deserialize<TKey>(x, out s);
-                     keySize += s;
-                     return key;
-                 }).ToArray();
-
-                 return Tracing.CreateReceived(keys, keySize);
-             });
-        }
-
-        /// <summary>
-        /// HVALS http://redis.io/commands/hvals
-        /// </summary>
-        public Task<TValue[]> Values(CommandFlags commandFlags = CommandFlags.None)
-        {
-            return TraceHelper.RecordReceive(Settings, Key, CallType, async () =>
             {
-                var r = await Command.HashValuesAsync(Key, commandFlags).ForAwait();
-                long valueSize = 0;
-                var values = r.Select(x =>
+                var r = await Command.HashKeysAsync(Key, commandFlags).ForAwait();
+                long keySize = 0;
+                var keys = r.Select(x =>
                 {
                     long s;
-                    var value = Settings.ValueConverter.Deserialize<TValue>(x, out s);
-                    valueSize += s;
-                    return value;
+                    var key = Settings.ValueConverter.Deserialize<TKey>(x, out s);
+                    keySize += s;
+                    return key;
                 }).ToArray();
 
-                return Tracing.CreateReceived(values, valueSize);
+                return Tracing.CreateReceived(keys, keySize);
             });
         }
 
@@ -346,6 +237,128 @@ return tostring(x)";
                 return Tracing.CreateSentAndReceived(new { fields }, keySize, rValue, sizeof(long));
             });
         }
+    }
+
+    public class RedisDictionary<TKey, TValue> : RedisHashBase<TKey>
+    {
+        protected override string CallType
+        {
+            get { return "RedisDictionary"; }
+        }
+
+        public RedisDictionary(RedisSettings settings, RedisKey listKey)
+            : base(settings, listKey)
+        {
+        }
+
+        public RedisDictionary(RedisGroup connectionGroup, RedisKey listKey)
+            : base(connectionGroup, listKey)
+        {
+        }
+
+        /// <summary>
+        /// HGET http://redis.io/commands/hget
+        /// </summary>
+        public Task<RedisResult<TValue>> Get(TKey field, CommandFlags commandFlags = CommandFlags.None)
+        {
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
+            {
+                long keySize;
+                var rKey = Settings.ValueConverter.Serialize(field, out keySize);
+
+                var rValue = await Command.HashGetAsync(Key, rKey, commandFlags).ForAwait();
+
+                long valueSize;
+                var value = RedisResult.FromRedisValue<TValue>(rValue, Settings, out valueSize);
+
+                return Tracing.CreateSentAndReceived(new { field }, keySize, value, valueSize);
+            });
+        }
+
+        /// <summary>
+        /// HMGET http://redis.io/commands/hmget
+        /// </summary>
+        public Task<Dictionary<TKey, TValue>> Get(TKey[] fields, IEqualityComparer<TKey> dictionaryEqualityComparer = null, CommandFlags commandFlags = CommandFlags.None)
+        {
+            dictionaryEqualityComparer = dictionaryEqualityComparer ?? EqualityComparer<TKey>.Default;
+
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
+            {
+                long keySize = 0;
+                var hashFields = fields.Select(x =>
+                {
+                    long s;
+                    var rKey = Settings.ValueConverter.Serialize(x, out s);
+                    keySize += s;
+                    return rKey;
+                }).ToArray();
+
+                var rValues = await Command.HashGetAsync(Key, hashFields, commandFlags).ForAwait();
+
+                long valueSize = 0;
+                var result = fields
+                    .Zip(rValues, (key, x) =>
+                    {
+                        if (!x.HasValue) return new { key, rValue = default(TValue), x.HasValue };
+
+                        long s;
+                        var rValue = Settings.ValueConverter.Deserialize<TValue>(x, out s);
+                        valueSize += s;
+                        return new { key, rValue, x.HasValue };
+                    })
+                    .Where(x => x.HasValue)
+                    .ToDictionary(x => x.key, x => x.rValue, dictionaryEqualityComparer);
+
+                return Tracing.CreateSentAndReceived(new { fields }, keySize, result, valueSize);
+            });
+        }
+
+        /// <summary>
+        /// HGETALL http://redis.io/commands/hgetall
+        /// </summary>
+        public Task<Dictionary<TKey, TValue>> GetAll(IEqualityComparer<TKey> dictionaryEqualityComparer = null, CommandFlags commandFlags = CommandFlags.None)
+        {
+            dictionaryEqualityComparer = dictionaryEqualityComparer ?? EqualityComparer<TKey>.Default;
+
+            return TraceHelper.RecordReceive(Settings, Key, CallType, async () =>
+            {
+                var hashEntries = await Command.HashGetAllAsync(Key, commandFlags).ForAwait();
+                long receivedSize = 0;
+                var r = hashEntries.Select(x =>
+                {
+                    long ss;
+                    var vk = Settings.ValueConverter.Deserialize<TKey>(x.Name, out ss);
+                    long s;
+                    var v = Settings.ValueConverter.Deserialize<TValue>(x.Value, out s);
+                    receivedSize += ss;
+                    receivedSize += s;
+                    return new { key = vk, value = v };
+                }).ToDictionary(x => x.key, x => x.value, dictionaryEqualityComparer);
+
+                return Tracing.CreateReceived(r, receivedSize);
+            });
+        }
+
+        /// <summary>
+        /// HVALS http://redis.io/commands/hvals
+        /// </summary>
+        public Task<TValue[]> Values(CommandFlags commandFlags = CommandFlags.None)
+        {
+            return TraceHelper.RecordReceive(Settings, Key, CallType, async () =>
+            {
+                var r = await Command.HashValuesAsync(Key, commandFlags).ForAwait();
+                long valueSize = 0;
+                var values = r.Select(x =>
+                {
+                    long s;
+                    var value = Settings.ValueConverter.Deserialize<TValue>(x, out s);
+                    valueSize += s;
+                    return value;
+                }).ToArray();
+
+                return Tracing.CreateReceived(values, valueSize);
+            });
+        }
 
         /// <summary>
         /// HSET, HSETNX http://redis.io/commands/hset http://redis.io/commands/hsetnx
@@ -397,524 +410,529 @@ return tostring(x)";
         }
     }
 
-    //public class RedisHash
-    //{
-    //    const string CallType = "RedisHash";
+    public class RedisHash<TKey> : RedisHashBase<TKey>
+    {
+        protected override string CallType
+        {
+            get { return "RedisHash"; }
+        }
 
-    //    public string Key { get; private set; }
-    //    public RedisSettings Settings { get; private set; }
+        public RedisHash(RedisSettings settings, RedisKey listKey)
+            : base(settings, listKey)
+        {
+        }
 
-    //    public RedisHash(RedisSettings settings, string hashKey)
-    //    {
-    //        this.Settings = settings;
-    //        this.Key = hashKey;
-    //    }
+        public RedisHash(RedisGroup connectionGroup, RedisKey listKey)
+            : base(connectionGroup, listKey)
+        {
+        }
 
-    //    public RedisHash(RedisGroup connectionGroup, string hashKey)
-    //        : this(connectionGroup.GetSettings(hashKey), hashKey)
-    //    {
-    //    }
+        /// <summary>
+        /// HGET http://redis.io/commands/hget
+        /// </summary>
+        public Task<RedisResult<TValue>> Get<TValue>(TKey field, CommandFlags commandFlags = CommandFlags.None)
+        {
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
+            {
+                long keySize;
+                var rKey = Settings.ValueConverter.Serialize(field, out keySize);
 
-    //    protected RedisConnection Connection
-    //    {
-    //        get
-    //        {
-    //            return Settings.GetConnection();
-    //        }
-    //    }
+                var rValue = await Command.HashGetAsync(Key, rKey, commandFlags).ForAwait();
 
-    //    protected IHashCommands Command
-    //    {
-    //        get
-    //        {
-    //            return Connection.Hashes;
-    //        }
-    //    }
+                long valueSize;
+                var value = RedisResult.FromRedisValue<TValue>(rValue, Settings, out valueSize);
 
-    //    /// <summary>
-    //    /// HEXISTS http://redis.io/commands/hexists
-    //    /// </summary>
-    //    public Task<bool> Exists(string field, CommandFlags commandFlags = CommandFlags.None)
-    //    {
-    //        return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
-    //        {
-    //            var r = await Command.Exists(Settings.Db, Key, field, commandFlags).ForAwait();
-    //            return Pair.Create(new { field }, r);
-    //        });
-    //    }
+                return Tracing.CreateSentAndReceived(new { field }, keySize, value, valueSize);
+            });
+        }
 
-    //    /// <summary>
-    //    /// HGET http://redis.io/commands/hget
-    //    /// </summary>
-    //    public Task<T> Get<T>(string field, CommandFlags commandFlags = CommandFlags.None)
-    //    {
-    //        return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
-    //        {
-    //            var v = await Command.Get(Settings.Db, Key, field, commandFlags).ForAwait();
-    //            var r = Settings.ValueConverter.Deserialize<T>(v);
-    //            return Pair.Create(new { field }, r);
-    //        });
-    //    }
+        /// <summary>
+        /// HMGET http://redis.io/commands/hmget
+        /// </summary>
+        public Task<Dictionary<TKey, TValue>> Get<TValue>(TKey[] fields, IEqualityComparer<TKey> dictionaryEqualityComparer = null, CommandFlags commandFlags = CommandFlags.None)
+        {
+            dictionaryEqualityComparer = dictionaryEqualityComparer ?? EqualityComparer<TKey>.Default;
 
-    //    /// <summary>
-    //    /// HMGET http://redis.io/commands/hmget
-    //    /// </summary>
-    //    public Task<T[]> Get<T>(string[] fields, CommandFlags commandFlags = CommandFlags.None)
-    //    {
-    //        return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
-    //        {
-    //            var v = await Command.Get(Settings.Db, Key, fields, commandFlags).ForAwait();
-    //            var r = v.Select(Settings.ValueConverter.Deserialize<T>).ToArray();
-    //            return Pair.Create(new { fields }, r);
-    //        });
-    //    }
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
+            {
+                long keySize = 0;
+                var hashFields = fields.Select(x =>
+                {
+                    long s;
+                    var rKey = Settings.ValueConverter.Serialize(x, out s);
+                    keySize += s;
+                    return rKey;
+                }).ToArray();
 
-    //    /// <summary>
-    //    /// HGETALL http://redis.io/commands/hgetall
-    //    /// </summary>
-    //    public Task<Dictionary<string, T>> GetAll<T>(CommandFlags commandFlags = CommandFlags.None)
-    //    {
-    //        return TraceHelper.RecordReceive(Settings, Key, CallType, async () =>
-    //        {
-    //            var v = await Command.GetAll(Settings.Db, Key, commandFlags).ForAwait();
-    //            var r = v.ToDictionary(x => x.Key, x => Settings.ValueConverter.Deserialize<T>(x.Value));
-    //            return r;
-    //        });
-    //    }
+                var rValues = await Command.HashGetAsync(Key, hashFields, commandFlags).ForAwait();
 
-    //    /// <summary>
-    //    /// HKEYS http://redis.io/commands/hkeys
-    //    /// </summary>
-    //    public Task<string[]> GetKeys(CommandFlags commandFlags = CommandFlags.None)
-    //    {
-    //        return TraceHelper.RecordReceive(Settings, Key, CallType, () =>
-    //        {
-    //            return Command.GetKeys(Settings.Db, Key, commandFlags);
-    //        });
-    //    }
+                long valueSize = 0;
+                var result = fields
+                    .Zip(rValues, (key, x) =>
+                    {
+                        if (!x.HasValue) return new { key, rValue = default(TValue), x.HasValue };
 
-    //    /// <summary>
-    //    /// HLEN http://redis.io/commands/hlen
-    //    /// </summary>
-    //    public Task<long> GetLength(CommandFlags commandFlags = CommandFlags.None)
-    //    {
-    //        return TraceHelper.RecordReceive(Settings, Key, CallType, () =>
-    //        {
-    //            return Command.GetLength(Settings.Db, Key, commandFlags);
-    //        });
-    //    }
+                        long s;
+                        var rValue = Settings.ValueConverter.Deserialize<TValue>(x, out s);
+                        valueSize += s;
+                        return new { key, rValue, x.HasValue };
+                    })
+                    .Where(x => x.HasValue)
+                    .ToDictionary(x => x.key, x => x.rValue, dictionaryEqualityComparer);
 
-    //    /// <summary>
-    //    /// HVALS http://redis.io/commands/hvals
-    //    /// </summary>
-    //    public Task<T[]> GetValues<T>(CommandFlags commandFlags = CommandFlags.None)
-    //    {
-    //        return TraceHelper.RecordReceive(Settings, Key, CallType, async () =>
-    //        {
-    //            var v = await Command.GetValues(Settings.Db, Key, commandFlags).ForAwait();
-    //            return v.Select(Settings.ValueConverter.Deserialize<T>).ToArray();
-    //        });
-    //    }
+                return Tracing.CreateSentAndReceived(new { fields }, keySize, result, valueSize);
+            });
+        }
 
-    //    /// <summary>
-    //    /// HINCRBY http://redis.io/commands/hincrby
-    //    /// </summary>
-    //    public Task<long> Increment(string field, int value = 1, CommandFlags commandFlags = CommandFlags.None)
-    //    {
-    //        return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
-    //        {
-    //            var r = await Command.Increment(Settings.Db, Key, field, value, commandFlags).ForAwait();
-    //            return Pair.Create(new { field, value }, r);
-    //        });
-    //    }
+        /// <summary>
+        /// HSET, HSETNX http://redis.io/commands/hset http://redis.io/commands/hsetnx
+        /// </summary>
+        public Task<bool> Set<TValue>(TKey field, TValue value, When when = When.Always, RedisExpiry expiry = null, CommandFlags commandFlags = CommandFlags.None)
+        {
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
+            {
+                long keySize;
+                long valueSize;
+                var rKey = Settings.ValueConverter.Serialize(field, out keySize);
+                var rValue = Settings.ValueConverter.Serialize(value, out valueSize);
 
-    //    /// <summary>
-    //    /// HINCRBYFLOAT http://redis.io/commands/hincrbyfloat
-    //    /// </summary>
-    //    public Task<double> Increment(string field, double value, CommandFlags commandFlags = CommandFlags.None)
-    //    {
-    //        return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
-    //        {
-    //            var r = await Command.Increment(Settings.Db, Key, field, value, commandFlags).ForAwait();
-    //            return Pair.Create(new { field, value }, r);
-    //        });
-    //    }
+                var result = await this.ExecuteWithKeyExpire(x => x.HashSetAsync(Key, rKey, rValue, when, commandFlags), Key, expiry, commandFlags).ForAwait();
 
-    //    public Task<long> IncrementLimitByMax(string field, int value, int max, CommandFlags commandFlags = CommandFlags.None)
-    //    {
-    //        return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
-    //        {
-    //            var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementLimitByMax, new[] { Key, field }, new object[] { value, max }, useCache: true, inferStrings: true, commandFlags);
-    //            var r = (long)(await v.ConfigureAwait(false));
-    //            return Pair.Create(new { field, value, max }, r);
-    //        });
-    //    }
+                return Tracing.CreateSentAndReceived(new { field, value, when }, keySize + valueSize, result, sizeof(bool));
+            });
+        }
 
-    //    public Task<double> IncrementLimitByMax(string field, double value, double max, CommandFlags commandFlags = CommandFlags.None)
-    //    {
-    //        return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
-    //        {
-    //            var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementFloatLimitByMax, new[] { Key, field }, new object[] { value, max }, useCache: true, inferStrings: true, commandFlags);
-    //            var r = double.Parse((string)(await v.ConfigureAwait(false)));
-    //            return Pair.Create(new { field, value, max }, r);
-    //        });
-    //    }
+        /// <summary>
+        /// HMSET http://redis.io/commands/hmset
+        /// </summary>
+        public Task Set<TValue>(IEnumerable<KeyValuePair<TKey, TValue>> values, RedisExpiry expiry = null, CommandFlags commandFlags = CommandFlags.None)
+        {
+            return TraceHelper.RecordSend(Settings, Key, CallType, async () =>
+            {
+                if (!(values is ICollection))
+                {
+                    values = values.ToArray(); // materialize
+                }
 
-    //    public Task<long> IncrementLimitByMin(string field, int value, int min, CommandFlags commandFlags = CommandFlags.None)
-    //    {
-    //        return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
-    //        {
-    //            var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementLimitByMin, new[] { Key, field }, new object[] { value, min }, useCache: true, inferStrings: true, commandFlags);
-    //            var r = (long)(await v.ConfigureAwait(false));
-    //            return Pair.Create(new { field, value, min }, r);
-    //        });
-    //    }
+                long keySize = 0;
+                long valueSize = 0;
+                var hashFields = values.Select(x =>
+                {
+                    long ks;
+                    long vs;
+                    var rKey = Settings.ValueConverter.Serialize(x.Key, out ks);
+                    var rValue = Settings.ValueConverter.Serialize(x.Value, out vs);
+                    keySize += ks;
+                    valueSize += vs;
+                    return new HashEntry(rKey, rValue);
+                }).ToArray();
 
-    //    public Task<double> IncrementLimitByMin(string field, double value, double min, CommandFlags commandFlags = CommandFlags.None)
-    //    {
-    //        return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
-    //        {
-    //            var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementFloatLimitByMin, new[] { Key, field }, new object[] { value, min }, useCache: true, inferStrings: true, commandFlags);
-    //            var r = double.Parse((string)(await v.ConfigureAwait(false)));
-    //            return Pair.Create(new { field, value, min }, r);
-    //        });
-    //    }
+                await this.ExecuteWithKeyExpire(x => x.HashSetAsync(Key, hashFields, commandFlags), Key, expiry, commandFlags).ForAwait();
 
-    //    /// <summary>
-    //    /// HDEL http://redis.io/commands/hdel
-    //    /// </summary>
-    //    public Task<bool> Remove(string field, CommandFlags commandFlags = CommandFlags.None)
-    //    {
-    //        return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
-    //        {
-    //            var r = await Command.Remove(Settings.Db, Key, field, commandFlags);
-    //            return Pair.Create(new { field }, r);
-    //        });
-    //    }
-    //    /// <summary>
-    //    /// HDEL http://redis.io/commands/hdel
-    //    /// </summary>
-    //    public Task<long> Remove(string[] fields, CommandFlags commandFlags = CommandFlags.None)
-    //    {
-    //        return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
-    //        {
-    //            var r = await Command.Remove(Settings.Db, Key, fields, commandFlags);
-    //            return Pair.Create(new { fields }, r);
-    //        });
-    //    }
-
-    //    /// <summary>
-    //    /// HMSET http://redis.io/commands/hmset
-    //    /// </summary>
-    //    public Task Set(Dictionary<string, object> values, CommandFlags commandFlags = CommandFlags.None)
-    //    {
-    //        return TraceHelper.RecordSend(Settings, Key, CallType, async () =>
-    //        {
-    //            var v = values.ToDictionary(x => x.Key, x => Settings.ValueConverter.Serialize(x.Value));
-    //            await Command.Set(Settings.Db, Key, v, commandFlags);
-    //            return new { values };
-    //        });
-    //    }
-
-    //    /// <summary>
-    //    /// HSET http://redis.io/commands/hset
-    //    /// </summary>
-    //    public Task<bool> Set(string field, object value, CommandFlags commandFlags = CommandFlags.None)
-    //    {
-    //        return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
-    //        {
-    //            var r = await Command.Set(Settings.Db, Key, field, Settings.ValueConverter.Serialize(value), commandFlags);
-    //            return Pair.Create(new { field, value }, r);
-    //        });
-    //    }
-
-    //    /// <summary>
-    //    /// HSETNX http://redis.io/commands/hsetnx
-    //    /// </summary>
-    //    public Task<bool> SetIfNotExists(string field, object value, CommandFlags commandFlags = CommandFlags.None)
-    //    {
-    //        return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
-    //        {
-    //            var r = await Command.SetIfNotExists(Settings.Db, Key, field, Settings.ValueConverter.Serialize(value), commandFlags);
-    //            return Pair.Create(new { field, value }, r);
-    //        });
-    //    }
-
-    //    /// <summary>
-    //    /// expire subtract Datetime.Now
-    //    /// </summary>
-    //    public Task<bool> SetExpire(DateTime expire, CommandFlags commandFlags = CommandFlags.None)
-    //    {
-    //        return SetExpire(expire - DateTime.Now, commandFlags);
-    //    }
-
-    //    public Task<bool> SetExpire(TimeSpan expire, CommandFlags commandFlags = CommandFlags.None)
-    //    {
-    //        return SetExpire((int)expire.TotalSeconds, commandFlags);
-    //    }
-
-    //    public Task<bool> SetExpire(int seconds, CommandFlags commandFlags = CommandFlags.None)
-    //    {
-    //        return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
-    //        {
-    //            var r = await Connection.Keys.Expire(Settings.Db, Key, seconds, commandFlags).ForAwait();
-    //            return Pair.Create(new { seconds }, r);
-    //        });
-    //    }
-
-    //    public Task<bool> KeyExists(CommandFlags commandFlags = CommandFlags.None)
-    //    {
-    //        return TraceHelper.RecordReceive(Settings, Key, CallType, () =>
-    //        {
-    //            return Connection.Keys.Exists(Settings.Db, Key, commandFlags);
-    //        });
-    //    }
-
-    //    public Task<bool> Clear(CommandFlags commandFlags = CommandFlags.None)
-    //    {
-    //        return TraceHelper.RecordReceive(Settings, Key, CallType, () =>
-    //        {
-    //            return Connection.Keys.Remove(Settings.Db, Key, commandFlags);
-    //        });
-    //    }
-    //}
+                return Tracing.CreateSent(new { values }, keySize + valueSize);
+            });
+        }
+    }
 
     /// <summary>
-    /// Class mapped RedisHash
+    /// RedisClass is type mapped RedisHash.
     /// </summary>
-    //public class RedisClass<T> where T : class, new()
-    //{
-    //    const string CallType = "RedisClass";
+    public class RedisClass<T> : RedisStructure where T : class, new()
+    {
+        protected override string CallType
+        {
+            get { return "RedisClass"; }
+        }
 
-    //    public string Key { get; private set; }
-    //    public RedisSettings Settings { get; private set; }
+        public RedisClass(RedisSettings settings, RedisKey listKey)
+            : base(settings, listKey)
+        {
+        }
 
-    //    public RedisClass(RedisSettings settings, string hashKey)
-    //    {
-    //        this.Settings = settings;
-    //        this.Key = hashKey;
-    //    }
+        public RedisClass(RedisGroup connectionGroup, RedisKey listKey)
+            : base(connectionGroup, listKey)
+        {
+        }
 
-    //    public RedisClass(RedisGroup connectionGroup, string hashKey)
-    //        : this(connectionGroup.GetSettings(hashKey), hashKey)
-    //    {
-    //    }
+        /// <summary>
+        /// All hash value map to class if key can't find returns null, includes HGETALL.
+        /// </summary>
+        public Task<T> Get(CommandFlags commandFlags = CommandFlags.None)
+        {
+            return TraceHelper.RecordReceive(Settings, Key, CallType, async () =>
+            {
+                var data = await Command.HashGetAllAsync(Key, commandFlags).ForAwait();
+                if (data == null || data.Length == 0)
+                {
+                    return null;
+                }
 
-    //    protected RedisConnection Connection
-    //    {
-    //        get
-    //        {
-    //            return Settings.GetConnection();
-    //        }
-    //    }
+                var accessor = TypeAccessor.Lookup(typeof(T));
+                var result = (T)accessor.CreateNew();
+                long resultSize = 0L;
+                foreach (var item in data)
+                {
+                    IMemberAccessor memberAccessor;
+                    if (accessor.TryGetValue(item.Name, out memberAccessor) && memberAccessor.IsReadable && memberAccessor.IsWritable)
+                    {
+                        long s;
+                        var v = Settings.ValueConverter.Deserialize(memberAccessor.MemberType, item.Value, out s);
+                        resultSize += s;
+                        memberAccessor.SetValue(result, v);
+                    }
+                    else
+                    {
+                        var buf = (byte[])item.Value;
+                        resultSize += buf.Length;
+                    }
+                }
 
-    //    protected IHashCommands Command
-    //    {
-    //        get
-    //        {
-    //            return Connection.Hashes;
-    //        }
-    //    }
+                return Tracing.CreateReceived(result, resultSize);
+            });
+        }
 
-    //    public Task<T> GetValue(CommandFlags commandFlags = CommandFlags.None)
-    //    {
-    //        return TraceHelper.RecordReceive(Settings, Key, CallType, async () =>
-    //        {
-    //            var data = await Command.GetAll(Settings.Db, Key, commandFlags).ForAwait();
-    //            if (data == null || data.Count == 0)
-    //            {
-    //                return null;
-    //            }
+        /// <summary>
+        /// Class fields set to hash, includes HMSET. If return value is null value == null.
+        /// </summary>
+        public Task<bool> Set(T value, RedisExpiry expiry = null, CommandFlags commandFlags = CommandFlags.None)
+        {
+            if (value == null) return Task.FromResult(false);
 
-    //            var accessor = FastMember.TypeAccessor.Create(typeof(T), allowNonPublicAccessors: false);
-    //            var result = (T)accessor.CreateNew();
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
+            {
+                var accessor = TypeAccessor.Lookup(typeof(T));
+                long sentSize = 0;
+                var hashFields = accessor.Where(kvp => kvp.Value.IsReadable && kvp.Value.IsWritable)
+                    .Select(kvp =>
+                    {
+                        var field = kvp.Value.GetValue(value);
+                        long s;
+                        var rv = Settings.ValueConverter.Serialize(field, out s);
+                        sentSize += s;
+                        return new HashEntry(kvp.Key, rv);
+                    })
+                    .ToArray();
 
-    //            foreach (var member in accessor.GetMembers())
-    //            {
-    //                byte[] value;
-    //                if (data.TryGetValue(member.Name, out value))
-    //                {
-    //                    accessor[result, member.Name] = Settings.ValueConverter.Deserialize(member.Type, value);
-    //                }
-    //            }
+                await this.ExecuteWithKeyExpire(x => x.HashSetAsync(Key, hashFields), Key, expiry, commandFlags).ForAwait();
 
-    //            return result;
-    //        });
-    //    }
+                return Tracing.CreateSentAndReceived(new { value }, sentSize, true, 0);
+            });
+        }
 
-    //    /// <summary>
-    //    /// expire subtract Datetime.Now
-    //    /// </summary>
-    //    public Task<T> GetValueOrSet(Func<T> valueFactory, DateTime expire, bool configureAwait = true, CommandFlags commandFlags = CommandFlags.None)
-    //    {
-    //        return GetValueOrSet(valueFactory, expire - DateTime.Now, configureAwait, commandFlags);
-    //    }
+        /// <summary>
+        /// GET(HGETALL), SET(HMSET)
+        /// </summary>
+        public async Task<T> GetOrSet(Func<T> valueFactory, RedisExpiry expiry = null, bool keepValueFactorySynchronizationContext = false, CommandFlags commandFlags = CommandFlags.None)
+        {
+            var value = await Get(commandFlags).ConfigureAwait(keepValueFactorySynchronizationContext);
+            if (value == null)
+            {
+                value = valueFactory();
+                await Set(value, expiry, commandFlags).ForAwait();
+            }
 
-    //    public Task<T> GetValueOrSet(Func<T> valueFactory, TimeSpan expire, bool configureAwait = true, CommandFlags commandFlags = CommandFlags.None)
-    //    {
-    //        return GetValueOrSet(valueFactory, (int)expire.TotalSeconds, configureAwait, commandFlags);
-    //    }
+            return value;
+        }
 
-    //    public async Task<T> GetValueOrSet(Func<T> valueFactory, int? expirySeconds = null, bool configureAwait = true, CommandFlags commandFlags = CommandFlags.None)
-    //    {
-    //        var value = await GetValue(commandFlags).ConfigureAwait(configureAwait); // keep valueFactory synchronization context
-    //        if (value == null)
-    //        {
-    //            value = valueFactory();
-    //            if (expirySeconds != null)
-    //            {
-    //                var a = SetValue(value);
-    //                var b = SetExpire(expirySeconds.Value, commandFlags);
-    //                await Task.WhenAll(a, b).ForAwait();
-    //            }
-    //            else
-    //            {
-    //                await SetValue(value).ForAwait();
-    //            }
-    //        }
+        /// <summary>
+        /// GET(HGETALL), SET(HMSET)
+        /// </summary>
+        public async Task<T> GetOrSet(Func<Task<T>> valueFactory, RedisExpiry expiry = null, bool keepValueFactorySynchronizationContext = false, CommandFlags commandFlags = CommandFlags.None)
+        {
+            var value = await Get(commandFlags).ConfigureAwait(keepValueFactorySynchronizationContext);
+            if (value == null)
+            {
+                value = await valueFactory().ForAwait();
+                await Set(value, expiry, commandFlags).ForAwait();
+            }
 
-    //        return value;
-    //    }
+            return value;
+        }
 
-    //    /// <summary>
-    //    /// expire subtract Datetime.Now
-    //    /// </summary>
-    //    public Task<T> GetValueOrSet(Func<Task<T>> valueFactory, DateTime expire, bool configureAwait = true, CommandFlags commandFlags = CommandFlags.None)
-    //    {
-    //        return GetValueOrSet(valueFactory, expire - DateTime.Now, configureAwait, commandFlags);
-    //    }
+        /// <summary>
+        /// HGET http://redis.io/commands/hget
+        /// </summary>
+        public Task<RedisResult<TValue>> GetMember<TValue>(Expression<Func<T, TValue>> memberSelector, CommandFlags commandFlags = CommandFlags.None)
+        {
+            var memberExpr = memberSelector.Body as MemberExpression;
+            if (memberExpr == null) throw new ArgumentException("can't analyze selector expression");
 
-    //    public Task<T> GetValueOrSet(Func<Task<T>> valueFactory, TimeSpan expire, bool configureAwait = true, CommandFlags commandFlags = CommandFlags.None)
-    //    {
-    //        return GetValueOrSet(valueFactory, (int)expire.TotalSeconds, configureAwait, commandFlags);
-    //    }
+            return GetMember<TValue>(memberExpr.Member.Name, commandFlags);
+        }
 
-    //    public async Task<T> GetValueOrSet(Func<Task<T>> valueFactory, int? expirySeconds = null, bool configureAwait = true, CommandFlags commandFlags = CommandFlags.None)
-    //    {
-    //        var value = await GetValue(commandFlags).ConfigureAwait(configureAwait); // keep valueFactory synchronization context
-    //        if (value == null)
-    //        {
-    //            value = await valueFactory().ConfigureAwait(configureAwait);
-    //            if (expirySeconds != null)
-    //            {
-    //                var a = SetValue(value);
-    //                var b = SetExpire(expirySeconds.Value, commandFlags);
-    //                await Task.WhenAll(a, b).ForAwait();
-    //            }
-    //            else
-    //            {
-    //                await SetValue(value).ForAwait();
-    //            }
-    //        }
+        /// <summary>
+        /// HGET http://redis.io/commands/hget
+        /// </summary>
+        public Task<RedisResult<TValue>> GetMember<TValue>(string memberName, CommandFlags commandFlags = CommandFlags.None)
+        {
+            if (!TypeAccessor.Lookup(typeof(T)).ContainsKey(memberName)) return Task.FromResult(new RedisResult<TValue>());
 
-    //        return value;
-    //    }
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
+            {
+                var rValue = await Command.HashGetAsync(Key, memberName, commandFlags).ForAwait();
+                long valueSize;
+                var value = RedisResult.FromRedisValue<TValue>(rValue, Settings, out valueSize);
+                return Tracing.CreateSentAndReceived(new { memberName }, 0, value, valueSize);
+            });
+        }
 
-    //    public Task SetValue(T value, CommandFlags commandFlags = CommandFlags.None)
-    //    {
-    //        return TraceHelper.RecordSend(Settings, Key, CallType, async () =>
-    //        {
-    //            var accessor = FastMember.TypeAccessor.Create(typeof(T), allowNonPublicAccessors: false);
-    //            var members = accessor.GetMembers();
-    //            var values = new Dictionary<string, byte[]>(members.Count);
-    //            foreach (var member in members)
-    //            {
-    //                values.Add(member.Name, Settings.ValueConverter.Serialize(accessor[value, member.Name]));
-    //            }
+        /// <summary>
+        /// HMGET http://redis.io/commands/hmget
+        /// </summary>
+        public Task<Dictionary<string, TValue>> GetMembers<TValue>(Expression<Func<T, TValue[]>> memberSelector, CommandFlags commandFlags = CommandFlags.None)
+        {
+            var newArrayExpr = memberSelector.Body as NewArrayExpression;
+            if (newArrayExpr == null) throw new ArgumentException("can't analyze selector expression");
+            var fields = newArrayExpr.Expressions.OfType<MemberExpression>().Select(x => x.Member.Name).ToArray();
 
-    //            await Command.Set(Settings.Db, Key, values, commandFlags).ForAwait();
+            return GetMembers<TValue>(fields, commandFlags);
+        }
 
-    //            return new { value };
-    //        });
-    //    }
+        /// <summary>
+        /// HMGET http://redis.io/commands/hmget
+        /// </summary>
+        public Task<Dictionary<string, TValue>> GetMembers<TValue>(string[] memberNames, CommandFlags commandFlags = CommandFlags.None)
+        {
+            var accesssor = TypeAccessor.Lookup(typeof(T));
+            memberNames = memberNames.Where(x => accesssor.ContainsKey(x)).ToArray();
+            if (memberNames.Length == 0) return Task.FromResult(new Dictionary<string, TValue>());
 
-    //    public Task<bool> SetField(string field, object value, CommandFlags commandFlags = CommandFlags.None)
-    //    {
-    //        return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
-    //        {
-    //            var r = await Command.Set(Settings.Db, Key, field, Settings.ValueConverter.Serialize(value), commandFlags).ForAwait();
-    //            return Pair.Create(new { field, value }, r);
-    //        });
-    //    }
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
+            {
+                var hashFields = memberNames.Select(x => (RedisValue)x).ToArray();
 
-    //    public Task SetFields(IEnumerable<KeyValuePair<string, object>> fields, CommandFlags commandFlags = CommandFlags.None)
-    //    {
-    //        return TraceHelper.RecordSend(Settings, Key, CallType, async () =>
-    //        {
-    //            var values = fields.ToDictionary(x => x.Key, x => Settings.ValueConverter.Serialize(x.Value));
-    //            await Command.Set(Settings.Db, Key, values, commandFlags).ForAwait();
+                var rValues = await Command.HashGetAsync(Key, hashFields, commandFlags).ForAwait();
 
-    //            return new { fields };
-    //        });
-    //    }
+                long valueSize = 0;
+                var result = memberNames
+                    .Zip(rValues, (key, x) =>
+                    {
+                        if (!x.HasValue) return new { key, rValue = default(TValue), x.HasValue };
 
-    //    public Task<TField> GetField<TField>(string field, CommandFlags commandFlags = CommandFlags.None)
-    //    {
-    //        return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
-    //        {
-    //            var v = await Command.Get(Settings.Db, Key, field, commandFlags).ForAwait();
-    //            var r = Settings.ValueConverter.Deserialize<TField>(v);
-    //            return Pair.Create(new { field }, r);
-    //        });
-    //    }
+                        long s;
+                        var rValue = Settings.ValueConverter.Deserialize<TValue>(x, out s);
+                        valueSize += s;
+                        return new { key, rValue, x.HasValue };
+                    })
+                    .Where(x => x.HasValue)
+                    .ToDictionary(x => x.key, x => x.rValue);
 
-    //    public Task<long> Increment(string field, int value = 1, CommandFlags commandFlags = CommandFlags.None)
-    //    {
-    //        return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
-    //        {
-    //            var r = await Command.Increment(Settings.Db, Key, field, value, commandFlags).ForAwait();
-    //            return Pair.Create(new { field, value }, r);
-    //        });
-    //    }
+                return Tracing.CreateSentAndReceived(new { memberNames }, 0, result, valueSize);
+            });
+        }
 
-    //    public Task<double> Increment(string field, double value, CommandFlags commandFlags = CommandFlags.None)
-    //    {
-    //        return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
-    //        {
-    //            var r = await Command.Increment(Settings.Db, Key, field, value, commandFlags).ForAwait();
-    //            return Pair.Create(new { field, value }, r);
-    //        });
-    //    }
+        /// <summary>
+        /// HSET, HSETNX http://redis.io/commands/hset http://redis.io/commands/hsetnx
+        /// </summary>
+        public Task<bool> SetMember<TValue>(Expression<Func<T, TValue>> memberSelector, TValue value, RedisExpiry expiry = null, CommandFlags commandFlags = CommandFlags.None)
+        {
+            var memberExpr = memberSelector.Body as MemberExpression;
+            if (memberExpr == null) throw new ArgumentException("can't analyze selector expression");
 
-    //    public Task<long> IncrementLimitByMax(string field, int value, int max, CommandFlags commandFlags = CommandFlags.None)
-    //    {
-    //        return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
-    //        {
-    //            var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementLimitByMax, new[] { Key, field }, new object[] { value, max }, useCache: true, inferStrings: true, commandFlags);
-    //            var r = (long)(await v.ConfigureAwait(false));
-    //            return Pair.Create(new { field, value, max }, r);
-    //        });
-    //    }
+            return SetMember<TValue>(memberExpr.Member.Name, value, expiry, commandFlags);
+        }
 
-    //    public Task<double> IncrementLimitByMax(string field, double value, double max, CommandFlags commandFlags = CommandFlags.None)
-    //    {
-    //        return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
-    //        {
-    //            var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementFloatLimitByMax, new[] { Key, field }, new object[] { value, max }, useCache: true, inferStrings: true, commandFlags);
-    //            var r = double.Parse((string)(await v.ConfigureAwait(false)));
-    //            return Pair.Create(new { field, value, max }, r);
-    //        });
-    //    }
+        /// <summary>
+        /// HSET, HSETNX http://redis.io/commands/hset http://redis.io/commands/hsetnx
+        /// </summary>
+        public Task<bool> SetMember<TValue>(string memberName, TValue value, RedisExpiry expiry = null, CommandFlags commandFlags = CommandFlags.None)
+        {
+            if (!TypeAccessor.Lookup(typeof(T)).ContainsKey(memberName)) return Task.FromResult(false);
 
-    //    public Task<long> IncrementLimitByMin(string field, int value, int min, CommandFlags commandFlags = CommandFlags.None)
-    //    {
-    //        return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
-    //        {
-    //            var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementLimitByMin, new[] { Key, field }, new object[] { value, min }, useCache: true, inferStrings: true, commandFlags);
-    //            var r = (long)(await v.ConfigureAwait(false));
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
+            {
+                RedisValue rKey = memberName;
+                long valueSize;
+                var rValue = Settings.ValueConverter.Serialize(value, out valueSize);
 
-    //            return Pair.Create(new { field, value, min }, r);
-    //        });
-    //    }
+                var result = await this.ExecuteWithKeyExpire(x => x.HashSetAsync(Key, rKey, rValue, flags: commandFlags), Key, expiry, commandFlags).ForAwait();
 
-    //    public Task<double> IncrementLimitByMin(string field, double value, double min, CommandFlags commandFlags = CommandFlags.None)
-    //    {
-    //        return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
-    //        {
-    //            var v = Connection.Scripting.Eval(Settings.Db, HashScript.IncrementFloatLimitByMin, new[] { Key, field }, new object[] { value, min }, useCache: true, inferStrings: true, commandFlags);
-    //            var r = double.Parse((string)(await v.ConfigureAwait(false)));
-    //            return Pair.Create(new { field, value, min }, r);
-    //        });
-    //    }
-    //}
+                return Tracing.CreateSentAndReceived(new { memberName, value }, valueSize, true, sizeof(bool));
+            });
+        }
+
+        /// <summary>
+        /// HMSET http://redis.io/commands/hmset
+        /// </summary>
+        public Task SetMembers<TValue>(Expression<Func<T, TValue[]>> memberSelector, TValue[] values, RedisExpiry expiry = null, CommandFlags commandFlags = CommandFlags.None)
+        {
+            var newArrayExpr = memberSelector.Body as NewArrayExpression;
+            if (newArrayExpr == null) throw new ArgumentException("can't analyze selector expression");
+            var fields = newArrayExpr.Expressions.OfType<MemberExpression>().Select(x => x.Member.Name).ToArray();
+
+            if (fields.Length != values.Length) throw new ArgumentException($"member and value's count is mismatch - memberSelector.Length:{fields.Length}, values.Length:{values.Length}");
+
+            var pairs = fields.Zip(values, (key, value) => new KeyValuePair<string, TValue>(key, value)).ToArray();
+            return SetMembers<TValue>(pairs, expiry, commandFlags);
+        }
+
+        /// <summary>
+        /// HMSET http://redis.io/commands/hmset
+        /// </summary>
+        public Task SetMembers<TValue>(IEnumerable<KeyValuePair<string, TValue>> values, RedisExpiry expiry = null, CommandFlags commandFlags = CommandFlags.None)
+        {
+            return TraceHelper.RecordSend(Settings, Key, CallType, async () =>
+            {
+                if (!(values is ICollection))
+                {
+                    values = values.ToArray(); // materialize
+                }
+
+                long valueSize = 0;
+                var hashFields = values.Select(x =>
+                {
+                    long vs;
+                    RedisValue rKey = x.Key;
+                    var rValue = Settings.ValueConverter.Serialize(x.Value, out vs);
+                    valueSize += vs;
+                    return new HashEntry(rKey, rValue);
+                }).ToArray();
+
+                await this.ExecuteWithKeyExpire(x => x.HashSetAsync(Key, hashFields, commandFlags), Key, expiry, commandFlags).ForAwait();
+
+                return Tracing.CreateSent(new { values }, valueSize);
+            });
+        }
+
+        /// <summary>
+        /// HINCRBY http://redis.io/commands/hincrby
+        /// </summary>
+        public Task<long> Increment(Expression<Func<T, long>> memberSelector, long value = 1, RedisExpiry expiry = null, CommandFlags commandFlags = CommandFlags.None)
+        {
+            return Increment(GetMemberName(memberSelector), value, expiry, commandFlags);
+        }
+
+        /// <summary>
+        /// HINCRBY http://redis.io/commands/hincrby
+        /// </summary>
+        public Task<long> Increment(string member, long value = 1, RedisExpiry expiry = null, CommandFlags commandFlags = CommandFlags.None)
+        {
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
+            {
+                var rKey = member;
+                var r = await this.ExecuteWithKeyExpire(x => x.HashIncrementAsync(Key, rKey, value, commandFlags), Key, expiry, commandFlags).ForAwait();
+                return Tracing.CreateSentAndReceived(new { member, value }, 0, r, sizeof(long));
+            });
+        }
+
+        /// <summary>
+        /// HINCRBYFLOAT http://redis.io/commands/hincrbyfloat
+        /// </summary>
+        public Task<double> Increment(Expression<Func<T, double>> memberSelector, double value, RedisExpiry expiry = null, CommandFlags commandFlags = CommandFlags.None)
+        {
+            return Increment(GetMemberName(memberSelector), value, expiry, commandFlags);
+        }
+
+        /// <summary>
+        /// HINCRBYFLOAT http://redis.io/commands/hincrbyfloat
+        /// </summary>
+        public Task<double> Increment(string member, double value, RedisExpiry expiry = null, CommandFlags commandFlags = CommandFlags.None)
+        {
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
+            {
+                var rKey = member;
+                var r = await this.ExecuteWithKeyExpire(x => x.HashIncrementAsync(Key, rKey, value, commandFlags), Key, expiry, commandFlags).ForAwait();
+                return Tracing.CreateSentAndReceived(new { member, value }, 0, r, sizeof(long));
+            });
+        }
+
+        /// <summary>
+        /// LUA Script including hincrby, hset
+        /// </summary>
+        public Task<long> IncrementLimitByMax(Expression<Func<T, long>> memberSelector, long value, long max, RedisExpiry expiry = null, CommandFlags commandFlags = CommandFlags.None)
+        {
+            return IncrementLimitByMax(GetMemberName(memberSelector), value, max, expiry, commandFlags);
+        }
+
+        /// <summary>
+        /// LUA Script including hincrby, hset
+        /// </summary>
+        public Task<long> IncrementLimitByMax(string member, long value, long max, RedisExpiry expiry = null, CommandFlags commandFlags = CommandFlags.None)
+        {
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
+            {
+                var rKey = (RedisKey)member;
+                var v = await this.ExecuteWithKeyExpire(x => x.ScriptEvaluateAsync(HashScript.IncrementLimitByMax, new[] { Key, rKey }, new RedisValue[] { value, max }, commandFlags), Key, expiry, commandFlags).ForAwait();
+                var r = (long)v;
+                return Tracing.CreateSentAndReceived(new { member, value, max, expiry = expiry?.Value }, sizeof(long) * 2, r, sizeof(long));
+            });
+        }
+
+        /// <summary>
+        /// LUA Script including hincrbyfloat, hset
+        /// </summary>
+        public Task<double> IncrementLimitByMax(Expression<Func<T, double>> memberSelector, double value, double max, RedisExpiry expiry = null, CommandFlags commandFlags = CommandFlags.None)
+        {
+            return IncrementLimitByMax(GetMemberName(memberSelector), value, max, expiry, commandFlags);
+        }
+
+        /// <summary>
+        /// LUA Script including hincrbyfloat, hset
+        /// </summary>
+        public Task<double> IncrementLimitByMax(string member, double value, double max, RedisExpiry expiry = null, CommandFlags commandFlags = CommandFlags.None)
+        {
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
+            {
+                var rKey = (RedisKey)member;
+                var v = await this.ExecuteWithKeyExpire(x => x.ScriptEvaluateAsync(HashScript.IncrementFloatLimitByMax, new[] { Key, rKey }, new RedisValue[] { value, max }, commandFlags), Key, expiry, commandFlags).ForAwait();
+                var r = (double)v;
+                return Tracing.CreateSentAndReceived(new { member, value, max, expiry = expiry?.Value }, sizeof(double) * 2, r, sizeof(double));
+            });
+        }
+
+        /// <summary>
+        /// LUA Script including hincrby, hset
+        /// </summary>
+        public Task<long> IncrementLimitByMin(Expression<Func<T, long>> memberSelector, long value, long max, RedisExpiry expiry = null, CommandFlags commandFlags = CommandFlags.None)
+        {
+            return IncrementLimitByMin(GetMemberName(memberSelector), value, max, expiry, commandFlags);
+        }
+
+        /// <summary>
+        /// LUA Script including hincrby, hset
+        /// </summary>
+        public Task<long> IncrementLimitByMin(string member, long value, long max, RedisExpiry expiry = null, CommandFlags commandFlags = CommandFlags.None)
+        {
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
+            {
+                var rKey = (RedisKey)member;
+                var v = await this.ExecuteWithKeyExpire(x => x.ScriptEvaluateAsync(HashScript.IncrementLimitByMin, new[] { Key, rKey }, new RedisValue[] { value, max }, commandFlags), Key, expiry, commandFlags).ForAwait();
+                var r = (long)v;
+                return Tracing.CreateSentAndReceived(new { member, value, max, expiry = expiry?.Value }, sizeof(long) * 2, r, sizeof(long));
+            });
+        }
+
+        /// <summary>
+        /// LUA Script including hincrbyfloat, hset
+        /// </summary>
+        public Task<double> IncrementLimitByMin(Expression<Func<T, double>> memberSelector, double value, double max, RedisExpiry expiry = null, CommandFlags commandFlags = CommandFlags.None)
+        {
+            return IncrementLimitByMin(GetMemberName(memberSelector), value, max, expiry, commandFlags);
+        }
+
+        /// <summary>
+        /// LUA Script including hincrbyfloat, hset
+        /// </summary>
+        public Task<double> IncrementLimitByMin(string member, double value, double max, RedisExpiry expiry = null, CommandFlags commandFlags = CommandFlags.None)
+        {
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
+            {
+                var rKey = (RedisKey)member;
+                var v = await this.ExecuteWithKeyExpire(x => x.ScriptEvaluateAsync(HashScript.IncrementFloatLimitByMin, new[] { Key, rKey }, new RedisValue[] { value, max }, commandFlags), Key, expiry, commandFlags).ForAwait();
+                var r = (double)v;
+                return Tracing.CreateSentAndReceived(new { member, value, max, expiry = expiry?.Value }, sizeof(double) * 2, r, sizeof(double));
+            });
+        }
+
+        string GetMemberName(LambdaExpression memberSelector)
+        {
+            var unary = memberSelector.Body as UnaryExpression;
+            var memberExpr = (unary != null)
+                ? unary.Operand as MemberExpression
+                : memberSelector.Body as MemberExpression;
+            if (memberExpr == null) throw new ArgumentException("can't analyze selector expression");
+
+            return memberExpr.Member.Name;
+        }
+    }
 }
