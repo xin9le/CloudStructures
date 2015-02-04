@@ -54,13 +54,13 @@ return tostring(x)";
 
     public abstract class RedisHashBase<TKey> : RedisStructure
     {
-        public RedisHashBase(RedisSettings settings, RedisKey listKey)
-            : base(settings, listKey)
+        public RedisHashBase(RedisSettings settings, RedisKey hashKey)
+            : base(settings, hashKey)
         {
         }
 
-        public RedisHashBase(RedisGroup connectionGroup, RedisKey listKey)
-            : base(connectionGroup, listKey)
+        public RedisHashBase(RedisGroup connectionGroup, RedisKey hashKey)
+            : base(connectionGroup, hashKey)
         {
         }
 
@@ -246,13 +246,13 @@ return tostring(x)";
             get { return "RedisDictionary"; }
         }
 
-        public RedisDictionary(RedisSettings settings, RedisKey listKey)
-            : base(settings, listKey)
+        public RedisDictionary(RedisSettings settings, RedisKey hashKey)
+            : base(settings, hashKey)
         {
         }
 
-        public RedisDictionary(RedisGroup connectionGroup, RedisKey listKey)
-            : base(connectionGroup, listKey)
+        public RedisDictionary(RedisGroup connectionGroup, RedisKey hashKey)
+            : base(connectionGroup, hashKey)
         {
         }
 
@@ -417,13 +417,13 @@ return tostring(x)";
             get { return "RedisHash"; }
         }
 
-        public RedisHash(RedisSettings settings, RedisKey listKey)
-            : base(settings, listKey)
+        public RedisHash(RedisSettings settings, RedisKey hashKey)
+            : base(settings, hashKey)
         {
         }
 
-        public RedisHash(RedisGroup connectionGroup, RedisKey listKey)
-            : base(connectionGroup, listKey)
+        public RedisHash(RedisGroup connectionGroup, RedisKey hashKey)
+            : base(connectionGroup, hashKey)
         {
         }
 
@@ -544,13 +544,13 @@ return tostring(x)";
             get { return "RedisClass"; }
         }
 
-        public RedisClass(RedisSettings settings, RedisKey listKey)
-            : base(settings, listKey)
+        public RedisClass(RedisSettings settings, RedisKey hashKey)
+            : base(settings, hashKey)
         {
         }
 
-        public RedisClass(RedisGroup connectionGroup, RedisKey listKey)
-            : base(connectionGroup, listKey)
+        public RedisClass(RedisGroup connectionGroup, RedisKey hashKey)
+            : base(connectionGroup, hashKey)
         {
         }
 

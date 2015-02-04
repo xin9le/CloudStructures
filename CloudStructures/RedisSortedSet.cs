@@ -14,13 +14,13 @@ namespace CloudStructures
             get { return "RedisSortedSet"; }
         }
 
-        public RedisSortedSet(RedisSettings settings, RedisKey listKey)
-            : base(settings, listKey)
+        public RedisSortedSet(RedisSettings settings, RedisKey setKey)
+            : base(settings, setKey)
         {
         }
 
-        public RedisSortedSet(RedisGroup connectionGroup, RedisKey listKey)
-            : base(connectionGroup, listKey)
+        public RedisSortedSet(RedisGroup connectionGroup, RedisKey setKey)
+            : base(connectionGroup, setKey)
         {
         }
 

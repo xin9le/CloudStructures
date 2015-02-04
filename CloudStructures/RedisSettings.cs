@@ -149,51 +149,57 @@ namespace CloudStructures
 
         // shortcut
 
-        ///// <summary>Create RedisString used by this settings.</summary>
-        //public RedisString<T> String<T>(RedisKey key)
-        //{
-        //    return new RedisString<T>(this, key);
-        //}
+        /// <summary>Create RedisString used by this settings.</summary>
+        public RedisString<T> String<T>(RedisKey key)
+        {
+            return new RedisString<T>(this, key);
+        }
 
-        ///// <summary>Create RedisList used by this settings.</summary>
-        //public RedisList<T> List<T>(RedisKey key)
-        //{
-        //    return new RedisList<T>(this, key);
-        //}
-        ///// <summary>Create RedisSet used by this settings.</summary>
-        //public RedisSet<T> Set<T>(RedisKey key)
-        //{
-        //    return new RedisSet<T>(this, key);
-        //}
+        /// <summary>Create RedisList used by this settings.</summary>
+        public RedisList<T> List<T>(RedisKey key)
+        {
+            return new RedisList<T>(this, key);
+        }
+        /// <summary>Create RedisSet used by this settings.</summary>
+        public RedisSet<T> Set<T>(RedisKey key)
+        {
+            return new RedisSet<T>(this, key);
+        }
 
-        ///// <summary>Create RedisSortedSet used by this settings.</summary>
-        //public RedisSortedSet<T> SortedSet<T>(RedisKey key)
-        //{
-        //    return new RedisSortedSet<T>(this, key);
-        //}
+        /// <summary>Create RedisSortedSet used by this settings.</summary>
+        public RedisSortedSet<T> SortedSet<T>(RedisKey key)
+        {
+            return new RedisSortedSet<T>(this, key);
+        }
 
-        ///// <summary>Create RedisHash used by this settings.</summary>
-        //public RedisHash Hash(RedisKey key)
-        //{
-        //    return new RedisHash(this, key);
-        //}
+        /// <summary>Create RedisHash used by this settings.</summary>
+        public RedisHash<TKey> Hash<TKey>(RedisKey key)
+        {
+            return new RedisHash<TKey>(this, key);
+        }
 
-        ///// <summary>Create RedisDictionary used by this settings.</summary>
-        //public RedisDictionary<T> Dictionary<T>(RedisKey key)
-        //{
-        //    return new RedisDictionary<T>(this, key);
-        //}
+        /// <summary>Create RedisDictionary used by this settings.</summary>
+        public RedisDictionary<TKey, TValue> Dictionary<TKey, TValue>(RedisKey key)
+        {
+            return new RedisDictionary<TKey, TValue>(this, key);
+        }
 
-        ///// <summary>Create RedisClass used by this settings.</summary>
-        //public RedisClass<T> Class<T>(RedisKey key) where T : class, new()
-        //{
-        //    return new RedisClass<T>(this, key);
-        //}
+        /// <summary>Create RedisClass used by this settings.</summary>
+        public RedisClass<T> Class<T>(RedisKey key) where T : class, new()
+        {
+            return new RedisClass<T>(this, key);
+        }
 
         /// <summary>Create RedisHyperLogLog used by this settings.</summary>
         public RedisHyperLogLog<T> HyperLogLog<T>(RedisKey key)
         {
             return new RedisHyperLogLog<T>(this, key);
+        }
+
+        /// <summary>Create RedisLua used by this settings.</summary>
+        public RedisLua Lua(RedisKey key)
+        {
+            return new RedisLua(this, key);
         }
 
         public class OpenConnectionEventArgs : EventArgs
