@@ -106,6 +106,56 @@ namespace CloudStructures
             });
         }
 
+        /// <summary>
+        /// LUA Script including zincrby, zadd
+        /// </summary>
+        public Task<double> IncrementLimitByMax(T member, double value, double max, RedisExpiry expiry = null, CommandFlags commandFlags = CommandFlags.None)
+        {
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
+            {
+                long size;
+                var mv = Settings.ValueConverter.Serialize(member, out size);
+                var v = await this.ExecuteWithKeyExpire(x => x.ScriptEvaluateAsync(@"
+local mem = ARGV[1]
+local inc = tonumber(ARGV[2])
+local max = tonumber(ARGV[3])
+local x = tonumber(redis.call('zincrby', KEYS[1], inc, mem))
+if(x > max) then
+    redis.call('zadd', KEYS[1], max, mem)
+    x = max
+end
+return tostring(x)", new[] { Key }, new RedisValue[] { mv, value, max }, commandFlags), Key, expiry, commandFlags).ForAwait();
+                var r = double.Parse((string)v);
+
+                return Tracing.CreateSentAndReceived(new { value, max, expiry = expiry?.Value }, size, r, sizeof(double));
+            });
+        }
+
+        /// <summary>
+        /// LUA Script including zincrby, zadd
+        /// </summary>
+        public Task<double> IncrementLimitByMin(T member, double value, double min, RedisExpiry expiry = null, CommandFlags commandFlags = CommandFlags.None)
+        {
+            return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
+            {
+                long size;
+                var mv = Settings.ValueConverter.Serialize(member, out size);
+                var v = await this.ExecuteWithKeyExpire(x => x.ScriptEvaluateAsync(@"
+local mem = ARGV[1]
+local inc = tonumber(ARGV[2])
+local min = tonumber(ARGV[3])
+local x = tonumber(redis.call('zincrby', KEYS[1], inc, mem))
+if(x < min) then
+    redis.call('zadd', KEYS[1], min, mem)
+    x = min
+end
+return tostring(x)", new[] { Key }, new RedisValue[] { mv, value, min }, commandFlags), Key, expiry, commandFlags).ForAwait();
+                var r = double.Parse((string)v);
+
+                return Tracing.CreateSentAndReceived(new { value, min, expiry = expiry?.Value }, size, r, sizeof(double));
+            });
+        }
+
 
         /// <summary>
         /// ZRANGE, ZREVRANGE http://redis.io/commands/zrange http://redis.io/commands/zrevrange

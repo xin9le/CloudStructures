@@ -157,6 +157,11 @@ namespace CloudStructures.Tests
 
             (await set.Increment("a", -100)).Is(11);
             (await set.Increment("a", -1)).Is(10);
+
+            (await set.IncrementLimitByMax("a", 30, 50)).Is(40);
+            (await set.IncrementLimitByMax("a", 30, 50)).Is(50);
+            (await set.IncrementLimitByMin("a", -30, 5)).Is(20);
+            (await set.IncrementLimitByMin("a", -30, 5)).Is(5);
         }
 
         [TestMethod]
