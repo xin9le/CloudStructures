@@ -80,7 +80,6 @@
     <Compile Include="RedisHyperLogLogTest.cs" />
     <Compile Include="CommandTracerTests.cs" />
     <Compile Include="RedisStringTest.cs" />
-    <Compile Include="DemoTest.cs" />
     <Compile Include="Scripting.cs" />
   </ItemGroup>
   <ItemGroup>

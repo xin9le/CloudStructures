@@ -119,7 +119,7 @@ namespace CloudStructures.Tests
             // length
             (await set.Length()).Is(6);
             (await set.Length(100, 10000)).Is(3);
-            (await set.Length(100, 10000, Exclude.Both)).Is(3);
+            (await set.Length(100, 10000, Exclude.Both)).Is(1);
         }
 
         [TestMethod]
