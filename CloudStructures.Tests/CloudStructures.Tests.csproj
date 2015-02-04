@@ -71,6 +71,7 @@
   </Choose>
   <ItemGroup>
     <Compile Include="ChainingAssertion.MSTest.cs" />
+    <Compile Include="RedisHashTest.cs" />
     <Compile Include="RedisSortedSetTest.cs" />
     <Compile Include="RedisSetTest.cs" />
     <Compile Include="RedisListTest.cs" />

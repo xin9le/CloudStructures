@@ -1,5 +1,6 @@
 ﻿using StackExchange.Redis;
 using System;
+using System.Text;
 
 namespace CloudStructures
 {
@@ -19,7 +20,7 @@ namespace CloudStructures
 
     /// <summary>
     /// <para>Bass class of IRedisValueConverter for object serialization.</para>
-    /// <para>If target is primitive type(int, double, etc), doesn't pass to core serializer.</para>
+    /// <para>If target is primitive type(int, double, string, etc), doesn't pass to core serializer.</para>
     /// </summary>
     public abstract class ObjectRedisValueConverterBase : IRedisValueConverter
     {
@@ -82,6 +83,9 @@ namespace CloudStructures
                     valueSize = sizeof(Char);
                     return (Char)value;
                 case TypeCode.String:
+                    byte[] strByte = value;
+                    valueSize = strByte.Length;
+                    return Encoding.UTF8.GetString(strByte);
                 default:
                     byte[] buf = value;
                     valueSize = buf.Length;
@@ -138,6 +142,9 @@ namespace CloudStructures
                     resultSize = sizeof(Char);
                     return (Char)value;
                 case TypeCode.String:
+                    var strByte = Encoding.UTF8.GetBytes((string)value);
+                    resultSize = strByte.Length;
+                    return strByte;
                 default:
                     return SerializeCore(value, out resultSize);
             }
