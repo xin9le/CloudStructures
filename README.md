@@ -197,17 +197,11 @@ Finally, RedisInfoTab. Showing all serverinfo, commandstat, server-configuration
 
 ![](./Docs/RedisInfoTab.png)
 
-Who is using this?
----
-CloudStructures is in production use at [Grani](http://grani.jp/)  
-Grani is top social game developer in Japan(and I'm CTO at Grani).  
-The game is developed by C# 5.0 + ASP.NET MVC 5 on AWS(Windows Server + RDS(MySQL) + Redis).  
-The game use redis massively heavy, hundreds of thousands of message per second.
-
 Author Info
 ---
 Yoshifumi Kawai(a.k.a. neuecc) is software developer in Japan.
 He is Director/CTO at Grani, Inc. 
+Grani is top social game developer in Japan(and I'm CTO at Grani).  
 He awarded Microsoft MVP for Visual C# since 2011.
 He is known by creator of [linq.js](http://linqjs.codeplex.com/)(LINQ to Objects for JavaScript) and [UniRx](https://github.com/neuecc/UniRx)(Reactive Extensions for Unity) 
 
