@@ -175,7 +175,7 @@ Install from NuGet - [Glimpse.CloudStructures.Redis](https://nuget.org/packages/
 PM> Install-Package Glimpse.CloudStructures.Redis
 ```
 
-Setup Glimpse and add config with GlimpseRedisCommandTracer and regisiter RedisGroup at first.
+Setup Glimpse and add config with GlimpseRedisCommandTracer. If you use RedisInfoTab then have to set connectionString's allowAdmin = true and regisiter RedisGroup at first.
 
 ```xml
 <add connectionString="127.0.0.1,allowAdmin=true" db="0" commandTracer="Glimpse.CloudStructures.Redis.GlimpseRedisCommandTracer, Glimpse.CloudStructures.Redis" />
