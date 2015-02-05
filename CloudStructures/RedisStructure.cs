@@ -55,7 +55,7 @@ namespace CloudStructures
         /// <summary>
         /// SETEX, PSETEX http://redis.io/commands/setex http://redis.io/commands/psetex
         /// </summary>
-        public Task<bool> SetExpire(DateTime expiry, CommandFlags commandFlags = CommandFlags.None)
+        public Task<bool> Expire(DateTime expiry, CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
@@ -67,7 +67,7 @@ namespace CloudStructures
         /// <summary>
         /// SETEX, PSETEX http://redis.io/commands/setex http://redis.io/commands/psetex
         /// </summary>
-        public Task<bool> SetExpire(TimeSpan expiry, CommandFlags commandFlags = CommandFlags.None)
+        public Task<bool> Expire(TimeSpan expiry, CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
@@ -79,7 +79,7 @@ namespace CloudStructures
         /// <summary>
         /// EXISTS http://redis.io/commands/exists
         /// </summary>
-        public Task<bool> KeyExists(CommandFlags commandFlags = CommandFlags.None)
+        public Task<bool> Exists(CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordReceive(Settings, Key, CallType, async () =>
             {

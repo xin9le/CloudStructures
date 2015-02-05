@@ -47,6 +47,11 @@ namespace CloudStructures
             this.value = value;
         }
 
+        public object GetValueOrNull()
+        {
+            return (HasValue) ? (object)Value : null;
+        }
+
         public T GetValueOrDefault()
         {
             return (HasValue) ? Value : default(T);

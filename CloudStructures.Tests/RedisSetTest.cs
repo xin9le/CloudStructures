@@ -41,8 +41,8 @@ namespace CloudStructures.Tests
 
             await Task.Delay(TimeSpan.FromMilliseconds(1500));
 
-            (await set.KeyExists()).IsTrue();
-            (await set2.KeyExists()).IsFalse();
+            (await set.Exists()).IsTrue();
+            (await set2.Exists()).IsFalse();
         }
 
 

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using StackExchange.Redis;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -14,6 +15,11 @@ namespace CloudStructures.Demo.Mvc.Controllers
         public int Age { get; set; }
     }
 
+    public static class RedisServer
+    {
+        public static readonly RedisSettings Default = new RedisSettings("127.0.0.1");
+    }
+
     public class HomeController : Controller
     {
         public async Task<ActionResult> Index()
@@ -22,7 +28,7 @@ namespace CloudStructures.Demo.Mvc.Controllers
 
             await list.Delete();
             await list.RightPush(new Person { Name = "Hoge", Age = 10 });
-            await list.SetExpire(TimeSpan.FromSeconds(15));
+            await list.Expire(TimeSpan.FromSeconds(15));
 
             var ids = new[] { 12 };//, 3124, 51, 636, 6714 };
             var rand = new Random();
@@ -36,6 +42,13 @@ namespace CloudStructures.Demo.Mvc.Controllers
 
             await list.Range(0, 10);
             await list.Range(0, 10);
+
+            var str = RedisGroups.Demo.String<int>("aaa");
+            await str.Set(1000);
+            await str.Get();
+            await str.Delete();
+            await str.Get(); // it's null!
+
 
             return View();
         }

@@ -20,7 +20,7 @@ namespace CloudStructures.Demo.Mvc
 
         static RedisGroups()
         {
-            // regisiter
+            // If you use Glimpse, needs to register RedisGroup
             Glimpse.CloudStructures.Redis.RedisInfoTab.RegisiterConnection(new[] { Demo });
         }
     }

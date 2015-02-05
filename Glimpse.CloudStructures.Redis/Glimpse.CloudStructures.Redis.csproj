@@ -54,7 +54,7 @@
   <ItemGroup>
     <Compile Include="RedisInfoTab.cs" />
     <Compile Include="RedisInspector.cs" />
-    <Compile Include="RedisProfiler.cs" />
+    <Compile Include="GlimpseRedisCommandTracer.cs" />
     <Compile Include="RedisTab.cs" />
     <Compile Include="RedisTimelineMessage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

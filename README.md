@@ -1,6 +1,6 @@
 CloudStructures
 ===============
-Redis Client based on [StachExchange.Redis](https://github.com/StackExchange/StackExchange.Redis). CloudStructures appends connection management, auto serialize/deserialize for RedisValue, key distributed connection(grouing), Web.config supports and Redis Profiler for Glimpse. 
+Redis Client based on [StachExchange.Redis](https://github.com/StackExchange/StackExchange.Redis). CloudStructures appends connection management, auto serialize/deserialize for RedisValue, key distributed connection(sharding), command logging, Web.config supports and Redis Profiler for Glimpse. 
 
 Why use CloudStructures?
 ---
@@ -8,24 +8,17 @@ StachExchange.Redis is pure, low level library. It is Redis driver like ADO.NET.
 
 Install
 ---
-NuGet - [CloudStructures](https://nuget.org/packages/CloudStructures/)
+from NuGet - [CloudStructures](https://nuget.org/packages/CloudStructures/)
 ```
 PM> Install-Package CloudStructures
 ```
 
 How to use
 ---
-At first, create `RedisSettings` or `RedisGroup` that represents StachExchange.Redis's ConnectionMultiplexer holder.
-
-
-
-
-
-
-
+At first, create `RedisSettings` or `RedisGroup` that represents StachExchange.Redis's ConnectionMultiplexer holder and create RedisStructure Class(`RedisString`, `RedisList`, etc). 
 
 ```csharp
-// Server of Redis
+// Settings should holds in static variable
 public static class RedisServer
 {
     public static readonly RedisSettings Default = new RedisSettings("127.0.0.1");
@@ -38,27 +31,27 @@ public class Person
     public int Age { get; set; }
 }
 
-
-// Redis String
+// Create RedisString... (or you can use RedisSettings.Default.String<Person>("key"))
 var redis = new RedisString<Person>(RedisServer.Default, "test-string-key");
+
+// call command(IntelliSense helps you)
 await redis.Set(new Person { Name = "John", Age = 34 });
 
-var copy = await redis.GetValueOrDefault();
+// get is the same as 
+var copy = await redis.Get();
 
-// Redis list
-var redis = new RedisList<Person>(RedisServer.Default, "test-list-key");
-await redis.AddLast(new Person { Name = "Tom" });
-await redis.AddLast(new Person { Name = "Mary" });
+// List is the same as
+var list = new RedisList<Person>(RedisServer.Default, "test-list-key");
+await list.LeftPush(new[] { new Person { Name = "Tom" }, new Person { Name = "Mary" } });
 
-var persons = await redis.Range(0, 10);
-
-// and others - Set, SortedSet, Hash, Dictionary(Generic Hash), Class(Object-Hash-Mapping)
+var persons = await list.Range(0, 10);
 ```
 
+CloudStructures manage object serialization/deserialization automatically. 
 
 Data structure of Redis
 ---
-CloudStructures supports these Redis data types.
+CloudStructures supports these Redis data types. All methods are async.
 
 Class  |Description 
 -------| -----------
@@ -82,72 +75,30 @@ await list.LeftPush(1, expiry: TimeSpan.FromSeconds(30));
 await list.LeftPush(10, expiry: DateTime.Now.AddDays(1));
 ```
 
-And all classes have `SetExpire`, `KeyExists`, `Delete`, `TimeToLive`.
+And all classes have `Expire`, `Exists`, `Delete`, `TimeToLive`.
 
 Some classes have additional methods. RedisList has `LeftPushAndFixLength` that simulate fixed size list by LPUSH and TRIM. RedisSortedSet has `RangeByRankWithScoresAndRank` that returns value, score and rank. If class has Increment method which is appended `IncrementLimitByMax` and `IncrementLimitByMin` there are increment with max/min limit by custom LUA script.
 
-Some methods return `RedisResult<T>`. If Redis returns null then `RedisResult<T>.HasValue` is false.
-
-
-
-
-
-ConnectionManagement
----
-```csharp
-// Represents of Redis settings
-var settings = new RedisSettings(host: "127.0.0.1", port: 6379, db: 0);
-
-// BookSleeve's threadsafe connection
-// keep single connection and re-connect when disconnected
-var conn = settings.GetConnection();
-
-// multi group of connections
-var group = new RedisGroup(groupName: "Cache", settings: new[]
-{
-    new RedisSettings(host: "100.0.0.1", port: 6379, db: 0),
-    new RedisSettings(host: "105.0.0.1", port: 6379, db: 0),
-});
-
-// key hashing
-var conn = group.GetSettings("hogehoge-100").GetConnection();
-
-// customize serializer(default as JSON, and option includes protocol-buffers)
-new RedisSettings("127.0.0.1", converter: new JsonRedisValueConverter());
-new RedisSettings("127.0.0.1", converter: new ProtoBufRedisValueConverter());
-```
-
-PubSub -> Observable
----
-Experimental feature, CloudStructures with Reactive Extensions. RedisSubject is ISubject = IObservable and IObserver. Observer publish message to Redis PubSub Channnel. Observable subscribe to Redis PubSub Channel.
-
-using with NuGet(Including PreRelease), [CloudStructures-Rx](https://nuget.org/packages/CloudStructures-Rx/)
-```
-PM> Install-Package CloudStructures-Rx -Pre
-```
+Some methods return `RedisResult<T>`. If Redis returns null `RedisResult<T>.HasValue` is false. You can take value from `Value` property or `GetValueOrDefault(defaultValue)` method or `GetValueOrNull()` method that if HasValue is false then return null.
 
 ```csharp
-// RedisSubject as ISubject<T>
-var subject = new RedisSubject<string>(RedisServer.Default, "PubSubTest");
+var redis = new RedisString<int>(settings);
+var result = await Get();
 
-// subject as IObservable<T> and Subscribe to Redis PubSub Channel
-var a = subject
-    .Select(x => DateTime.Now.Ticks + " " + x)
-    .Subscribe(x => Console.WriteLine(x));
+// take from .Value
+if (result.HasValue) Debug.Write(result.Value);
+// or from GetValueOrDefault
+var value = result.GetValueOrDefault(-1);
+// take boxed value
+var objectValue = result.GetValueOrNull();
+```
 
-var b = subject
-    .Where(x => !x.StartsWith("A"))
-    .Subscribe(x => Console.WriteLine(x), () => Console.WriteLine("completed!"));
+CloudStructures does not provide multiple key operation such as SUNION, ZINTERSTORE, etc. Because connection might be distributed by RedisGroup, secondary key may not exist in first key's Redis. If you want to do it, you can take raw connection and do manual deserialize.
 
-// subject as IObserver and OnNext/OnError/OnCompleted publish to Redis PubSub Channel
-subject.OnNext("ABCDEFGHIJKLM");
-subject.OnNext("hello");
-subject.OnNext("world");
-
-Thread.Sleep(200);
-
-a.Dispose(); // Unsubscribe is Dispose
-subject.OnCompleted(); // if receive OnError/OnCompleted then subscriber is unsubscribed
+```csharp
+// Connections in the group must be single
+var rawResults = settings.GetConnection().GetDatabase().SetCombine(SetOperation.Union, "firstKey", "secondKey");
+var results = rawResults.Select(x => { long size; return settings.ValueConverter.Deserialize<Person>(x, out size); }).ToArray();
 ```
 
 Configuration
@@ -156,61 +107,81 @@ load configuration from web.config or app.config
 
 ```xml
 <configSections>
-    <section name="cloudStructures" type="CloudStructures.Redis.CloudStructuresConfigurationSection, CloudStructures" />
+    <section name="cloudStructures" type="CloudStructures.CloudStructuresConfigurationSection, CloudStructures" />
 </configSections>
 
 <cloudStructures>
     <redis>
-        <group name="cache">
-            <add host="127.0.0.1" />
-            <add host="127.0.0.2" port="1000" />
+        <group name="Cache">
+            <!-- Simple Grouping(key sharding) -->
+            <add connectionString="127.0.0.1,allowAdmin=true" db="0" />
+            <add connectionString="127.0.0.1,allowAdmin=true" db="1" />
         </group>
-        <group name="session">
-            <add host="127.0.0.1" db="2" valueConverter="CloudStructures.Redis.ProtoBufRedisValueConverter, CloudStructures" />
+        <group name="Session">
+            <!-- Full option -->
+            <add connectionString="127.0.0.1,allowAdmin=true" db="2" valueConverter="CloudStructures.GZipJsonRedisValueConverter, CloudStructures"  commandTracer="Glimpse.CloudStructures.Redis.GlimpseRedisCommandTracer, Glimpse.CloudStructures.Redis" />
         </group>
     </redis>
 </cloudStructures>
 ```
 
 ```csharp
-// load configuration from .config
-var groups = CloudStructuresConfigurationSection.GetSection().ToRedisGroups();
+// setting hold static fields
+public static class RedisGroups
+{
+    // load from web.config
+    static Dictionary<string, RedisGroup> configDict = CloudStructures.CloudStructuresConfigurationSection
+        .GetSection()
+        .ToRedisGroups()
+        .ToDictionary(x => x.GroupName);
+
+    // setup group
+    public static readonly RedisGroup Cache = configDict["Cache"];
+    public static readonly RedisGroup Session = configDict["Session"];
+
+    static RedisGroups()
+    {
+        // If you want to enable Glimpse's RedisInfo then register groups
+        Glimpse.CloudStructures.Redis.RedisInfoTab.RegisiterConnection(new[] { Cache, Session });
+    }
+}
 ```
 
-group attributes are "host, port, ioTimeout, password, maxUnsent, allowAdmin, syncTimeout, db, valueConverter, commandTracer".  
-It is same as RedisSettings except commandTracer.
+connectionString is [StackExchange.Redis's Configuration String](https://github.com/StackExchange/StackExchange.Redis/blob/master/Docs/Configuration.md).
+
+
 
 Glimpse.CloudStructures.Redis
 ---
-CloudStructures has Redis Profiler for [Glimpse](http://getglimpse.com/). - [Glimpse.CloudStructures.Redis](https://nuget.org/packages/Glimpse.CloudStructures.Redis/)
+CloudStructures has Redis Profiler for [Glimpse](http://getglimpse.com/).
+
+Install from NuGet - [Glimpse.CloudStructures.Redis](https://nuget.org/packages/Glimpse.CloudStructures.Redis/)
 
 ```
 PM> Install-Package Glimpse.CloudStructures.Redis
 ```
 
-Setup Glimpse and add config with RedisProfiler for example
+Setup Glimpse and add config with GlimpseRedisCommandTracer and regisiter RedisGroup at first.
 
 ```xml
-<cloudStructures>
-<redis>
-    <group name="Demo">
-    <add host="127.0.0.1" db="0" commandTracer="Glimpse.CloudStructures.Redis.RedisProfiler, Glimpse.CloudStructures.Redis" />
-    </group>
-</redis>
-</cloudStructures>
+<add connectionString="127.0.0.1,allowAdmin=true" db="0" commandTracer="Glimpse.CloudStructures.Redis.GlimpseRedisCommandTracer, Glimpse.CloudStructures.Redis" />
 ```
 
-You can see Redis Tab on Glimpse.
+```csharp
+Glimpse.CloudStructures.Redis.RedisInfoTab.RegisiterConnection(new[] { Cache, Session });
+```
 
-![](http://i.imgur.com/QZ7hZu6.jpg)
+Okay, you can see timeline tab, can visualize parallel access.
 
-Command, Key, Sent/Received Object as JSON, Duration. If duplicate command and key then show warn(Icon and Orange Text).
+![](./Docs/RedisTimeline.png)
 
-And Timeline, can visualise parallel access.
+Look at the RedisTab! You can see Sent/Received object's dump, each size, key expire, command duration, warning at duplicate command & key. 
 
-![](http://i.imgur.com/yqzAIzk.jpg)
+![](./Docs/RedisTab.png)
 
-Sample is avaliable on this Repositry, [CloudStructures.Demo.Mvc](https://github.com/neuecc/CloudStructures/tree/master/CloudStructures.Demo.Mvc).
+Finally, RedisInfoTab. Showing all serverinfo, commandstat, server-configuration and client-configuration and client-status-counter.
+
+![](./Docs/RedisInfoTab.png)
 
 Who is using this?
 ---
@@ -219,8 +190,26 @@ Grani is top social game developer in Japan(and I'm CTO at Grani).
 The game is developed by C# 5.0 + ASP.NET MVC 5 on AWS(Windows Server + RDS(MySQL) + Redis).  
 The game use redis massively heavy, hundreds of thousands of message per second.
 
+Author Info
+---
+Yoshifumi Kawai(a.k.a. neuecc) is software developer in Japan.
+He is Director/CTO at Grani, Inc. 
+He awarded Microsoft MVP for Visual C# since 2011.
+He is known by creator of [linq.js](http://linqjs.codeplex.com/)(LINQ to Objects for JavaScript) and [UniRx](https://github.com/neuecc/UniRx)(Reactive Extensions for Unity) 
+
+Blog: http://neue.cc/ (JPN)  
+Twitter: https://twitter.com/neuecc (JPN)
+
 History
 ---
+2015-02-06 ver 1.0.0
+* changed base library from BookSleeve to StackExchange.Redis
+* overhaul all API, many breaking changes
+* improvement RedisTab for Glimpse
+* add RedisInfoTab for Glimpse
+* regsiter CloudStructures.LZ4 on NuGet
+* document rewrite
+
 2013-11-16 ver 0.6.1
 * fix, Configuration's GetElementKey take uniq by Host, Port, Db.
 

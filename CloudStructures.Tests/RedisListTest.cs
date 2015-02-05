@@ -23,7 +23,7 @@ namespace CloudStructures.Tests
 
             await Task.Delay(TimeSpan.FromMilliseconds(1500));
 
-            (await list.KeyExists()).IsFalse();
+            (await list.Exists()).IsFalse();
 
             (await list.RightPush(1)).Is(1);
             (await list.RightPush(10)).Is(2);
@@ -33,7 +33,7 @@ namespace CloudStructures.Tests
 
             await Task.Delay(TimeSpan.FromMilliseconds(1500));
 
-            (await list.KeyExists()).IsFalse();
+            (await list.Exists()).IsFalse();
         }
 
         [TestMethod]
