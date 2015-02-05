@@ -1,20 +1,23 @@
-﻿using CloudStructures.Redis;
+﻿using CloudStructures;
 using System.Web;
+using System;
+using StackExchange.Redis;
 
 namespace Glimpse.CloudStructures.Redis
 {
-    public class RedisProfiler : ICommandTracer
+    public class GlimpseRedisCommandTracer : ICommandTracer
     {
         RedisInspector.TimelineRegion timelineRegion;
 
-        public void CommandStart(RedisSettings usedSettings, string command, string key)
+        public void CommandStart(RedisSettings usedSettings, string command, RedisKey key)
         {
-            this.timelineRegion = RedisInspector.Start(command, key);
+            this.timelineRegion = RedisInspector.Start(usedSettings, command, key);
         }
 
-        public void CommandFinish(object sendObject, object receivedObject, bool isError)
+
+        public void CommandFinish(object sentObject, long sentSize, object receivedObject, long receivedSize, bool isError)
         {
-            timelineRegion.Publish(sendObject, receivedObject, isError);
+            timelineRegion.Publish(sentObject, sentSize, receivedObject, receivedSize, isError);
         }
     }
 }

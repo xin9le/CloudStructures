@@ -18,11 +18,15 @@ namespace CloudStructures.Demo.Mvc.Controllers
     {
         public async Task<ActionResult> Index()
         {
-            await RedisGroups.Demo.List<Person>("ListDemo").AddLast(new Person { Name = "Hoge", Age = 10 });
+            var list = RedisGroups.Demo.List<Person>("ListDemo");
 
-            var ids = new[] { 12, 3124, 51, 636, 6714 };
+            await list.Delete();
+            await list.RightPush(new Person { Name = "Hoge", Age = 10 });
+            await list.SetExpire(TimeSpan.FromSeconds(15));
+
+            var ids = new[] { 12 };//, 3124, 51, 636, 6714 };
             var rand = new Random();
-            
+
             // you can watch parallel execution
             await Task.WhenAll(ids.Select(async x =>
             {
@@ -30,8 +34,8 @@ namespace CloudStructures.Demo.Mvc.Controllers
             }).ToArray());
 
 
-            await RedisGroups.Demo.List<Person>("ListDemo").Range(1, 10);
-            await RedisGroups.Demo.List<Person>("ListDemo").Range(1, 10);
+            await list.Range(0, 10);
+            await list.Range(0, 10);
 
             return View();
         }
