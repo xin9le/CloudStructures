@@ -43,10 +43,10 @@ namespace Glimpse.CloudStructures.Redis
             public ServerInfo[] ServerInfo { get; set; }
             public ServerCmdStat[] ServerCmdStat { get; set; }
             public ServerConfig[] ServerConfig { get; set; }
-            public RedisInfoConnectionInfoModel[] ConnectionInfo { get; set; }
+            public RedisSettingsInfoModel[] SettingsInfo { get; set; }
         }
 
-        public class RedisInfoConnectionInfoModel
+        public class RedisSettingsInfoModel
         {
             public string Group { get; set; }
             public ConfigurationOptions ConfigurationOptions { get; set; }
@@ -137,9 +137,9 @@ namespace Glimpse.CloudStructures.Redis
             }
             catch { }
 
-            var connectionInfos = redisGroups
+            var settingsInfos = redisGroups
                 .SelectMany(x => x.Settings, (x, y) => new { Group = x.GroupName, Settings = y })
-                .Select(x => new RedisInfoConnectionInfoModel
+                .Select(x => new RedisSettingsInfoModel
                 {
                     Group = x.Group,
                     ConfigurationOptions = x.Settings.ConfigurationOptions,
@@ -155,7 +155,7 @@ namespace Glimpse.CloudStructures.Redis
                 ServerInfo = infos,
                 ServerConfig = configs,
                 ServerCmdStat = cmdstats,
-                ConnectionInfo = connectionInfos
+                SettingsInfo = settingsInfos
             };
         }
     }

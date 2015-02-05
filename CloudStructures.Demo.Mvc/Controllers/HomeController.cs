@@ -18,25 +18,24 @@ namespace CloudStructures.Demo.Mvc.Controllers
     {
         public async Task<ActionResult> Index()
         {
-            await RedisGroups.Demo.List<Person>("ListDemo").Delete();
-            await RedisGroups.Demo.List<Person>("ListDemo").RightPush(new Person { Name = "Hoge", Age = 10 });
-            await RedisGroups.Demo.List<Person>("ListDemo").RightPush(new Person { Name = "Hage", Age = 20 });
-            await RedisGroups.Demo.List<Person>("ListDemo").RightPush(new Person { Name = "Huge", Age = 30 });
-            await RedisGroups.Demo.List<Person>("ListDemo").RightPush(new Person { Name = "Tage", Age = 40 });
-            await RedisGroups.Demo.List<Person>("ListDemo").RightPush(new Person { Name = "Koge", Age = 50 });
+            var list = RedisGroups.Demo.List<Person>("ListDemo");
 
-            var ids = new[] { 12, 3124, 51, 636, 6714 };
+            await list.Delete();
+            await list.RightPush(new Person { Name = "Hoge", Age = 10 });
+            await list.SetExpire(TimeSpan.FromSeconds(15));
+
+            var ids = new[] { 12 };//, 3124, 51, 636, 6714 };
             var rand = new Random();
 
             // you can watch parallel execution
             await Task.WhenAll(ids.Select(async x =>
             {
-                await RedisGroups.Demo.String<int>("TestInc.Id." + x).Increment(rand.Next(1, 10), TimeSpan.FromSeconds(10));
+                await RedisGroups.Demo.String<int>("TestInc.Id." + x).Increment(rand.Next(1, 10));
             }).ToArray());
 
 
-            await RedisGroups.Demo.List<Person>("ListDemo").Range(0, 10);
-            await RedisGroups.Demo.List<Person>("ListDemo").Range(0, 10);
+            await list.Range(0, 10);
+            await list.Range(0, 10);
 
             return View();
         }

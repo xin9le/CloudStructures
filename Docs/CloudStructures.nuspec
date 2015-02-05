@@ -2,24 +2,23 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <metadata>
         <id>CloudStructures</id>
-        <version>0.6.1</version>
+        <version>1.0.0</version>
         <title>CloudStructures</title>
         <authors>neuecc</authors>
         <owners>neuecc</owners>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
-        <description>Redis Client based on BookSleeve. Features: connection management, serialize/deserialize to object, key distribute and configuration.</description>
+        <description>Redis Client based on StackExchange.Redis. Features: connection management, serialize/deserialize to object, key distribute, configuration and Glimpse profiler addon.</description>
         <language>en-US</language>
         <licenseUrl>http://opensource.org/licenses/MIT</licenseUrl>
         <projectUrl>https://github.com/neuecc/CloudStructures</projectUrl>
         <tags>Redis</tags>
         <dependencies>
-            <dependency id="BookSleeve" version="1.3.39" />
-            <dependency id="FastMember" version="1.0.0.11" />
-            <dependency id="Newtonsoft.Json" version="5.0.8" />
-            <dependency id="protobuf-net" version="2.0.0.668" />
+            <dependency id="Jil" version="2.7.2" />
+            <dependency id="StackExchange.Redis" version="1.0.394" />
         </dependencies>
     </metadata>
     <files>
         <file src="..\CloudStructures\bin\Release\CloudStructures.dll" target="lib" />
+        <file src="..\CloudStructures\bin\Release\CloudStructures.xml" target="lib" />
     </files>
 </package>

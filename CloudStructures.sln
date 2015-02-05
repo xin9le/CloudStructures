@@ -6,12 +6,16 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{CC9007A7-F1A7-4623-A21E-C4F25F41AA6D}"
 	ProjectSection(SolutionItems) = preProject
 		Docs\CloudStructures-Rx.nuspec = Docs\CloudStructures-Rx.nuspec
+		Docs\CloudStructures.LZ4.nuspec = Docs\CloudStructures.LZ4.nuspec
 		Docs\CloudStructures.nuspec = Docs\CloudStructures.nuspec
 		Docs\Glimpse.CloudStructures.Redis.nuspec = Docs\Glimpse.CloudStructures.Redis.nuspec
 		Docs\NuGet.exe = Docs\NuGet.exe
 		Docs\pack.bat = Docs\pack.bat
 		Docs\push.bat = Docs\push.bat
 		README.md = README.md
+		Docs\RedisInfoTab.png = Docs\RedisInfoTab.png
+		Docs\RedisTab.png = Docs\RedisTab.png
+		Docs\RedisTimeline.png = Docs\RedisTimeline.png
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{51F7D316-78B8-42E7-B93B-77A01DBDCA47}"
