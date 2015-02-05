@@ -149,7 +149,21 @@ public static class RedisGroups
 
 connectionString is [StackExchange.Redis's Configuration String](https://github.com/StackExchange/StackExchange.Redis/blob/master/Docs/Configuration.md).
 
+ValueConverter
+---
+Default ValueConverter(Serializer) is JSON by [Jil](https://github.com/kevin-montrose/Jil). You can change ValueConverter on RediSettings's valueConverter property. ClousStructure has 2 compressed valueConverter. One is `GZipJsonRedisValueConverter` it's bundled CloudStructures. Another is `LZ4JsonRedisValueConverter` it's used fastest compression algorithm [LZ4](https://code.google.com/p/lz4/).
 
+Install from NuGet - [CloudStructures.LZ4](https://nuget.org/packages/CloudStructures.LZ4/)
+
+```
+PM> Install-Package CloudStructures.LZ4
+```
+
+and configuration for
+
+```xml
+valueConverter="CloudStructures.LZ4JsonRedisValueConverter, CloudStructures.LZ4"
+```
 
 Glimpse.CloudStructures.Redis
 ---
