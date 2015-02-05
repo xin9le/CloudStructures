@@ -1,20 +1,29 @@
 CloudStructures
 ===============
-Redis Client based on BookSleeve. Features: connection management, serialize/deserialize to object, key distribute and configuration. And includes Redis Profiler for Glimpse. The concept is distributed collection inspired by Cloud Collection(System.Cloud.Collections.IAsyncList[T], etc...) of [ActorFx](http://actorfx.codeplex.com/).
+Redis Client based on [StachExchange.Redis](https://github.com/StackExchange/StackExchange.Redis). CloudStructures appends connection management, auto serialize/deserialize for RedisValue, key distributed connection(grouing), Web.config supports and Redis Profiler for Glimpse. 
 
 Why use CloudStructures?
 ---
-BookSleeve is pure, low level library. It is Redis driver like ADO.NET. CloudStructures is O/R(Object/Redis) Mapper like Dapper.
+StachExchange.Redis is pure, low level library. It is Redis driver like ADO.NET. Using raw is very hard. CloudStructures is simple O/R(Object/Redis) Mapper like Dapper in ADO.NET.
 
 Install
 ---
-using with NuGet, [CloudStructures](https://nuget.org/packages/CloudStructures/)
+NuGet - [CloudStructures](https://nuget.org/packages/CloudStructures/)
 ```
 PM> Install-Package CloudStructures
 ```
 
-Example
+How to use
 ---
+At first, create `RedisSettings` or `RedisGroup` that represents StachExchange.Redis's ConnectionMultiplexer holder.
+
+
+
+
+
+
+
+
 ```csharp
 // Server of Redis
 public static class RedisServer
@@ -45,6 +54,43 @@ var persons = await redis.Range(0, 10);
 
 // and others - Set, SortedSet, Hash, Dictionary(Generic Hash), Class(Object-Hash-Mapping)
 ```
+
+
+Data structure of Redis
+---
+CloudStructures supports these Redis data types.
+
+Class  |Description 
+-------| -----------
+`RedisString<T>`|Redis's Strings API 
+`RedisList<T>`|Redis's Lists API
+`RedisSet<T>`|Redis's Sets API
+`RedisHash<TKey>`|Redis's Hashes API
+`RedisDictionary<TKey, TValue>`| Hashes API with constrained value type.
+`RedisClass<T>`|C# type mapped Redis Hashes  
+`RedisSortedSet<T>`|Redis's SortedSets API
+`RedisHyperLogLog<T>`|Redis's HyperLogLog API
+`RedisLua`|Lua EVALSHA API
+
+Methods are simply wrapped StackExchange.Redis's API. Data type prefix(String/List/Set/etc) are Class, removed async suffix and RedisValue to T. For example `ListLeftPushAsync(RedisKey, RedisValue)` -> `new RedisList<T>(RedisKey)`.`LeftPush(T)`.
+
+All storing methods have `RedisExpiry` argument. If expiry isn't null which is appended expiry second. RedisExpiry is convert from DateTime/TimeSpan implicitly.
+
+```csharp
+var list = new RedisList<int>(settings);
+await list.LeftPush(1, expiry: TimeSpan.FromSeconds(30));
+await list.LeftPush(10, expiry: DateTime.Now.AddDays(1));
+```
+
+And all classes have `SetExpire`, `KeyExists`, `Delete`, `TimeToLive`.
+
+Some classes have additional methods. RedisList has `LeftPushAndFixLength` that simulate fixed size list by LPUSH and TRIM. RedisSortedSet has `RangeByRankWithScoresAndRank` that returns value, score and rank. If class has Increment method which is appended `IncrementLimitByMax` and `IncrementLimitByMin` there are increment with max/min limit by custom LUA script.
+
+Some methods return `RedisResult<T>`. If Redis returns null then `RedisResult<T>.HasValue` is false.
+
+
+
+
 
 ConnectionManagement
 ---

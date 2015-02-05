@@ -250,7 +250,7 @@ namespace CloudStructures
         // additional commands
 
         /// <summary>
-        /// Simulate fixed size list includes LPUSH, Trim.
+        /// Simulate fixed size list includes LPUSH, TRIM.
         /// </summary>
         public Task<long> LeftPushAndFixLength(T value, long fixLength, RedisExpiry expiry = null, When when = When.Always, CommandFlags commandFlags = CommandFlags.None)
         {

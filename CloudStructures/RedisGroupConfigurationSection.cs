@@ -99,7 +99,6 @@ namespace CloudStructures
             var settings = this.Select(x => new RedisSettings(
                 x.ConnectionString,
                 x.Db,
-                x.KeepAlive,
                 x.ValueConverter,
                 x.CommandTracer));
             return new RedisGroup(Name, settings.ToArray(), ServerSelector);
@@ -113,9 +112,6 @@ namespace CloudStructures
 
         [ConfigurationProperty("db", DefaultValue = 0)]
         public int Db { get { return (int)base["db"]; } }
-
-        [ConfigurationProperty("keepAlive", DefaultValue = -1)]
-        public int KeepAlive { get { return (int)base["keepAlive"]; } }
 
         [ConfigurationProperty("valueConverter"), TypeConverter(typeof(TypeNameConverter))]
         public IRedisValueConverter ValueConverter

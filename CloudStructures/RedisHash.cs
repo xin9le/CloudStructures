@@ -363,7 +363,7 @@ return tostring(x)";
         /// <summary>
         /// HSET, HSETNX http://redis.io/commands/hset http://redis.io/commands/hsetnx
         /// </summary>
-        public Task<bool> Set(TKey field, TValue value, When when = When.Always, RedisExpiry expiry = null, CommandFlags commandFlags = CommandFlags.None)
+        public Task<bool> Set(TKey field, TValue value, RedisExpiry expiry = null, When when = When.Always, CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {
@@ -487,7 +487,7 @@ return tostring(x)";
         /// <summary>
         /// HSET, HSETNX http://redis.io/commands/hset http://redis.io/commands/hsetnx
         /// </summary>
-        public Task<bool> Set<TValue>(TKey field, TValue value, When when = When.Always, RedisExpiry expiry = null, CommandFlags commandFlags = CommandFlags.None)
+        public Task<bool> Set<TValue>(TKey field, TValue value, RedisExpiry expiry = null, When when = When.Always, CommandFlags commandFlags = CommandFlags.None)
         {
             return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {

@@ -30,8 +30,7 @@ namespace CloudStructures
         {
             get
             {
-                // for serialization(use monitoring dump), don't throw exception
-                // if (!HasValue) throw new InvalidOperationException("Result no contains value");
+                if (!HasValue) throw new InvalidOperationException("Result no contains value");
                 return value;
             }
         }
