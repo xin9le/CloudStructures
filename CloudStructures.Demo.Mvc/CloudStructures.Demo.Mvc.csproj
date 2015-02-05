@@ -166,6 +166,10 @@
     <Content Include="Views\Home\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\CloudStructures.LZ4\CloudStructures.LZ4.csproj">
+      <Project>{cdb2e8eb-e262-4c72-8748-088ecd4623fb}</Project>
+      <Name>CloudStructures.LZ4</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CloudStructures\CloudStructures.csproj">
       <Project>{80104d24-1ebc-4970-a8ae-3be1c6336a44}</Project>
       <Name>CloudStructures</Name>

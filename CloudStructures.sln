@@ -29,6 +29,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Glimpse.CloudStructures.Red
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CloudStructures.Demo.Mvc", "CloudStructures.Demo.Mvc\CloudStructures.Demo.Mvc.csproj", "{7799E810-4361-4E4D-8456-81AAA9562C34}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CloudStructures.LZ4", "CloudStructures.LZ4\CloudStructures.LZ4.csproj", "{CDB2E8EB-E262-4C72-8748-088ECD4623FB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -121,6 +123,22 @@ Global
 		{7799E810-4361-4E4D-8456-81AAA9562C34}.Release|x64.Build.0 = Release|Any CPU
 		{7799E810-4361-4E4D-8456-81AAA9562C34}.Release|x86.ActiveCfg = Release|Any CPU
 		{7799E810-4361-4E4D-8456-81AAA9562C34}.Release|x86.Build.0 = Release|Any CPU
+		{CDB2E8EB-E262-4C72-8748-088ECD4623FB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CDB2E8EB-E262-4C72-8748-088ECD4623FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CDB2E8EB-E262-4C72-8748-088ECD4623FB}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{CDB2E8EB-E262-4C72-8748-088ECD4623FB}.Debug|ARM.Build.0 = Debug|Any CPU
+		{CDB2E8EB-E262-4C72-8748-088ECD4623FB}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{CDB2E8EB-E262-4C72-8748-088ECD4623FB}.Debug|x64.Build.0 = Debug|Any CPU
+		{CDB2E8EB-E262-4C72-8748-088ECD4623FB}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{CDB2E8EB-E262-4C72-8748-088ECD4623FB}.Debug|x86.Build.0 = Debug|Any CPU
+		{CDB2E8EB-E262-4C72-8748-088ECD4623FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CDB2E8EB-E262-4C72-8748-088ECD4623FB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CDB2E8EB-E262-4C72-8748-088ECD4623FB}.Release|ARM.ActiveCfg = Release|Any CPU
+		{CDB2E8EB-E262-4C72-8748-088ECD4623FB}.Release|ARM.Build.0 = Release|Any CPU
+		{CDB2E8EB-E262-4C72-8748-088ECD4623FB}.Release|x64.ActiveCfg = Release|Any CPU
+		{CDB2E8EB-E262-4C72-8748-088ECD4623FB}.Release|x64.Build.0 = Release|Any CPU
+		{CDB2E8EB-E262-4C72-8748-088ECD4623FB}.Release|x86.ActiveCfg = Release|Any CPU
+		{CDB2E8EB-E262-4C72-8748-088ECD4623FB}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
