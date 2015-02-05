@@ -15,6 +15,7 @@ namespace CloudStructures
         object connectionLock = new object();
 
         public int Db { get; private set; }
+        public ConfigurationOptions ConfigurationOptions { get { return configuration; } }
         public IRedisValueConverter ValueConverter { get; private set; }
         public Func<ICommandTracer> CommandTracerFactory { get; private set; }
 
@@ -55,7 +56,7 @@ namespace CloudStructures
                         if (connection == null)
                         {
                             connection = StackExchange.Redis.ConnectionMultiplexer.Connect(configuration, connectionMultiplexerLog);
-
+                            connection.IncludeDetailInExceptions = true;
                             sw.Stop();
                         }
                     }
