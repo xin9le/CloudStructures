@@ -1,10 +1,10 @@
 CloudStructures
 ===============
-Redis Client based on [StachExchange.Redis](https://github.com/StackExchange/StackExchange.Redis). CloudStructures appends connection management, auto serialize/deserialize for RedisValue, key distributed connection(sharding), command logging, Web.config supports and Redis Profiler for Glimpse. 
+Redis Client based on [StackExchange.Redis](https://github.com/StackExchange/StackExchange.Redis). CloudStructures appends connection management, auto serialize/deserialize for RedisValue, key distributed connection(sharding), command logging, Web.config supports and Redis Profiler for Glimpse. 
 
 Why use CloudStructures?
 ---
-StachExchange.Redis is pure, low level library. It is Redis driver like ADO.NET. Using raw is very hard. CloudStructures is simple O/R(Object/Redis) Mapper like Dapper in ADO.NET.
+StackExchange.Redis is pure, low level library. It is Redis driver like ADO.NET. Using raw is very hard. CloudStructures is simple O/R(Object/Redis) Mapper like Dapper in ADO.NET.
 
 Install
 ---
@@ -15,7 +15,7 @@ PM> Install-Package CloudStructures
 
 How to use
 ---
-At first, create `RedisSettings` or `RedisGroup` that represents StachExchange.Redis's ConnectionMultiplexer holder and create RedisStructure Class(`RedisString`, `RedisList`, etc). 
+At first, create `RedisSettings` or `RedisGroup` that represents StackExchange.Redis's ConnectionMultiplexer holder and create RedisStructure Class(`RedisString`, `RedisList`, etc). 
 
 ```csharp
 // Settings should holds in static variable
