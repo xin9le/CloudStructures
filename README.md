@@ -210,6 +210,9 @@ Twitter: https://twitter.com/neuecc (JPN)
 
 History
 ---
+2015-02-11 ver 1.0.1(only CloudStructures.LZ4)
+* LZ4JsonRedisValueConverter's default buffer size changed to 64KB
+
 2015-02-06 ver 1.0.0
 * changed base library from BookSleeve to StackExchange.Redis
 * overhaul all API, many breaking changes

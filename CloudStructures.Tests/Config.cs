@@ -12,7 +12,7 @@ namespace CloudStructures.Tests
     public static class GlobalSettings
     {
         public static readonly RedisSettings Default = new RedisSettings("127.0.0.1,allowAdmin=true",
-            converter: new JsonRedisValueConverter(), tracerFactory: () => new MyTracer());
+            converter: new LZ4JsonRedisValueConverter(), tracerFactory: () => new MyTracer());
 
         public static void Clear()
         {
