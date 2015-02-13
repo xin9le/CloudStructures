@@ -15,11 +15,6 @@ namespace CloudStructures.Demo.Mvc.Controllers
         public int Age { get; set; }
     }
 
-    public static class RedisServer
-    {
-        public static readonly RedisSettings Default = new RedisSettings("127.0.0.1");
-    }
-
     public class HomeController : Controller
     {
         public async Task<ActionResult> Index()

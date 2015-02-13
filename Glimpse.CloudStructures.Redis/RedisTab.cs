@@ -10,36 +10,30 @@ using StackExchange.Redis;
 
 namespace Glimpse.CloudStructures.Redis
 {
-    public class RedisTab : TabBase, ITabSetup, ITabLayout, ILayoutControl
+    public class RedisTab : TabBase, ITabSetup, ITabLayout
     {
-        private static readonly object Layout = TabLayout.Create()
-            .Row(r =>
-            {
-                r.Cell(0).WithTitle("Command").WidthInPercent(10);
-                r.Cell(1).WithTitle("Key").WidthInPercent(10);
-                r.Cell(2).WithTitle("Sent").WidthInPercent(30);
-                r.Cell(3).WithTitle("Size");
-                r.Cell(4).WithTitle("Received").WidthInPercent(30);
-                r.Cell(5).WithTitle("Size");
-                r.Cell(6).WithTitle("Expire").WidthInPercent(5);
-                r.Cell(7).Suffix(" ms").WithTitle("Duration").WidthInPercent(5);
-            }).Build();
-
-
         public override string Name
         {
             get { return "Redis"; }
-        }
-
-        public bool KeysHeadings
-        {
-            get { return true; }
         }
 
         public void Setup(ITabSetupContext context)
         {
             context.PersistMessages<RedisTimelineMessage>();
         }
+
+        static readonly object Layout = TabLayout.Create()
+           .Row(r =>
+           {
+               r.Cell(0).WidthInPercent(10);
+               r.Cell(1).WidthInPercent(10);
+               r.Cell(2).WidthInPercent(30);
+               r.Cell(3);
+               r.Cell(4).WidthInPercent(30);
+               r.Cell(5);
+               r.Cell(6).WidthInPercent(5);
+               r.Cell(7).Suffix(" ms").WidthInPercent(5);
+           }).Build();
 
         public object GetLayout()
         {
@@ -51,6 +45,7 @@ namespace Glimpse.CloudStructures.Redis
             var plugin = Plugin.Create("Command", "Key", "Sent", "Size", "Received", "Size", "Expire", "Duration");
 
             var messages = context.GetMessages<RedisTimelineMessage>().ToArray();
+            if (!messages.Any()) return null;
 
             var ttl = Task.WhenAll(messages.Select(async x =>
             {
