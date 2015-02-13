@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Glimpse.CloudStructures.Redis
 {
-    public class RedisInfoTab : TabBase
+    public class RedisInfoTab : TabBase, ILayoutControl
     {
         static RedisGroup[] redisGroups;
 
@@ -60,6 +60,8 @@ namespace Glimpse.CloudStructures.Redis
         {
             get { return "RedisInfo"; }
         }
+
+        public bool KeysHeadings { get { return true; } }
 
         public override object GetData(ITabContext context)
         {
