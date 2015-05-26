@@ -5,6 +5,7 @@ using System.Reactive;
 using System.Reactive.Subjects;
 using System.Text;
 using System.Threading.Tasks;
+using StackExchange.Redis;
 
 namespace CloudStructures.Redis
 {

@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <metadata>
         <id>Glimpse.CloudStructures.Redis</id>
-        <version>1.0.0</version>
+        <version>1.1.0</version>
         <title>Glimpse.CloudStructures.Redis</title>
         <authors>neuecc</authors>
         <owners>neuecc</owners>
@@ -13,7 +13,7 @@
         <projectUrl>https://github.com/neuecc/CloudStructures</projectUrl>
         <tags>Redis, Glimpse</tags>
         <dependencies>
-            <dependency id="CloudStructures" version="1.0.0" />
+            <dependency id="CloudStructures" version="1.1.0" />
             <dependency id="Glimpse" version="1.8.6" />
         </dependencies>
     </metadata>

@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <metadata>
         <id>CloudStructures</id>
-        <version>1.0.0</version>
+        <version>1.1.0</version>
         <title>CloudStructures</title>
         <authors>neuecc</authors>
         <owners>neuecc</owners>
@@ -13,8 +13,8 @@
         <projectUrl>https://github.com/neuecc/CloudStructures</projectUrl>
         <tags>Redis</tags>
         <dependencies>
-            <dependency id="Jil" version="2.7.2" />
-            <dependency id="StackExchange.Redis" version="1.0.394" />
+            <dependency id="Jil" version="2.10.0" />
+            <dependency id="StackExchange.Redis" version="1.0.450" />
         </dependencies>
     </metadata>
     <files>

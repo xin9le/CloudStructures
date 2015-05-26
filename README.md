@@ -210,6 +210,10 @@ Twitter: https://twitter.com/neuecc (JPN)
 
 History
 ---
+2015-05-26 ver 1.1
+* fix SoretedSet.Add(IEnumerable) set wrong key
+* update NuGet packages(Jil and StackExchange.Redis)
+
 2015-02-11 ver 1.0.1(only CloudStructures.LZ4)
 * LZ4JsonRedisValueConverter's default buffer size changed to 64KB
 
