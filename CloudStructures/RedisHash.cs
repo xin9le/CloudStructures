@@ -665,7 +665,7 @@ return tostring(x)";
         /// </summary>
         public Task<RedisResult<TValue>> GetMember<TValue>(string memberName, CommandFlags commandFlags = CommandFlags.None)
         {
-            if (!TypeAccessor.Lookup(typeof(T)).ContainsKey(memberName)) return Task.FromResult(new RedisResult<TValue>());
+            if (!TypeAccessor.Lookup(typeof(T)).ContainsKey(memberName)) return Task.FromResult(RedisResult<TValue>.NoValue);
 
             return TraceHelper.RecordSendAndReceive(Settings, Key, CallType, async () =>
             {

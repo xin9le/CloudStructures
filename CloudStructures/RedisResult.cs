@@ -23,6 +23,8 @@ namespace CloudStructures
 
     public struct RedisResult<T>
     {
+        public static RedisResult<T> NoValue = new RedisResult<T>(false, default(T));
+
         public bool HasValue { get; private set; }
 
         readonly T value;
@@ -35,16 +37,16 @@ namespace CloudStructures
             }
         }
 
-        public RedisResult()
-        {
-            this.HasValue = false;
-            this.value = default(T);
-        }
-
         public RedisResult(T value)
         {
             this.HasValue = true;
             this.value = value;
+        }
+
+        RedisResult(bool hasValue, T value)
+        {
+            this.HasValue = hasValue;
+            this.value = default(T);
         }
 
         public object GetValueOrNull()

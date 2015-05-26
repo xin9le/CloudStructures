@@ -51,7 +51,7 @@ namespace CloudStructures
                 if (redisResult.IsNull)
                 {
                     receivedSize = 0;
-                    r = new RedisResult<T>(); // null
+                    r = RedisResult<T>.NoValue;
                 }
                 else
                 {
