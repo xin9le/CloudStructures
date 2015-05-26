@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Text;
 using System.Threading;
 using StackExchange.Redis;
+using System.Collections.Generic;
 
 namespace CloudStructures.Tests
 {
@@ -23,6 +24,20 @@ namespace CloudStructures.Tests
 
             (await set.RangeByRank()).Is("huga", "hogehoge");
             (await set.RangeByRank(order: Order.Descending)).Is("hogehoge", "huga");
+        }
+
+        [TestMethod]
+        public async Task SortedSetAddRange()
+        {
+            var set = new RedisSortedSet<string>(GlobalSettings.Default, "set");
+            await set.Delete();
+
+            (await set.Add(new[] { new KeyValuePair<string, double>("hogehoge", 10), new KeyValuePair<string, double>("huga", 100) })).Is(2);
+            (await set.Add(new[] { new KeyValuePair<string, double>("huga", 100), new KeyValuePair<string, double>("hugahuga", 1000) })).Is(1);
+
+            var tako = await set.RangeByRank();
+            (await set.RangeByRank()).Is("hogehoge", "huga", "hugahuga");
+            (await set.RangeByRank(order: Order.Descending)).Is("hugahuga", "huga", "hogehoge");
         }
 
         [TestMethod]

@@ -56,7 +56,7 @@ namespace CloudStructures
                 var sendValues = values.Select(x =>
                 {
                     long s;
-                    var v = Settings.ValueConverter.Serialize(x, out s);
+                    var v = Settings.ValueConverter.Serialize(x.Key, out s);
                     sentSize += s;
                     return new SortedSetEntry(v, x.Value);
                 }).ToArray();
