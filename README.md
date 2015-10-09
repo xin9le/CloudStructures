@@ -210,6 +210,11 @@ Twitter: https://twitter.com/neuecc (JPN)
 
 History
 ---
+2015-10-09 ver 1.1
+* improved GetConnection handling(use connectTimeout and retryCount)
+* add RedisSettings.OnConnectAsyncFailed
+* update NuGet packages(StackExchange.Redis)
+
 2015-05-26 ver 1.1
 * fix SoretedSet.Add(IEnumerable) set wrong key
 * update NuGet packages(Jil and StackExchange.Redis)
