@@ -1,5 +1,4 @@
-﻿using BookSleeve;
-using System;
+﻿using System;
 using System.IO;
 using System.Reactive;
 using System.Reactive.Subjects;
@@ -95,7 +94,8 @@ namespace CloudStructures.Redis
                         using (var restMemory = new MemoryStream())
                         {
                             stream.CopyTo(restMemory);
-                            value.Value = converter.Deserialize<T>(restMemory.ToArray());
+                            long dummy;
+                            value.Value = converter.Deserialize<T>(restMemory.ToArray(), out dummy);
                         }
                         break;
                     default:
@@ -119,7 +119,8 @@ namespace CloudStructures.Redis
                         bw.Write(ErrorMessage);
                         break;
                     case NotificationKind.OnNext:
-                        bw.Write(converter.Serialize(Value));
+                        long dummy;
+                        bw.Write((byte[])converter.Serialize(Value, out dummy));
                         break;
                     default:
                         throw new InvalidOperationException("Invalid Kind");
@@ -150,7 +151,7 @@ namespace CloudStructures.Redis
         {
         }
 
-        protected RedisConnection Connection
+        protected ConnectionMultiplexer Connection
         {
             get
             {
@@ -160,17 +161,17 @@ namespace CloudStructures.Redis
 
         public void OnNext(T value)
         {
-            OnNext(value, false).Wait();
+            OnNext(value, CommandFlags.None).Wait();
         }
 
-        public Task<long> OnNext(T value, bool commandFlags)
+        public Task<long> OnNext(T value, CommandFlags commandFlags)
         {
             if (keyType != PubSubKeyType.Normal) throw new InvalidOperationException("OnNext is supported only PubSubKeyType.Normal");
 
             using (var ms = new MemoryStream())
             {
                 RemotableNotification<T>.OnNext(value).WriteTo(ms, valueConverter);
-                return Connection.Publish(Key, ms.ToArray(), commandFlags);
+                return Task.FromResult(Connection.GetSubscriber().Publish(Key, ms.ToArray(), commandFlags));
             }
         }
 
@@ -186,23 +187,23 @@ namespace CloudStructures.Redis
             using (var ms = new MemoryStream())
             {
                 RemotableNotification<T>.OnError(errorMessage).WriteTo(ms, valueConverter);
-                return Connection.Publish(Key, ms.ToArray(), commandFlags);
+                return Task.FromResult(Connection.GetSubscriber().Publish(Key, ms.ToArray(), commandFlags));
             }
         }
 
         public void OnCompleted()
         {
-            OnCompleted(false).Wait();
+            OnCompleted(CommandFlags.None).Wait();
         }
 
-        public Task<long> OnCompleted(bool commandFlags)
+        public Task<long> OnCompleted(CommandFlags commandFlags)
         {
             if (keyType != PubSubKeyType.Normal) throw new InvalidOperationException("OnCompleted is supported only PubSubKeyType.Normal");
 
             using (var ms = new MemoryStream())
             {
                 RemotableNotification<T>.OnCompleted().WriteTo(ms, valueConverter);
-                return Connection.Publish(Key, ms.ToArray(), commandFlags);
+                return Task.FromResult(Connection.GetSubscriber().Publish(Key, ms.ToArray(), commandFlags));
             }
         }
 
@@ -212,15 +213,15 @@ namespace CloudStructures.Redis
             {
                 if (keyType == PubSubKeyType.Normal)
                 {
-                    Connection.GetOpenSubscriberChannel().Unsubscribe(Key).Wait();
+                    Connection.GetSubscriber().Unsubscribe(Key);
                 }
                 else
                 {
-                    Connection.GetOpenSubscriberChannel().PatternUnsubscribe(Key).Wait();
+                    Connection.GetSubscriber().Unsubscribe(new RedisChannel(Key, RedisChannel.PatternMode.Pattern));
                 }
             });
 
-            var subscribeAction = (Action<string, byte[]>)((_, xs) =>
+            var subscribeAction = (Action<RedisChannel, RedisValue>)((_, xs) =>
             {
                 using (var ms = new MemoryStream(xs))
                 {
@@ -236,11 +237,11 @@ namespace CloudStructures.Redis
             // when error, shutdown, close, reconnect? handling?
             if (keyType == PubSubKeyType.Normal)
             {
-                Connection.GetOpenSubscriberChannel().Subscribe(Key, subscribeAction).Wait();
+                Connection.GetSubscriber().Subscribe(Key, subscribeAction);
             }
             else
             {
-                Connection.GetOpenSubscriberChannel().PatternSubscribe(Key, subscribeAction).Wait();
+                Connection.GetSubscriber().Subscribe(new RedisChannel(Key, RedisChannel.PatternMode.Pattern), subscribeAction);
             }
 
             return disposable;
