@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <metadata>
         <id>CloudStructures</id>
-        <version>1.2.0</version>
+        <version>1.2.0.1-beta</version>
         <title>CloudStructures</title>
         <authors>neuecc</authors>
         <owners>neuecc</owners>
