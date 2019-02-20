@@ -10,39 +10,39 @@ using StackExchange.Redis;
 namespace CloudStructures.Structures
 {
     /// <summary>
-    /// 辞書関連のコマンドを提供します。
+    /// Provides dictionary related commands.
     /// </summary>
-    /// <typeparam name="TKey">キーの型</typeparam>
-    /// <typeparam name="TValue">値の型</typeparam>
+    /// <typeparam name="TKey">Key type</typeparam>
+    /// <typeparam name="TValue">Value type</typeparam>
     public readonly struct RedisDictionary<TKey, TValue> : IRedisStructure
     {
         #region IRedisStructure implementations
         /// <summary>
-        /// 接続を取得します。
+        /// Gets connection.
         /// </summary>
         public RedisConnection Connection { get; }
 
 
         /// <summary>
-        /// キーを取得します。
+        /// Gets key.
         /// </summary>
         public RedisKey Key { get; }
 
 
         /// <summary>
-        /// 既定の有効期限を取得します。
+        /// Gets default expiration time.
         /// </summary>
         public TimeSpan? DefaultExpiry { get; }
         #endregion
 
 
-        #region コンストラクタ
+        #region Constructors
         /// <summary>
-        /// インスタンスを生成します。
+        /// Creates instance.
         /// </summary>
-        /// <param name="connection">接続</param>
-        /// <param name="key">キー</param>
-        /// <param name="defaultExpiry">既定の有効期限</param>
+        /// <param name="connection"></param>
+        /// <param name="key"></param>
+        /// <param name="defaultExpiry"></param>
         public RedisDictionary(RedisConnection connection, RedisKey key, TimeSpan? defaultExpiry)
         {
             this.Connection = connection ?? throw new ArgumentNullException(nameof(connection));
@@ -52,7 +52,7 @@ namespace CloudStructures.Structures
         #endregion
 
 
-        #region コマンド
+        #region Commands
         //- [x] HashDecrementAsync
         //- [x] HashDeleteAsync
         //- [x] HashExistsAsync
@@ -286,7 +286,7 @@ namespace CloudStructures.Structures
         #endregion
 
 
-        #region カスタムコマンド
+        #region Custom Commands
         /// <summary>
         /// HGET : https://redis.io/commands/hget
         /// HSET : https://redis.io/commands/hset

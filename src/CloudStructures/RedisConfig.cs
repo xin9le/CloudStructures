@@ -6,41 +6,41 @@ using StackExchange.Redis;
 namespace CloudStructures
 {
     /// <summary>
-    /// 構成を表します。
+    /// Represents connection configuration.
     /// </summary>
     public class RedisConfig
     {
-        #region プロパティ
+        #region Properties
         /// <summary>
-        /// 名称を取得します。
+        /// Gets name.
         /// </summary>
         public string Name { get; }
 
 
         /// <summary>
-        /// 構成オプションを取得します。
+        /// Gets configuration options.
         /// </summary>
         /// <remarks>
-        /// 書き方のヒントはこちら
+        /// How to write configuration:
         /// https://stackexchange.github.io/StackExchange.Redis/Configuration.html
         /// </remarks>
         public ConfigurationOptions Options { get; }
 
 
         /// <summary>
-        /// 論理的データベースのインデックスを取得します。
+        /// Gets logical database index.
         /// </summary>
         public int? Database { get; }
         #endregion
 
 
-        #region コンストラクタ
+        #region Constructors
         /// <summary>
-        /// インスタンスを生成します。
+        /// Creates instance.
         /// </summary>
-        /// <param name="name">名称</param>
-        /// <param name="connectionString">接続文字列</param>
-        /// <param name="database">論理データベース</param>
+        /// <param name="name"></param>
+        /// <param name="connectionString"></param>
+        /// <param name="database"></param>
         public RedisConfig(string name, string connectionString, int? database = null)
         {
             if (connectionString == null)

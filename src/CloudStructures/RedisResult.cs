@@ -7,26 +7,26 @@ using StackExchange.Redis;
 namespace CloudStructures
 {
     /// <summary>
-    /// Generics 版の <see cref="RedisResult"/> を表します。
+    /// Represents generics version of <see cref="RedisResult"/>.
     /// </summary>
-    /// <typeparam name="T">データ型</typeparam>
+    /// <typeparam name="T">Data type</typeparam>
     public readonly struct RedisResult<T>
     {
-        #region プロパティ
+        #region Properties
         /// <summary>
-        /// 既定値を取得します。
+        /// Gets default value.
         /// </summary>
         public static RedisResult<T> Default { get; } = default;
 
 
         /// <summary>
-        /// 値があるかどうかを取得します。
+        /// Gets If value exists.
         /// </summary>
         public bool HasValue { get; }
 
 
         /// <summary>
-        /// 値を取得します。
+        /// Gets value.
         /// </summary>
         public T Value
             => this.HasValue
@@ -36,11 +36,11 @@ namespace CloudStructures
         #endregion
 
 
-        #region コンストラクタ
+        #region Constructors
         /// <summary>
-        /// インスタンスを生成します。
+        /// Creates instance.
         /// </summary>
-        /// <param name="value">値</param>
+        /// <param name="value"></param>
         internal RedisResult(T value)
         {
             this.HasValue = true;
@@ -51,7 +51,7 @@ namespace CloudStructures
 
         #region override
         /// <summary>
-        /// 文字列に変換します。
+        /// Converts to string.
         /// </summary>
         /// <returns></returns>
         public override string ToString()
@@ -61,7 +61,7 @@ namespace CloudStructures
 
         #region 取得
         /// <summary>
-        /// 値を取得します。値が存在しない場合は null を返します。
+        /// Gets value. Returns null if value doesn't exists.
         /// </summary>
         /// <returns></returns>
         public object GetValueOrNull()
@@ -69,18 +69,18 @@ namespace CloudStructures
 
 
         /// <summary>
-        /// 値を取得します。値が存在しない場合は既定値を返します。
+        /// Gets value. Returns default value if value doesn't exists.
         /// </summary>
-        /// <param name="default">既定値</param>
+        /// <param name="default"></param>
         /// <returns></returns>
         public T GetValueOrDefault(T @default = default)
             => this.HasValue ? this.Value : @default;
 
 
         /// <summary>
-        /// 値を取得します。値が存在しない場合はデリゲートから取得された値を返します。
+        /// Gets value. Returns value which returned from delegate if value doesn't exists.
         /// </summary>
-        /// <param name="valueFactory">既定値の生成処理</param>
+        /// <param name="valueFactory"></param>
         /// <returns></returns>
         public T GetValueOrDefault(Func<T> valueFactory)
         {
@@ -94,26 +94,26 @@ namespace CloudStructures
 
 
     /// <summary>
-    /// Generics 版の <see cref="RedisResult"/> に有効期限情報を付与したものを表します。
+    /// Represents generics version of <see cref="RedisResult"/> with expiration time.
     /// </summary>
-    /// <typeparam name="T">データ型</typeparam>
+    /// <typeparam name="T">Data type</typeparam>
     public readonly struct RedisResultWithExpiry<T>
     {
-        #region プロパティ
+        #region Properties
         /// <summary>
-        /// 既定値を取得します。
+        /// Gets default value.
         /// </summary>
         public static RedisResultWithExpiry<T> Default { get; } = default;
 
 
         /// <summary>
-        /// 値があるかどうかを取得します。
+        /// Gets If value exists.
         /// </summary>
         public bool HasValue { get; }
 
 
         /// <summary>
-        /// 値を取得します。
+        /// Gets value.
         /// </summary>
         public T Value
             => this.HasValue
@@ -123,18 +123,18 @@ namespace CloudStructures
 
 
         /// <summary>
-        /// 有効期限を取得します。
+        /// Gets expiration time.
         /// </summary>
         public TimeSpan? Expiry { get; }
         #endregion
 
 
-        #region コンストラクタ
+        #region Constructors
         /// <summary>
-        /// インスタンスを生成します。
+        /// Creates instance.
         /// </summary>
-        /// <param name="value">値</param>
-        /// <param name="expiry">有効期限</param>
+        /// <param name="value"></param>
+        /// <param name="expiry"></param>
         internal RedisResultWithExpiry(T value, TimeSpan? expiry)
         {
             this.HasValue = true;
@@ -146,7 +146,7 @@ namespace CloudStructures
 
         #region override
         /// <summary>
-        /// 文字列に変換します。
+        /// Converts to string.
         /// </summary>
         /// <returns></returns>
         public override string ToString()
@@ -156,7 +156,7 @@ namespace CloudStructures
 
         #region 取得
         /// <summary>
-        /// 値を取得します。値が存在しない場合は null を返します。
+        /// Gets value. Returns null if value doesn't exists.
         /// </summary>
         /// <returns></returns>
         public object GetValueOrNull()
@@ -164,18 +164,18 @@ namespace CloudStructures
 
 
         /// <summary>
-        /// 値を取得します。値が存在しない場合は既定値を返します。
+        /// Gets value. Returns default value if value doesn't exists.
         /// </summary>
-        /// <param name="default">既定値</param>
+        /// <param name="default"></param>
         /// <returns></returns>
         public T GetValueOrDefault(T @default = default)
             => this.HasValue ? this.Value : @default;
 
 
         /// <summary>
-        /// 値を取得します。値が存在しない場合はデリゲートから取得された値を返します。
+        /// Gets value. Returns value which returned from delegate if value doesn't exists.
         /// </summary>
-        /// <param name="valueFactory">既定値の生成処理</param>
+        /// <param name="valueFactory"></param>
         /// <returns></returns>
         public T GetValueOrDefault(Func<T> valueFactory)
         {
@@ -189,16 +189,16 @@ namespace CloudStructures
 
 
     /// <summary>
-    /// <see cref="RedisResult{T}"/> および <seealso cref="RedisResultWithExpiry{T}"/> 関連の拡張機能を提供します。
+    /// Provides extension methods for <see cref="RedisResult{T}"/> and <seealso cref="RedisResultWithExpiry{T}"/>.
     /// </summary>
     internal static class RedisResultExtensions
     {
         /// <summary>
-        /// 指定された値を <see cref="RedisResult{T}"/> に変換します。
+        /// Converts to <see cref="RedisResult{T}"/>.
         /// </summary>
-        /// <typeparam name="T">データ型</typeparam>
-        /// <param name="value">値</param>
-        /// <param name="converter">値変換機能</param>
+        /// <typeparam name="T">Data type</typeparam>
+        /// <param name="value"></param>
+        /// <param name="converter"></param>
         /// <returns></returns>
         public static RedisResult<T> ToResult<T>(this in RedisValue value, ValueConverter converter)
         {
@@ -211,11 +211,11 @@ namespace CloudStructures
 
 
         /// <summary>
-        /// 指定された値を <see cref="RedisResultWithExpiry{T}"/> に変換します。
+        /// Converts to <see cref="RedisResultWithExpiry{T}"/>.
         /// </summary>
-        /// <typeparam name="T">データ型</typeparam>
-        /// <param name="value">値</param>
-        /// <param name="converter">値変換機能</param>
+        /// <typeparam name="T">Data type</typeparam>
+        /// <param name="value"></param>
+        /// <param name="converter"></param>
         /// <returns></returns>
         public static RedisResultWithExpiry<T> ToResult<T>(this in RedisValueWithExpiry value, ValueConverter converter)
         {

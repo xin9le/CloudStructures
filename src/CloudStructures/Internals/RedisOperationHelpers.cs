@@ -8,19 +8,19 @@ using StackExchange.Redis;
 namespace CloudStructures.Internals
 {
     /// <summary>
-    /// Redis の操作に関する補助機能を提供します。
+    /// Provides helper methods for Redis operation.
     /// </summary>
     internal static class RedisOperationHelpers
     {
         /// <summary>
-        /// 有効期限を設定しつつ、指定されたコマンドを実行します。
+        /// Execute specified command with expiration time.
         /// </summary>
-        /// <typeparam name="TRedis">Redis 構造</typeparam>
-        /// <typeparam name="TArgs">コマンド引数のデータ型</typeparam>
-        /// <param name="structure">データ構造</param>
-        /// <param name="command">コマンド</param>
-        /// <param name="expiry">有効期限</param>
-        /// <param name="flags">フラグ</param>
+        /// <typeparam name="TRedis"></typeparam>
+        /// <typeparam name="TArgs"></typeparam>
+        /// <param name="structure"></param>
+        /// <param name="command"></param>
+        /// <param name="expiry"></param>
+        /// <param name="flags"></param>
         /// <returns></returns>
         public static async Task ExecuteWithExpiry<TRedis, TArgs>(this TRedis structure, Func<IDatabaseAsync, TArgs, Task> command, TArgs args, TimeSpan? expiry, CommandFlags flags)
             where TRedis : IRedisStructure
@@ -30,10 +30,10 @@ namespace CloudStructures.Internals
 
             if (expiry.HasValue)
             {
-                //--- トランザクション内で複数のコマンドを実行
+                //--- Execute multiple commands in tracsaction
                 var t = structure.Connection.Transaction;
-                var _ = command(t, args);  // forget
-                var __ = t.KeyExpireAsync(structure.Key, expiry.Value, flags);  // forget
+                _ = command(t, args);  // forget
+                _ = t.KeyExpireAsync(structure.Key, expiry.Value, flags);  // forget
 
                 //--- commit
                 await t.ExecuteAsync(flags).ConfigureAwait(false);
@@ -47,15 +47,15 @@ namespace CloudStructures.Internals
 
 
         /// <summary>
-        /// 有効期限を設定しつつ、指定されたコマンドを実行します。
+        /// Execute specified command with expiration time.
         /// </summary>
-        /// <typeparam name="TRedis">Redis 構造</typeparam>
-        /// <typeparam name="TArgs">コマンド引数のデータ型</typeparam>
-        /// <typeparam name="TResult">戻り値のデータ型</typeparam>
-        /// <param name="structure">データ構造</param>
-        /// <param name="command">コマンド</param>
-        /// <param name="expiry">有効期限</param>
-        /// <param name="flags">フラグ</param>
+        /// <typeparam name="TRedis"></typeparam>
+        /// <typeparam name="TArgs"></typeparam>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="structure"></param>
+        /// <param name="command"></param>
+        /// <param name="expiry"></param>
+        /// <param name="flags"></param>
         /// <returns></returns>
         public static async Task<TResult> ExecuteWithExpiry<TRedis, TArgs, TResult>(this TRedis structure, Func<IDatabaseAsync, TArgs, Task<TResult>> command, TArgs args, TimeSpan? expiry, CommandFlags flags)
             where TRedis : IRedisStructure
@@ -65,15 +65,15 @@ namespace CloudStructures.Internals
 
             if (expiry.HasValue)
             {
-                //--- トランザクション内で複数のコマンドを実行
+                //--- Execute multiple commands in tracsaction
                 var t = structure.Connection.Transaction;
                 var result = command(t, args);
-                var _ = t.KeyExpireAsync(structure.Key, expiry.Value, flags);  // forget
+                _ = t.KeyExpireAsync(structure.Key, expiry.Value, flags);  // forget
 
                 //--- commit
                 await t.ExecuteAsync(flags).ConfigureAwait(false);
 
-                //--- 結果を取り出す
+                //--- gets result value
                 return await result.ConfigureAwait(false);
             }
             else

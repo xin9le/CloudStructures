@@ -5,7 +5,7 @@
 namespace CloudStructures.Converters
 {
     /// <summary>
-    /// <see cref="Boolean"/> の変換機能を提供します。
+    /// Provides <see cref="Boolean"/> conversion function.
     /// </summary>
     internal sealed class BooleanConverter : IRedisValueConverter<bool>
     {
@@ -16,7 +16,7 @@ namespace CloudStructures.Converters
 
 
     /// <summary>
-    /// <see cref="Nullable{Boolean}"/> の変換機能を提供します。
+    /// Provides <see cref="Nullable{Boolean}"/> conversion function.
     /// </summary>
     internal sealed class NullableBooleanConverter : IRedisValueConverter<bool?>
     {
@@ -27,7 +27,7 @@ namespace CloudStructures.Converters
 
 
     /// <summary>
-    /// <see cref="Char"/> の変換機能を提供します。
+    /// Provides <see cref="Char"/> conversion function.
     /// </summary>
     internal sealed class CharConverter : IRedisValueConverter<char>
     {
@@ -38,7 +38,7 @@ namespace CloudStructures.Converters
 
 
     /// <summary>
-    /// <see cref="Nullable{Char}"/> の変換機能を提供します。
+    /// Provides <see cref="Nullable{Char}"/> conversion function.
     /// </summary>
     internal sealed class NullableCharConverter : IRedisValueConverter<char?>
     {
@@ -49,7 +49,7 @@ namespace CloudStructures.Converters
 
 
     /// <summary>
-    /// <see cref="SByte"/> の変換機能を提供します。
+    /// Provides <see cref="SByte"/> conversion function.
     /// </summary>
     internal sealed class SByteConverter : IRedisValueConverter<sbyte>
     {
@@ -60,7 +60,7 @@ namespace CloudStructures.Converters
 
 
     /// <summary>
-    /// <see cref="Nullable{SByte}"/> の変換機能を提供します。
+    /// Provides <see cref="Nullable{SByte}"/> conversion function.
     /// </summary>
     internal sealed class NullableSByteConverter : IRedisValueConverter<sbyte?>
     {
@@ -71,7 +71,7 @@ namespace CloudStructures.Converters
 
 
     /// <summary>
-    /// <see cref="Byte"/> の変換機能を提供します。
+    /// Provides <see cref="Byte"/> conversion function.
     /// </summary>
     internal sealed class ByteConverter : IRedisValueConverter<byte>
     {
@@ -82,7 +82,7 @@ namespace CloudStructures.Converters
 
 
     /// <summary>
-    /// <see cref="Nullable{Byte}"/> の変換機能を提供します。
+    /// Provides <see cref="Nullable{Byte}"/> conversion function.
     /// </summary>
     internal sealed class NullableByteConverter : IRedisValueConverter<byte?>
     {
@@ -93,7 +93,7 @@ namespace CloudStructures.Converters
 
 
     /// <summary>
-    /// <see cref="Int16"/> の変換機能を提供します。
+    /// Provides <see cref="Int16"/> conversion function.
     /// </summary>
     internal sealed class Int16Converter : IRedisValueConverter<short>
     {
@@ -104,7 +104,7 @@ namespace CloudStructures.Converters
 
 
     /// <summary>
-    /// <see cref="Nullable{Int16}"/> の変換機能を提供します。
+    /// Provides <see cref="Nullable{Int16}"/> conversion function.
     /// </summary>
     internal sealed class NullableInt16Converter : IRedisValueConverter<short?>
     {
@@ -115,7 +115,7 @@ namespace CloudStructures.Converters
 
 
     /// <summary>
-    /// <see cref="UInt16"/> の変換機能を提供します。
+    /// Provides <see cref="UInt16"/> conversion function.
     /// </summary>
     internal sealed class UInt16Converter : IRedisValueConverter<ushort>
     {
@@ -126,7 +126,7 @@ namespace CloudStructures.Converters
 
 
     /// <summary>
-    /// <see cref="Nullable{UInt16}"/> の変換機能を提供します。
+    /// Provides <see cref="Nullable{UInt16}"/> conversion function.
     /// </summary>
     internal sealed class NullableUInt16Converter : IRedisValueConverter<ushort?>
     {
@@ -137,7 +137,7 @@ namespace CloudStructures.Converters
 
 
     /// <summary>
-    /// <see cref="Int32"/> の変換機能を提供します。
+    /// Provides <see cref="Int32"/> conversion function.
     /// </summary>
     internal sealed class Int32Converter : IRedisValueConverter<int>
     {
@@ -148,7 +148,7 @@ namespace CloudStructures.Converters
 
 
     /// <summary>
-    /// <see cref="Nullable{Int32}"/> の変換機能を提供します。
+    /// Provides <see cref="Nullable{Int32}"/> conversion function.
     /// </summary>
     internal sealed class NullableInt32Converter : IRedisValueConverter<int?>
     {
@@ -159,7 +159,7 @@ namespace CloudStructures.Converters
 
 
     /// <summary>
-    /// <see cref="UInt32"/> の変換機能を提供します。
+    /// Provides <see cref="UInt32"/> conversion function.
     /// </summary>
     internal sealed class UInt32Converter : IRedisValueConverter<uint>
     {
@@ -170,7 +170,7 @@ namespace CloudStructures.Converters
 
 
     /// <summary>
-    /// <see cref="Nullable{UInt32}"/> の変換機能を提供します。
+    /// Provides <see cref="Nullable{UInt32}"/> conversion function.
     /// </summary>
     internal sealed class NullableUInt32Converter : IRedisValueConverter<uint?>
     {
@@ -181,7 +181,7 @@ namespace CloudStructures.Converters
 
 
     /// <summary>
-    /// <see cref="Int64"/> の変換機能を提供します。
+    /// Provides <see cref="Int64"/> conversion function.
     /// </summary>
     internal sealed class Int64Converter : IRedisValueConverter<long>
     {
@@ -192,7 +192,7 @@ namespace CloudStructures.Converters
 
 
     /// <summary>
-    /// <see cref="Nullable{Int64}"/> の変換機能を提供します。
+    /// Provides <see cref="Nullable{Int64}"/> conversion function.
     /// </summary>
     internal sealed class NullableInt64Converter : IRedisValueConverter<long?>
     {
@@ -203,7 +203,7 @@ namespace CloudStructures.Converters
 
 
     /// <summary>
-    /// <see cref="UInt64"/> の変換機能を提供します。
+    /// Provides <see cref="UInt64"/> conversion function.
     /// </summary>
     internal sealed class UInt64Converter : IRedisValueConverter<ulong>
     {
@@ -214,7 +214,7 @@ namespace CloudStructures.Converters
 
 
     /// <summary>
-    /// <see cref="Nullable{UInt64}"/> の変換機能を提供します。
+    /// Provides <see cref="Nullable{UInt64}"/> conversion function.
     /// </summary>
     internal sealed class NullableUInt64Converter : IRedisValueConverter<ulong?>
     {
@@ -225,7 +225,7 @@ namespace CloudStructures.Converters
 
 
     /// <summary>
-    /// <see cref="Single"/> の変換機能を提供します。
+    /// Provides <see cref="Single"/> conversion function.
     /// </summary>
     internal sealed class SingleConverter : IRedisValueConverter<float>
     {
@@ -236,7 +236,7 @@ namespace CloudStructures.Converters
 
 
     /// <summary>
-    /// <see cref="Nullable{Single}"/> の変換機能を提供します。
+    /// Provides <see cref="Nullable{Single}"/> conversion function.
     /// </summary>
     internal sealed class NullableSingleConverter : IRedisValueConverter<float?>
     {
@@ -247,7 +247,7 @@ namespace CloudStructures.Converters
 
 
     /// <summary>
-    /// <see cref="Double"/> の変換機能を提供します。
+    /// Provides <see cref="Double"/> conversion function.
     /// </summary>
     internal sealed class DoubleConverter : IRedisValueConverter<double>
     {
@@ -258,7 +258,7 @@ namespace CloudStructures.Converters
 
 
     /// <summary>
-    /// <see cref="Nullable{Double}"/> の変換機能を提供します。
+    /// Provides <see cref="Nullable{Double}"/> conversion function.
     /// </summary>
     internal sealed class NullableDoubleConverter : IRedisValueConverter<double?>
     {
@@ -269,7 +269,7 @@ namespace CloudStructures.Converters
 
 
     /// <summary>
-    /// <see cref="string"/> の変換機能を提供します。
+    /// Provides <see cref="string"/> conversion function.
     /// </summary>
     internal sealed class StringConverter : IRedisValueConverter<string>
     {
@@ -280,7 +280,7 @@ namespace CloudStructures.Converters
 
 
     /// <summary>
-    /// <see cref="byte[]"/> の変換機能を提供します。
+    /// Provides <see cref="byte[]"/> conversion function.
     /// </summary>
     internal sealed class ByteArrayConverter : IRedisValueConverter<byte[]>
     {

@@ -11,38 +11,38 @@ using StackExchange.Redis;
 namespace CloudStructures.Structures
 {
     /// <summary>
-    /// SortedSet 関連のコマンドを提供します。
+    /// Provides sorted set related commands.
     /// </summary>
-    /// <typeparam name="T">データ型</typeparam>
+    /// <typeparam name="T">Data type</typeparam>
     public readonly struct RedisSortedSet<T> : IRedisStructure
     {
         #region IRedisStructure implementations
         /// <summary>
-        /// 接続を取得します。
+        /// Gets connection.
         /// </summary>
         public RedisConnection Connection { get; }
 
 
         /// <summary>
-        /// キーを取得します。
+        /// Gets key.
         /// </summary>
         public RedisKey Key { get; }
 
 
         /// <summary>
-        /// 既定の有効期限を取得します。
+        /// Gets default expiration time.
         /// </summary>
         public TimeSpan? DefaultExpiry { get; }
         #endregion
 
 
-        #region コンストラクタ
+        #region Constructors
         /// <summary>
-        /// インスタンスを生成します。
+        /// Creates instance.
         /// </summary>
-        /// <param name="connection">接続</param>
-        /// <param name="key">キー</param>
-        /// <param name="defaultExpiry">既定の有効期限</param>
+        /// <param name="connection"></param>
+        /// <param name="key"></param>
+        /// <param name="defaultExpiry"></param>
         public RedisSortedSet(RedisConnection connection, RedisKey key, TimeSpan? defaultExpiry)
         {
             this.Connection = connection ?? throw new ArgumentNullException(nameof(connection));
@@ -52,7 +52,7 @@ namespace CloudStructures.Structures
         #endregion
 
 
-        #region コマンド
+        #region Commands
         //- [x] SortedSetAddAsync
         //- [x] SortedSetCombineAndStoreAsync
         //- [x] SortedSetDecrementAsync
@@ -345,7 +345,7 @@ namespace CloudStructures.Structures
         #endregion
 
 
-        #region カスタムコマンド
+        #region Custom Commands
         /// <summary>
         /// LUA Script including zincrby, zadd
         /// </summary>
@@ -414,31 +414,31 @@ return tostring(x)";
 
 
     /// <summary>
-    /// <see cref="RedisSortedSet{T}"/> の要素を表します。
+    /// Represents <see cref="RedisSortedSet{T}"/> element.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">Data type</typeparam>
     public readonly struct RedisSortedSetEntry<T>
     {
-        #region プロパティ
+        #region Properties
         /// <summary>
-        /// 値を取得します。
+        /// Gets value.
         /// </summary>
         public T Value { get; }
 
 
         /// <summary>
-        /// スコアを取得します。
+        /// Gets score.
         /// </summary>
         public double Score { get; }
         #endregion
 
 
-        #region コンストラクタ
+        #region Constructors
         /// <summary>
-        /// インスタンスを生成します。
+        /// Creates instance.
         /// </summary>
-        /// <param name="value">値</param>
-        /// <param name="score">スコア</param>
+        /// <param name="value"></param>
+        /// <param name="score"></param>
         public RedisSortedSetEntry(T value, double score)
         {
             this.Value = value;
@@ -450,16 +450,16 @@ return tostring(x)";
 
 
     /// <summary>
-    /// <see cref="RedisSortedSetEntry{T}"/> の拡張機能を提供します。
+    /// Provides extension methods for <see cref="RedisSortedSetEntry{T}"/>.
     /// </summary>
     internal static class RedisSortedSetEntryExtensions
     {
         /// <summary>
-        /// <see cref="SortedSetEntry"/> に変換します。
+        /// Converts to <see cref="SortedSetEntry"/>.
         /// </summary>
-        /// <typeparam name="T">データの型</typeparam>
-        /// <param name="entry">要素</param>
-        /// <param name="converter">値変換機能</param>
+        /// <typeparam name="T">Data type</typeparam>
+        /// <param name="entry"></param>
+        /// <param name="converter"></param>
         /// <returns></returns>
         public static SortedSetEntry ToNonGenerics<T>(this in RedisSortedSetEntry<T> entry, ValueConverter converter)
         {
@@ -469,11 +469,11 @@ return tostring(x)";
 
 
         /// <summary>
-        /// <see cref="RedisSortedSetEntry{T}"/> に変換します。
+        /// Converts to <see cref="RedisSortedSetEntry{T}"/>.
         /// </summary>
-        /// <typeparam name="T">データの型</typeparam>
-        /// <param name="entry">要素</param>
-        /// <param name="converter">値変換機能</param>
+        /// <typeparam name="T">Data type</typeparam>
+        /// <param name="entry"></param>
+        /// <param name="converter"></param>
         /// <returns></returns>
         public static RedisSortedSetEntry<T> ToGenerics<T>(this in SortedSetEntry entry, ValueConverter converter)
         {

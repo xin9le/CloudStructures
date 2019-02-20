@@ -11,38 +11,38 @@ using StackExchange.Redis;
 namespace CloudStructures.Structures
 {
     /// <summary>
-    /// Geo 関連のコマンドを提供します。
+    /// Provides geometry related commands.
     /// </summary>
-    /// <typeparam name="T">データ型</typeparam>
+    /// <typeparam name="T">Data type</typeparam>
     public readonly struct RedisGeo<T> : IRedisStructure
     {
         #region IRedisStructure implementations
         /// <summary>
-        /// 接続を取得します。
+        /// Gets connection.
         /// </summary>
         public RedisConnection Connection { get; }
 
 
         /// <summary>
-        /// キーを取得します。
+        /// Gets key.
         /// </summary>
         public RedisKey Key { get; }
 
 
         /// <summary>
-        /// 既定の有効期限を取得します。
+        /// Gets default expiration time.
         /// </summary>
         public TimeSpan? DefaultExpiry { get; }
         #endregion
 
 
-        #region コンストラクタ
+        #region Constructors
         /// <summary>
-        /// インスタンスを生成します。
+        /// Creates instance.
         /// </summary>
-        /// <param name="connection">接続</param>
-        /// <param name="key">キー</param>
-        /// <param name="defaultExpiry">既定の有効期限</param>
+        /// <param name="connection"></param>
+        /// <param name="key"></param>
+        /// <param name="defaultExpiry"></param>
         public RedisGeo(RedisConnection connection, RedisKey key, TimeSpan? defaultExpiry)
         {
             this.Connection = connection ?? throw new ArgumentNullException(nameof(connection));
@@ -52,7 +52,7 @@ namespace CloudStructures.Structures
         #endregion
 
 
-        #region コマンド
+        #region Commands
         //- [x] GeoAddAsync
         //- [x] GeoDistanceAsync
         //- [x] GeoHashAsync
@@ -193,38 +193,38 @@ namespace CloudStructures.Structures
 
 
     /// <summary>
-    /// <see cref="RedisGeo{T}"/> の要素を表します。
+    /// Represents <see cref="RedisGeo{T}"/> element.
     /// </summary>
-    /// <typeparam name="T">データの型</typeparam>
+    /// <typeparam name="T">Data type</typeparam>
     public readonly struct RedisGeoEntry<T>
     {
-        #region プロパティ
+        #region Properties
         /// <summary>
-        /// 経度を取得します。
+        /// Gets longitude.
         /// </summary>
         public double Longitude { get; }
 
 
         /// <summary>
-        /// 緯度を取得します。
+        /// Gets latitude.
         /// </summary>
         public double Latitude { get; }
 
 
         /// <summary>
-        /// メンバーを取得します。
+        /// Gets member.
         /// </summary>
         public T Member { get; }
         #endregion
 
 
-        #region コンストラクタ
+        #region Constructors
         /// <summary>
-        /// インスタンスを生成します。
+        /// Creates instance.
         /// </summary>
-        /// <param name="longitude">経度</param>
-        /// <param name="latitude">緯度</param>
-        /// <param name="member">メンバー</param>
+        /// <param name="longitude"></param>
+        /// <param name="latitude"></param>
+        /// <param name="member"></param>
         public RedisGeoEntry(double longitude, double latitude, T member)
         {
             this.Longitude = longitude;
@@ -237,16 +237,16 @@ namespace CloudStructures.Structures
 
 
     /// <summary>
-    /// <see cref="RedisGeoEntry{T}"/> の拡張機能を提供します。
+    /// Provides extension methods for <see cref="RedisGeoEntry{T}"/>.
     /// </summary>
     internal static class RedisGeoEntryExtensions
     {
         /// <summary>
-        /// <see cref="GeoEntry"/> に変換します。
+        /// Converts to <see cref="GeoEntry"/>.
         /// </summary>
-        /// <typeparam name="T">データの型</typeparam>
-        /// <param name="entry">要素</param>
-        /// <param name="converter">値変換機能</param>
+        /// <typeparam name="T">Data type</typeparam>
+        /// <param name="entry"></param>
+        /// <param name="converter"></param>
         /// <returns></returns>
         public static GeoEntry ToNonGenerics<T>(this in RedisGeoEntry<T> entry, ValueConverter converter)
         {
@@ -258,45 +258,45 @@ namespace CloudStructures.Structures
 
 
     /// <summary>
-    /// <see cref="RedisGeo{T}.Radius"/> の結果型を表します。
+    /// Represents <see cref="RedisGeo{T}.Radius"/> result.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">Data type</typeparam>
     public readonly struct RedisGeoRadiusResult<T>
     {
-        #region プロパティ
+        #region Properties
         /// <summary>
-        /// メンバーを取得します。
+        /// Gets member.
         /// </summary>
         public RedisResult<T> Member { get; }
 
 
         /// <summary>
-        /// 距離を取得します。
+        /// Gets distance.
         /// </summary>
         public double? Distance { get; }
 
 
         /// <summary>
-        /// ハッシュを取得します。
+        /// Gets hash.
         /// </summary>
         public long? Hash { get; }
 
 
         /// <summary>
-        /// 位置を取得します。
+        /// Gets position.
         /// </summary>
         public GeoPosition? Position { get; }
         #endregion
 
 
-        #region コンストラクタ
+        #region Constructors
         /// <summary>
-        /// インスタンスを生成します。
+        /// Creates instance.
         /// </summary>
-        /// <param name="member">メンバー</param>
-        /// <param name="distance">距離</param>
-        /// <param name="hash">ハッシュ</param>
-        /// <param name="position">位置</param>
+        /// <param name="member"></param>
+        /// <param name="distance"></param>
+        /// <param name="hash"></param>
+        /// <param name="position"></param>
         internal RedisGeoRadiusResult(RedisResult<T> member, double? distance, long? hash, GeoPosition? position)
         {
             this.Member = member;
@@ -310,16 +310,16 @@ namespace CloudStructures.Structures
 
 
     /// <summary>
-    /// <see cref="RedisGeoRadiusResult{T}"/> の拡張機能を提供します。
+    /// Provides extension methods for <see cref="RedisGeoRadiusResult{T}"/>.
     /// </summary>
     internal static class RedisGeoRadiusResultExtensions
     {
         /// <summary>
-        /// <see cref="RedisGeoRadiusResult{T}"/> に変換します。
+        /// Converts to <see cref="RedisGeoRadiusResult{T}"/>.
         /// </summary>
-        /// <typeparam name="T">データ型</typeparam>
-        /// <param name="result">結果</param>
-        /// <param name="converter">値変換機能</param>
+        /// <typeparam name="T">Data type</typeparam>
+        /// <param name="result"></param>
+        /// <param name="converter"></param>
         /// <returns></returns>
         public static RedisGeoRadiusResult<T> ToGenerics<T>(this in GeoRadiusResult result, ValueConverter converter)
         {

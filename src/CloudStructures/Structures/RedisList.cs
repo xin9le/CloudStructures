@@ -10,38 +10,38 @@ using StackExchange.Redis;
 namespace CloudStructures.Structures
 {
     /// <summary>
-    /// List 関連のコマンドを提供します。
+    /// Provides list related commands.
     /// </summary>
-    /// <typeparam name="T">データ型</typeparam>
+    /// <typeparam name="T">Data type</typeparam>
     public readonly struct RedisList<T> : IRedisStructure
     {
         #region IRedisStructure implementations
         /// <summary>
-        /// 接続を取得します。
+        /// Gets connection.
         /// </summary>
         public RedisConnection Connection { get; }
 
 
         /// <summary>
-        /// キーを取得します。
+        /// Gets key.
         /// </summary>
         public RedisKey Key { get; }
 
 
         /// <summary>
-        /// 既定の有効期限を取得します。
+        /// Gets default expiration time.
         /// </summary>
         public TimeSpan? DefaultExpiry { get; }
         #endregion
 
 
-        #region コンストラクタ
+        #region Constructors
         /// <summary>
-        /// インスタンスを生成します。
+        /// Creates instance.
         /// </summary>
-        /// <param name="connection">接続</param>
-        /// <param name="key">キー</param>
-        /// <param name="defaultExpiry">既定の有効期限</param>
+        /// <param name="connection"></param>
+        /// <param name="key"></param>
+        /// <param name="defaultExpiry"></param>
         public RedisList(RedisConnection connection, RedisKey key, TimeSpan? defaultExpiry)
         {
             this.Connection = connection ?? throw new ArgumentNullException(nameof(connection));
@@ -51,7 +51,7 @@ namespace CloudStructures.Structures
         #endregion
 
 
-        #region コマンド
+        #region Commands
         //- [x] ListGetByIndexAsync
         //- [x] ListInsertAfterAsync
         //- [x] ListInsertBeforeAsync
@@ -296,9 +296,9 @@ namespace CloudStructures.Structures
         #endregion
 
 
-        #region カスタムコマンド
+        #region Custom Commands
         /// <summary>
-        /// LPUSH し、指定されたリスト長に LTRIM します。
+        /// First LPUSH, then LTRIM to the specified list length.
         /// </summary>
         public async Task<long> FixedLengthLeftPush(T value, long length, TimeSpan? expiry = null, When when = When.Always, CommandFlags flags = CommandFlags.None)
         {
@@ -322,7 +322,7 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// LPUSH し、指定されたリスト長に LTRIM します。
+        /// First LPUSH, then LTRIM to the specified list length.
         /// </summary>
         public async Task<long> FixedLengthLeftPush(IEnumerable<T> values, long length, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {

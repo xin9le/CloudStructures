@@ -9,26 +9,26 @@ using StackExchange.Redis;
 namespace CloudStructures
 {
     /// <summary>
-    /// Redis サーバーへの接続を提供します。
+    /// Provides connection to the server.
     /// </summary>
-    /// <remarks>接続は破棄することなくアプリケーション上で使い回す必要があります。</remarks>
+    /// <remarks>This connection needs to be used w/o destroying. Please hold as static field or static property.</remarks>
     public sealed class RedisConnection
     {
-        #region プロパティ
+        #region Properties
         /// <summary>
-        /// 構成を取得します。
+        /// Gets configuration.
         /// </summary>
         public RedisConfig Config { get; }
 
 
         /// <summary>
-        /// 値変換機能を取得します。
+        /// Gets value converter.
         /// </summary>
         internal ValueConverter Converter { get; }
 
 
         /// <summary>
-        /// データベースを取得します。
+        /// Gets an interactive connection to a database inside redis.
         /// </summary>
         internal IDatabaseAsync Database
             => this.Config.Database.HasValue
@@ -37,14 +37,14 @@ namespace CloudStructures
 
 
         /// <summary>
-        /// トランザクションを取得します。
+        /// Gets a transaction.
         /// </summary>
         internal ITransaction Transaction
             => ((IDatabase)this.Database).CreateTransaction();
 
 
         /// <summary>
-        /// 接続先のサーバーを取得します。
+        /// Gets target servers.
         /// </summary>
         internal IServer[] Servers
             => this.Config.Options
@@ -54,20 +54,20 @@ namespace CloudStructures
 
 
         /// <summary>
-        /// 内部で保持するコネクションを取得します。
+        /// Gets an internal connection.
         /// </summary>
         private Lazy<ConnectionMultiplexer> InnerConnection { get; }
         #endregion
 
 
-        #region コンストラクタ
+        #region Constructors
         /// <summary>
-        /// インスタンスを生成します。
+        /// Creates instance.
         /// </summary>
-        /// <param name="config">構成</param>
-        /// <param name="converter">値変換機能</param>
-        /// <param name="handler">イベントハンドラ</param>
-        /// <param name="logger">ログ書き込み機能</param>
+        /// <param name="config"></param>
+        /// <param name="converter"></param>
+        /// <param name="handler"></param>
+        /// <param name="logger"></param>
         public RedisConnection(RedisConfig config, IValueConverter converter, IConnectionEventHandler handler = null, TextWriter logger = null)
         {
             if (converter == null)

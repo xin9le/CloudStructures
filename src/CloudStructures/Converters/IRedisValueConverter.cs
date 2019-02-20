@@ -5,25 +5,25 @@
 namespace CloudStructures.Converters
 {
     /// <summary>
-    /// <see cref="RedisValue"/> との変換機能を提供します。
+    /// Provides conversion function to <see cref="RedisValue"/>.
     /// </summary>
     internal interface IRedisValueConverter<T>
     {
         /// <summary>
-        /// 直列化します。
+        /// Serialize to <see cref="RedisValue"/>.
         /// </summary>
-        /// <typeparam name="T">データ型</typeparam>
-        /// <param name="value">値</param>
-        /// <returns>直列化された値</returns>
+        /// <typeparam name="T">Data type</typeparam>
+        /// <param name="value"></param>
+        /// <returns></returns>
         RedisValue Serialize(T value);
 
 
         /// <summary>
-        /// 逆直列化します。
+        /// Deserialize from <see cref="RedisValue"/>.
         /// </summary>
-        /// <typeparam name="T">データ型</typeparam>
-        /// <param name="value">直列化された値</param>
-        /// <returns>逆直列化された値</returns>
+        /// <typeparam name="T">Data type</typeparam>
+        /// <param name="value"></param>
+        /// <returns></returns>
         T Deserialize(RedisValue value);
     }
 }

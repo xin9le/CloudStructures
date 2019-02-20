@@ -7,21 +7,21 @@ using StackExchange.Redis;
 namespace CloudStructures.Converters
 {
     /// <summary>
-    /// 値の変換機能を提供します。
+    /// Provides data conversion function.
     /// </summary>
     internal sealed class ValueConverter
     {
-        #region プロパティ
+        #region Properties
         /// <summary>
-        /// 独自の値変換機能を取得します。
+        /// Gets custom conversion function.
         /// </summary>
         private IValueConverter CustomConverter { get; }
         #endregion
 
 
-        #region コンストラクタ
+        #region Constructors
         /// <summary>
-        /// インスタンスを生成します。
+        /// Creates instance.
         /// </summary>
         /// <param name="customConverter"></param>
         public ValueConverter(IValueConverter customConverter)
@@ -29,13 +29,13 @@ namespace CloudStructures.Converters
         #endregion
 
 
-        #region シリアライズ
+        #region Serialization
         /// <summary>
-        /// 直列化します。
+        /// Serialize to <see cref="RedisValue"/>.
         /// </summary>
-        /// <typeparam name="T">データ型</typeparam>
-        /// <param name="value">値</param>
-        /// <returns>直列化された値</returns>
+        /// <typeparam name="T">Data type</typeparam>
+        /// <param name="value"></param>
+        /// <returns></returns>
         public RedisValue Serialize<T>(T value)
         {
             var converter = PrimitiveConverterCache<T>.Converter;
@@ -46,11 +46,11 @@ namespace CloudStructures.Converters
 
 
         /// <summary>
-        /// 逆直列化します。
+        /// Deserialize from <see cref="RedisValue"/>.
         /// </summary>
-        /// <typeparam name="T">データ型</typeparam>
-        /// <param name="value">直列化された値</param>
-        /// <returns>逆直列化された値</returns>
+        /// <typeparam name="T">Data type</typeparam>
+        /// <param name="value"></param>
+        /// <returns></returns>
         public T Deserialize<T>(RedisValue value)
         {
             var converter = PrimitiveConverterCache<T>.Converter;
@@ -61,14 +61,14 @@ namespace CloudStructures.Converters
         #endregion
 
 
-        #region キャッシュ
+        #region Cache
         /// <summary>
-        /// <see cref="IRedisValueConverter{T}"/> のキャッシュ機構を提供します。
+        /// Provides primitive value converter cache mecanism.
         /// </summary>
         private static class PrimitiveConverterCache
         {
             /// <summary>
-            /// 型とコンバーターのマップテーブルを保持します。
+            /// Hold type and converter mapping table.
             /// </summary>
             public static IDictionary<Type, object> Map { get; } = new Dictionary<Type, object>
             {
@@ -103,13 +103,13 @@ namespace CloudStructures.Converters
 
 
         /// <summary>
-        /// <see cref="IRedisValueConverter{T}"/> のキャッシュ機構を提供します。
+        /// Provides <see cref="IRedisValueConverter{T}"/> cache mecanism.
         /// </summary>
-        /// <typeparam name="T">データ型</typeparam>
+        /// <typeparam name="T">Data type</typeparam>
         private static class PrimitiveConverterCache<T>
         {
             /// <summary>
-            /// コンバーターを取得します。
+            /// Gets converter.
             /// </summary>
             public static IRedisValueConverter<T> Converter { get; }
 

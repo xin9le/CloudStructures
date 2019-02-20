@@ -7,15 +7,15 @@ using System.Linq;
 namespace CloudStructures.Internals
 {
     /// <summary>
-    /// <see cref="IEnumerable{T}"/> の拡張機能を提供します。
+    /// Provides extension methods for <see cref="IEnumerable{T}"/>.
     /// </summary>
     internal static class EnumerableExtensions
     {
         /// <summary>
-        /// source の中身が空かどうかを返します。
+        /// Returns if collection is empty.
         /// </summary>
-        /// <typeparam name="T">要素の型</typeparam>
-        /// <param name="source">コレクション</param>
+        /// <typeparam name="T">Element type</typeparam>
+        /// <param name="source"></param>
         /// <returns></returns>
         public static bool IsEmpty<T>(this IEnumerable<T> source)
         {
@@ -26,14 +26,14 @@ namespace CloudStructures.Internals
 
 
         /// <summary>
-        /// 状態を与えつつ射影します。
+        /// Projects each element of a sequance into new form with state. 
         /// </summary>
-        /// <typeparam name="T">要素の型</typeparam>
-        /// <typeparam name="TState">状態の型</typeparam>
-        /// <typeparam name="TResult">結果の型</typeparam>
-        /// <param name="source">コレクション</param>
-        /// <param name="state">状態</param>
-        /// <param name="selector">セレクター</param>
+        /// <typeparam name="T">Element type</typeparam>
+        /// <typeparam name="TState">State type</typeparam>
+        /// <typeparam name="TResult">Result type</typeparam>
+        /// <param name="source"></param>
+        /// <param name="state"></param>
+        /// <param name="selector"></param>
         /// <returns></returns>
         public static IEnumerable<TResult> Select<T, TState, TResult>(this IEnumerable<T> source, TState state, Func<T, TState, TResult> selector)
         {
@@ -46,11 +46,11 @@ namespace CloudStructures.Internals
 
 
         /// <summary>
-        /// source が遅延状態の場合は実体化して返し、既に実体化されている場合は何もせずそれ自身を返します。
+        /// If state of source is lazy, returns materialized collection. if materialized already, it does nothing and returns itself.
         /// </summary>
-        /// <typeparam name="T">要素の型</typeparam>
-        /// <param name="source">コレクション</param>
-        /// <param name="nullToEmpty">true の場合、source が null 時は空シーケンスを返します。false の場合は <see cref="ArgumentNullException"/> を吐きます。</param>
+        /// <typeparam name="T">Element type</typeparam>
+        /// <param name="source"></param>
+        /// <param name="nullToEmpty">If true, returns empty sequence when source collection is null. If false, throws <see cref="ArgumentNullException"/></param>
         /// <returns></returns>
         public static IEnumerable<T> Materialize<T>(this IEnumerable<T> source, bool nullToEmpty = true)
         {
@@ -58,7 +58,7 @@ namespace CloudStructures.Internals
             {
                 if (nullToEmpty)
                     return Enumerable.Empty<T>();
-                throw new ArgumentNullException("source が null です");
+                throw new ArgumentNullException("source is null.");
             }
             if (source is ICollection<T>) return source;
             if (source is IReadOnlyCollection<T>) return source;

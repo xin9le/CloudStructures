@@ -1,25 +1,25 @@
 ﻿namespace CloudStructures.Converters
 {
     /// <summary>
-    /// 値の変換機能を提供します。
+    /// Provides data conversion function.
     /// </summary>
     public interface IValueConverter
     {
         /// <summary>
-        /// 直列化します。
+        /// Serialize to byte array.
         /// </summary>
-        /// <typeparam name="T">データ型</typeparam>
-        /// <param name="value">値</param>
-        /// <returns>直列化された値</returns>
+        /// <typeparam name="T">Data type</typeparam>
+        /// <param name="value"></param>
+        /// <returns></returns>
         byte[] Serialize<T>(T value);
 
 
         /// <summary>
-        /// 逆直列化します。
+        /// Deserialize from byte array.
         /// </summary>
-        /// <typeparam name="T">データ型</typeparam>
-        /// <param name="value">直列化された値</param>
-        /// <returns>逆直列化された値</returns>
+        /// <typeparam name="T">Data type</typeparam>
+        /// <param name="value"></param>
+        /// <returns></returns>
         T Deserialize<T>(byte[] value);
     }
 }

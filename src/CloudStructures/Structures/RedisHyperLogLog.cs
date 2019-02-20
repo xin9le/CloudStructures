@@ -10,38 +10,38 @@ using StackExchange.Redis;
 namespace CloudStructures.Structures
 {
     /// <summary>
-    /// HyperLogLog 関連のコマンドを提供します。
+    /// Provides HyperLogLog related commands.
     /// </summary>
-    /// <typeparam name="T">データ型</typeparam>
+    /// <typeparam name="T">Data type</typeparam>
     public readonly struct RedisHyperLogLog<T> : IRedisStructure
     {
         #region IRedisStructure implementations
         /// <summary>
-        /// 接続を取得します。
+        /// Gets connection.
         /// </summary>
         public RedisConnection Connection { get; }
 
 
         /// <summary>
-        /// キーを取得します。
+        /// Gets key.
         /// </summary>
         public RedisKey Key { get; }
 
 
         /// <summary>
-        /// 既定の有効期限を取得します。
+        /// Gets default expiration time.
         /// </summary>
         public TimeSpan? DefaultExpiry { get; }
         #endregion
 
 
-        #region コンストラクタ
+        #region Constructors
         /// <summary>
-        /// インスタンスを生成します。
+        /// Creates instance.
         /// </summary>
-        /// <param name="connection">接続</param>
-        /// <param name="key">キー</param>
-        /// <param name="defaultExpiry">既定の有効期限</param>
+        /// <param name="connection"></param>
+        /// <param name="key"></param>
+        /// <param name="defaultExpiry"></param>
         public RedisHyperLogLog(RedisConnection connection, RedisKey key, TimeSpan? defaultExpiry)
         {
             this.Connection = connection ?? throw new ArgumentNullException(nameof(connection));
@@ -51,7 +51,7 @@ namespace CloudStructures.Structures
         #endregion
 
 
-        #region コマンド
+        #region Commands
         //- [x] HyperLogLogAddAsync
         //- [x] HyperLogLogLengthAsync
         //- [x] HyperLogLogMergeAsync

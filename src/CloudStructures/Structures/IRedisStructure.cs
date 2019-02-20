@@ -8,25 +8,25 @@ using StackExchange.Redis;
 namespace CloudStructures.Structures
 {
     /// <summary>
-    /// Redis のデータ構造の基底インターフェースを表します。
+    /// Represents a base interface for Redis data structure.
     /// </summary>
     public interface IRedisStructure
     {
-        #region プロパティ
+        #region Properties
         /// <summary>
-        /// 接続を取得します。
+        /// Gets connection.
         /// </summary>
         RedisConnection Connection { get; }
 
 
         /// <summary>
-        /// キーを取得します。
+        /// Gets key.
         /// </summary>
         RedisKey Key { get; }
 
 
         /// <summary>
-        /// 既定の有効期限を取得します。
+        /// Gets default expiration time.
         /// </summary>
         TimeSpan? DefaultExpiry { get; }
         #endregion
@@ -35,11 +35,11 @@ namespace CloudStructures.Structures
 
 
     /// <summary>
-    /// <see cref="IRedisStructure"/> の拡張機能を提供します。
+    /// Provides extension methods for <see cref="IRedisStructure"/>.
     /// </summary>
     public static class RedisStructureExtensions
     {
-        #region コマンド
+        #region Commands
         //- [] DebugObjectAsync
         //- [] ExecuteAsync
         //- [] IdentifyEndpointAsync
@@ -59,9 +59,8 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// インスタンスがサーバーと接続できるかどうかを取得します。
+        /// Indicates whether the instance can communicate with the server (resolved using the supplied key and optional flags).
         /// </summary>
-        /// <remarks>キーとフラグを利用して解決します</remarks>
         public static bool IsConnected<T>(this T redis, CommandFlags flags = CommandFlags.None)
             where T : IRedisStructure
             => redis.Connection.Database.IsConnected(redis.Key);

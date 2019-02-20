@@ -5,7 +5,7 @@
 namespace CloudStructures
 {
     /// <summary>
-    /// 接続のイベントをハンドリングする機能を提供します。
+    /// Provides connection event handling function.
     /// </summary>
     public interface IConnectionEventHandler
     {
