@@ -63,7 +63,7 @@ namespace CloudStructures.Structures
         /// </summary>
         public static bool IsConnected<T>(this T redis, CommandFlags flags = CommandFlags.None)
             where T : IRedisStructure
-            => redis.Connection.Database.IsConnected(redis.Key);
+            => redis.Connection.Database.IsConnected(redis.Key, flags);
 
 
         /// <summary>
