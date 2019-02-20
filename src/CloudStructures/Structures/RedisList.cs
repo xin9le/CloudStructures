@@ -275,7 +275,7 @@ namespace CloudStructures.Structures
         /// </summary>
         public Task<long> SortAndStore(RedisList<T> destination, long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, /*RedisValue by = default, RedisValue[] get = null,*/ CommandFlags flags = CommandFlags.None)
         {
-            //--- シリアライズが必要かどうか分からないから、とりあえず既定値固定にする
+            //--- I don't know if serialization is necessary or not, so I will fix the default value.
             RedisValue by = default;
             RedisValue[] get = default;
             return this.Connection.Database.SortAndStoreAsync(destination.Key, this.Key, skip, take, order, sortType, by, get, flags);
@@ -287,7 +287,7 @@ namespace CloudStructures.Structures
         /// </summary>
         public async Task<T[]> Sort(long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, /*RedisValue by = default, RedisValue[] get = null,*/ CommandFlags flags = CommandFlags.None)
         {
-            //--- シリアライズが必要かどうか分からないから、とりあえず既定値固定にする
+            //--- I don't know if serialization is necessary or not, so I will fix the default value.
             RedisValue by = default;
             RedisValue[] get = default;
             var values = await this.Connection.Database.SortAsync(this.Key, skip, take, order, sortType, by, get, flags).ConfigureAwait(false);
@@ -305,7 +305,7 @@ namespace CloudStructures.Structures
             expiry = expiry ?? this.DefaultExpiry;
             var serialized = this.Connection.Converter.Serialize(value);
 
-            //--- トランザクション内で複数のコマンドを実行
+            //--- execute multiple commands in transaction
             var t = this.Connection.Transaction;
             var leftPush = t.ListLeftPushAsync(this.Key, serialized, when, flags);
             _ = t.ListTrimAsync(this.Key, 0, length - 1, flags);  // forget
@@ -315,7 +315,7 @@ namespace CloudStructures.Structures
             //--- commit
             await t.ExecuteAsync(flags).ConfigureAwait(false);
 
-            //--- 結果を取り出す
+            //--- get result
             var pushLength = await leftPush.ConfigureAwait(false);
             return Math.Min(pushLength, length);
         }
@@ -329,7 +329,7 @@ namespace CloudStructures.Structures
             expiry = expiry ?? this.DefaultExpiry;
             var serialized = values.Select(this.Connection.Converter.Serialize).ToArray();
 
-            //--- トランザクション内で複数のコマンドを実行
+            //--- execute multiple commands in transaction
             var t = this.Connection.Transaction;
             var leftPush = t.ListLeftPushAsync(this.Key, serialized, flags);
             _ = t.ListTrimAsync(this.Key, 0, length - 1, flags);  // forget
@@ -339,7 +339,7 @@ namespace CloudStructures.Structures
             //--- commit
             await t.ExecuteAsync(flags).ConfigureAwait(false);
 
-            //--- 結果を取り出す
+            //--- get result
             var pushLength = await leftPush.ConfigureAwait(false);
             return Math.Min(pushLength, length);
         }

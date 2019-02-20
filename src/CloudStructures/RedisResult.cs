@@ -59,7 +59,7 @@ namespace CloudStructures
         #endregion
 
 
-        #region 取得
+        #region Gets
         /// <summary>
         /// Gets value. Returns null if value doesn't exists.
         /// </summary>
@@ -154,7 +154,7 @@ namespace CloudStructures
         #endregion
 
 
-        #region 取得
+        #region Gets
         /// <summary>
         /// Gets value. Returns null if value doesn't exists.
         /// </summary>

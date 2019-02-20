@@ -324,7 +324,7 @@ namespace CloudStructures.Structures
         /// </summary>
         public Task<long> SortAndStore(RedisSortedSet<T> destination, long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, /*RedisValue by = default, RedisValue[] get = null,*/ CommandFlags flags = CommandFlags.None)
         {
-            //--- シリアライズが必要かどうか分からないから、とりあえず既定値固定にする
+            //--- I don't know if serialization is necessary or not, so I will fix the default value.
             RedisValue by = default;
             RedisValue[] get = default;
             return this.Connection.Database.SortAndStoreAsync(destination.Key, this.Key, skip, take, order, sortType, by, get, flags);
@@ -336,7 +336,7 @@ namespace CloudStructures.Structures
         /// </summary>
         public async Task<T[]> Sort(long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, /*RedisValue by = default, RedisValue[] get = null,*/ CommandFlags flags = CommandFlags.None)
         {
-            //--- シリアライズが必要かどうか分からないから、とりあえず既定値固定にする
+            //--- I don't know if serialization is necessary or not, so I will fix the default value.
             RedisValue by = default;
             RedisValue[] get = default;
             var values = await this.Connection.Database.SortAsync(this.Key, skip, take, order, sortType, by, get, flags).ConfigureAwait(false);

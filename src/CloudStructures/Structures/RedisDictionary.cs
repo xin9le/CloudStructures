@@ -349,11 +349,11 @@ namespace CloudStructures.Structures
             if (fields.IsEmpty())
                 return new Dictionary<TKey, TValue>(comparer);
 
-            //--- 取得
+            //--- get
             var hashFields = fields.Select(this.Connection.Converter.Serialize).ToArray();
             var values = await this.Connection.Database.HashGetAsync(this.Key, hashFields, flags).ConfigureAwait(false);
 
-            //--- キャッシュ済み / 未キャッシュを振り分ける
+            //--- divides cached / non cached
             var cached = new Dictionary<TKey, TValue>(comparer);
             var notCached = new LinkedList<TKey>();
             foreach (var x in fields.Zip(values, (f, v) => (f, v)))
@@ -364,7 +364,7 @@ namespace CloudStructures.Structures
                     notCached.AddLast(x.f);
             }
 
-            //--- 未キャッシュがある場合は読み込み
+            //--- load if non cached key exists
             if (notCached.Count > 0)
             {
                 var loaded = valueFactory(notCached).Materialize();
@@ -390,11 +390,11 @@ namespace CloudStructures.Structures
             if (fields.IsEmpty())
                 return new Dictionary<TKey, TValue>(comparer);
 
-            //--- 取得
+            //--- get
             var hashFields = fields.Select(this.Connection.Converter.Serialize).ToArray();
             var values = await this.Connection.Database.HashGetAsync(this.Key, hashFields, flags).ConfigureAwait(false);
 
-            //--- キャッシュ済み / 未キャッシュを振り分ける
+            //--- divides cached / non cached
             var cached = new Dictionary<TKey, TValue>(comparer);
             var notCached = new LinkedList<TKey>();
             foreach (var x in fields.Zip(values, (f, v) => (f, v)))
@@ -405,7 +405,7 @@ namespace CloudStructures.Structures
                     notCached.AddLast(x.f);
             }
 
-            //--- 未キャッシュがある場合は読み込み
+            //--- load if non cached key exists
             if (notCached.Count > 0)
             {
                 var loaded = (await valueFactory(notCached).ConfigureAwait(false)).Materialize();

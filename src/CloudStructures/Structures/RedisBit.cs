@@ -69,7 +69,6 @@ namespace CloudStructures.Structures
         /// </summary>
         public Task<long> Operation(Bitwise operation, RedisBit first, RedisBit? second = null, CommandFlags flags = CommandFlags.None)
         {
-            // RedisKey で受けてもいいけど、間違いがないように敢えて RedisBit で受ける
             var firstKey = first.Key;
             var secondKey = second?.Key ?? default; 
             return this.Connection.Database.StringBitOperationAsync(operation, this.Key, firstKey, secondKey, flags);
@@ -81,7 +80,6 @@ namespace CloudStructures.Structures
         /// </summary>
         public Task<long> Operation(Bitwise operation, RedisBit[] bits, CommandFlags flags = CommandFlags.None)
         {
-            // RedisKey[] で受けてもいいけど、間違いがないように敢えて RedisBit[] で受ける
             if (bits == null) throw new ArgumentNullException(nameof(bits));
             if (bits.Length == 0) throw new ArgumentException("bits length is 0.");
 
