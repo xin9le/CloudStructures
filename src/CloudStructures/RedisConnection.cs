@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using CloudStructures.Converters;
+using CloudStructures.Internals;
 using StackExchange.Redis;
 
 
@@ -28,12 +29,24 @@ namespace CloudStructures
 
 
         /// <summary>
+        /// Gets connection event handler.
+        /// </summary>
+        private IConnectionEventHandler Handler { get; }
+
+
+        /// <summary>
+        /// Gets logger.
+        /// </summary>
+        private TextWriter Logger { get; }
+
+
+        /// <summary>
         /// Gets an interactive connection to a database inside redis.
         /// </summary>
         internal IDatabaseAsync Database
             => this.Config.Database.HasValue
-            ? this.InnerConnection.Value.GetDatabase(this.Config.Database.Value)
-            : this.InnerConnection.Value.GetDatabase();
+            ? this.GetConnection().GetDatabase(this.Config.Database.Value)
+            : this.GetConnection().GetDatabase();
 
 
         /// <summary>
@@ -49,14 +62,8 @@ namespace CloudStructures
         internal IServer[] Servers
             => this.Config.Options
             .EndPoints
-            .Select(x => this.InnerConnection.Value.GetServer(x))
+            .Select(this.GetConnection(), (x, c) => c.GetServer(x))
             .ToArray();
-
-
-        /// <summary>
-        /// Gets an internal connection.
-        /// </summary>
-        private Lazy<ConnectionMultiplexer> InnerConnection { get; }
         #endregion
 
 
@@ -75,22 +82,48 @@ namespace CloudStructures
 
             this.Config = config ?? throw new ArgumentNullException(nameof(config));
             this.Converter = new ValueConverter(converter);
-            this.InnerConnection = new Lazy<ConnectionMultiplexer>(() =>
-            {
-                var connection = ConnectionMultiplexer.Connect(this.Config.Options, logger);
-
-                //--- attach events
-                connection.ConfigurationChanged += (_, e) => handler?.OnConfigurationChanged(this, e);
-                connection.ConfigurationChangedBroadcast += (_, e) => handler?.OnConfigurationChangedBroadcast(this, e);
-                connection.ConnectionFailed += (_, e) => handler?.OnConnectionFailed(this, e);
-                connection.ConnectionRestored += (_, e) => handler?.OnConnectionRestored(this, e);
-                connection.ErrorMessage += (_, e) => handler?.OnErrorMessage(this, e);
-                connection.HashSlotMoved += (_, e) => handler?.OnHashSlotMoved(this, e);
-                connection.InternalError += (_, e) => handler?.OnInternalError(this, e);
-
-                return connection;
-            });
+            this.Handler = handler;
+            this.Logger = logger;
         }
+        #endregion
+
+
+        #region Inner connection management
+        /// <summary>
+        /// Gets inner connection.
+        /// </summary>
+        /// <returns></returns>
+        private ConnectionMultiplexer GetConnection()
+        {
+            lock (this.gate)
+            {
+                if (this.connection == null || !this.connection.IsConnected)
+                {
+                    try
+                    {
+                        //--- create inner connection
+                        this.connection = ConnectionMultiplexer.Connect(this.Config.Options, this.Logger);
+
+                        //--- attach events
+                        this.connection.ConfigurationChanged += (_, e) => this.Handler?.OnConfigurationChanged(this, e);
+                        this.connection.ConfigurationChangedBroadcast += (_, e) => this.Handler?.OnConfigurationChangedBroadcast(this, e);
+                        this.connection.ConnectionFailed += (_, e) => this.Handler?.OnConnectionFailed(this, e);
+                        this.connection.ConnectionRestored += (_, e) => this.Handler?.OnConnectionRestored(this, e);
+                        this.connection.ErrorMessage += (_, e) => this.Handler?.OnErrorMessage(this, e);
+                        this.connection.HashSlotMoved += (_, e) => this.Handler?.OnHashSlotMoved(this, e);
+                        this.connection.InternalError += (_, e) => this.Handler?.OnInternalError(this, e);
+                    }
+                    catch
+                    {
+                        this.connection = null;
+                        throw;
+                    }
+                }
+                return this.connection;
+            }
+        }
+        private readonly object gate = new object();
+        private ConnectionMultiplexer connection = null;
         #endregion
     }
 }
