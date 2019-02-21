@@ -35,6 +35,13 @@ namespace CloudStructures
 
 
         /// <summary>
+        /// Raised whenever a physical connection is opened
+        /// </summary>
+        /// <param name="sender"></param>
+        void OnConnectionOpened(RedisConnection sender);
+
+
+        /// <summary>
         /// Raised whenever a physical connection is established
         /// </summary>
         /// <param name="sender"></param>

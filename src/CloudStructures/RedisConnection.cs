@@ -103,6 +103,7 @@ namespace CloudStructures
                     {
                         //--- create inner connection
                         this.connection = ConnectionMultiplexer.Connect(this.Config.Options, this.Logger);
+                        this.Handler?.OnConnectionOpened(this);
 
                         //--- attach events
                         this.connection.ConfigurationChanged += (_, e) => this.Handler?.OnConfigurationChanged(this, e);
