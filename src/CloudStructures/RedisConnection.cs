@@ -76,11 +76,8 @@ namespace CloudStructures
         /// <param name="converter"></param>
         /// <param name="handler"></param>
         /// <param name="logger"></param>
-        public RedisConnection(RedisConfig config, IValueConverter converter, IConnectionEventHandler handler = null, TextWriter logger = null)
+        public RedisConnection(RedisConfig config, IValueConverter converter = null, IConnectionEventHandler handler = null, TextWriter logger = null)
         {
-            if (converter == null)
-                throw new ArgumentNullException(nameof(converter));
-
             this.Config = config ?? throw new ArgumentNullException(nameof(config));
             this.Converter = new ValueConverter(converter);
             this.Handler = handler;

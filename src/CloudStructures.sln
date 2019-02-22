@@ -10,8 +10,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CloudStructures", "CloudStructures\CloudStructures.csproj", "{737EFD85-803D-48F6-AFB4-4637773E32A8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CloudStructures.Converters.Utf8Json", "CloudStructures.Converters.Utf8Json\CloudStructures.Converters.Utf8Json.csproj", "{D97C0723-E08A-4FA2-AFF4-04DBDBE5796C}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CloudStructures.Converters.MessagePack", "CloudStructures.Converters.MessagePack\CloudStructures.Converters.MessagePack.csproj", "{FE910B93-6E35-4FCC-9EAD-A6C4E27D9EF5}"
 EndProject
 Global
@@ -24,10 +22,6 @@ Global
 		{737EFD85-803D-48F6-AFB4-4637773E32A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{737EFD85-803D-48F6-AFB4-4637773E32A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{737EFD85-803D-48F6-AFB4-4637773E32A8}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D97C0723-E08A-4FA2-AFF4-04DBDBE5796C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D97C0723-E08A-4FA2-AFF4-04DBDBE5796C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D97C0723-E08A-4FA2-AFF4-04DBDBE5796C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D97C0723-E08A-4FA2-AFF4-04DBDBE5796C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{FE910B93-6E35-4FCC-9EAD-A6C4E27D9EF5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{FE910B93-6E35-4FCC-9EAD-A6C4E27D9EF5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FE910B93-6E35-4FCC-9EAD-A6C4E27D9EF5}.Release|Any CPU.ActiveCfg = Release|Any CPU
