@@ -6,9 +6,9 @@ using Utf8Json.Resolvers;
 namespace CloudStructures.Converters
 {
     /// <summary>
-    /// Provides default value converter. (using Utf8Json)
+    /// Provides value converter using Utf8Json.
     /// </summary>
-    internal sealed class DefaultConverter : IValueConverter
+    internal sealed class Utf8JsonConverter : IValueConverter
     {
         /// <summary>
         /// Serialize value to binary.

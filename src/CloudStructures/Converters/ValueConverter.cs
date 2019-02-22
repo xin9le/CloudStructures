@@ -25,7 +25,7 @@ namespace CloudStructures.Converters
         /// </summary>
         /// <param name="customConverter"></param>
         public ValueConverter(IValueConverter customConverter)
-            => this.CustomConverter = customConverter ?? new DefaultConverter();
+            => this.CustomConverter = customConverter ?? new Utf8JsonConverter();  // fallback
         #endregion
 
 
