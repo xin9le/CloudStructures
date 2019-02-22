@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using CloudStructures.Converters;
@@ -102,8 +103,10 @@ namespace CloudStructures
                     try
                     {
                         //--- create inner connection
+                        var stopwatch = Stopwatch.StartNew();
                         this.connection = ConnectionMultiplexer.Connect(this.Config.Options, this.Logger);
-                        this.Handler?.OnConnectionOpened(this);
+                        stopwatch.Stop();
+                        this.Handler?.OnConnectionOpened(this, new ConnectionOpenedEventArgs(stopwatch.Elapsed));
 
                         //--- attach events
                         this.connection.ConfigurationChanged += (_, e) => this.Handler?.OnConfigurationChanged(this, e);
