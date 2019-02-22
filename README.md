@@ -41,8 +41,7 @@ public static class RedisServer
     public static RedisServer()
     {
         var config = new RedisConfig("name", "connectionString");
-        var converter = new Utf8JsonConverter();
-        Connection = new RedisConnection(config, converter);
+        Connection = new RedisConnection(config);
     }
 }
 
@@ -67,11 +66,10 @@ var result = await redis.Get();
 
 
 # ValueConverter
-If you use this library, you must implement `IValueConverter` to serialize your original class. However, we provides default implementations using [MessagePack for C#](https://github.com/neuecc/MessagePack-CSharp) and [Utf8Json](https://github.com/neuecc/Utf8Json).
+If you use this library, you must implement `IValueConverter` to serialize your original class. However, we provides default implementations using [MessagePack for C#](https://github.com/neuecc/MessagePack-CSharp) and [Utf8Json](https://github.com/neuecc/Utf8Json). Unless you pass custom `IValueConverter` to `RedisConnection` ctor, fallback to `Utf8JsonConverter` automatically. If you wanna use MessagePack version, you should install following package.
 
 ```
 PM> Install-Package CloudStructures.Converters.MessagePack
-PM> Install-Package CloudStructures.Converters.Utf8Json
 ```
 
 
