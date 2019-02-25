@@ -8,7 +8,7 @@ namespace CloudStructures.Converters
     /// <summary>
     /// Provides value converter using Utf8Json.
     /// </summary>
-    internal sealed class Utf8JsonConverter : IValueConverter
+    public sealed class Utf8JsonConverter : IValueConverter
     {
         /// <summary>
         /// Serialize value to binary.
