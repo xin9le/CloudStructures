@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>CloudStructures.Converters</RootNamespace>
+    <LangVersion>latest</LangVersion>
+    <IsPackable>true</IsPackable>
+    <VersionPrefix>2.0.0</VersionPrefix>
+    <VersionSuffix></VersionSuffix>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageLicenseUrl>http://opensource.org/licenses/MIT</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/neuecc/CloudStructures</PackageProjectUrl>
+    <Description>Provides MessagePackConverter for CloudStructures.</Description>
+    <Copyright>Copyright© neuecc, xin9le</Copyright>
+    <PackageTags>Redis, Redis Client, O/R Mapping</PackageTags>
+    <RepositoryUrl>https://github.com/neuecc/CloudStructures</RepositoryUrl>
+    <RepositoryType>Git</RepositoryType>
+    <PackageIconUrl></PackageIconUrl>
+    <Authors>neuecc xin9le</Authors>
+    <Product>CloudStructures</Product>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MessagePack" Version="1.7.3.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CloudStructures\CloudStructures.csproj" />
+  </ItemGroup>
+
+</Project>

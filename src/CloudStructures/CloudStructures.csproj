@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <IsPackable>true</IsPackable>
+    <VersionPrefix>2.0.0</VersionPrefix>
+    <VersionSuffix></VersionSuffix>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageLicenseUrl>http://opensource.org/licenses/MIT</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/neuecc/CloudStructures</PackageProjectUrl>
+    <Description>Redis Client based on StackExchange.Redis.</Description>
+    <PackageReleaseNotes>Supports .NET Standard</PackageReleaseNotes>
+    <Copyright>Copyright© neuecc, xin9le</Copyright>
+    <PackageTags>Redis, Redis Client, O/R Mapping</PackageTags>
+    <RepositoryUrl>https://github.com/neuecc/CloudStructures</RepositoryUrl>
+    <RepositoryType>Git</RepositoryType>
+    <PackageIconUrl></PackageIconUrl>
+    <Authors>neuecc xin9le</Authors>
+    <Product>CloudStructures</Product>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="StackExchange.Redis" Version="2.0.519" />
+    <PackageReference Include="Utf8Json" Version="1.3.7" />
+  </ItemGroup>
+
+</Project>
