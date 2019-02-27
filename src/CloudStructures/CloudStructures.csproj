@@ -17,7 +17,7 @@
     <RepositoryUrl>https://github.com/neuecc/CloudStructures</RepositoryUrl>
     <RepositoryType>Git</RepositoryType>
     <PackageIconUrl></PackageIconUrl>
-    <Authors>neuecc xin9le</Authors>
+    <Authors>neuecc, xin9le</Authors>
     <Product>CloudStructures</Product>
   </PropertyGroup>
 

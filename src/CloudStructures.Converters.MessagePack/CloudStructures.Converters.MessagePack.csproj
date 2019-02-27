@@ -13,11 +13,11 @@
     <PackageProjectUrl>https://github.com/neuecc/CloudStructures</PackageProjectUrl>
     <Description>Provides MessagePackConverter for CloudStructures.</Description>
     <Copyright>Copyright© neuecc, xin9le</Copyright>
-    <PackageTags>Redis, Redis Client, O/R Mapping</PackageTags>
+    <PackageTags>Redis, Redis Client, O/R Mapping, MessagePack, Converter</PackageTags>
     <RepositoryUrl>https://github.com/neuecc/CloudStructures</RepositoryUrl>
     <RepositoryType>Git</RepositoryType>
     <PackageIconUrl></PackageIconUrl>
-    <Authors>neuecc xin9le</Authors>
+    <Authors>neuecc, xin9le</Authors>
     <Product>CloudStructures</Product>
   </PropertyGroup>
 
