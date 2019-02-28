@@ -103,7 +103,7 @@ namespace CloudStructures.Structures
         /// SETEX  : http://redis.io/commands/setex
         /// PSETEX : http://redis.io/commands/psetex
         /// </summary>
-        public static Task<bool> Expire<T>(this T redis, TimeSpan expiry, CommandFlags flags = CommandFlags.None)
+        public static Task<bool> Expire<T>(this T redis, TimeSpan? expiry, CommandFlags flags = CommandFlags.None)
             where T : IRedisStructure
             => redis.Connection.Database.KeyExpireAsync(redis.Key, expiry, flags);
 
