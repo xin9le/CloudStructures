@@ -14,9 +14,9 @@ namespace CloudStructures.Structures
     /// Like RedisDictionary&lt;TKey, bool&gt;.
     /// </summary>
     /// <typeparam name="T">Data type</typeparam>
-    public readonly struct RedisHashSet<T> : IRedisStructure
+    public readonly struct RedisHashSet<T> : IRedisStructureWithExpiry
     {
-        #region IRedisStructure implementations
+        #region IRedisStructureWithExpiry implementations
         /// <summary>
         /// Gets connection.
         /// </summary>

@@ -14,9 +14,9 @@ namespace CloudStructures.Structures
     /// </summary>
     /// <typeparam name="TKey">Key type</typeparam>
     /// <typeparam name="TValue">Value type</typeparam>
-    public readonly struct RedisDictionary<TKey, TValue> : IRedisStructure
+    public readonly struct RedisDictionary<TKey, TValue> : IRedisStructureWithExpiry
     {
-        #region IRedisStructure implementations
+        #region IRedisStructureWithExpiry implementations
         /// <summary>
         /// Gets connection.
         /// </summary>

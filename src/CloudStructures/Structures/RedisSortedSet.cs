@@ -14,9 +14,9 @@ namespace CloudStructures.Structures
     /// Provides sorted set related commands.
     /// </summary>
     /// <typeparam name="T">Data type</typeparam>
-    public readonly struct RedisSortedSet<T> : IRedisStructure
+    public readonly struct RedisSortedSet<T> : IRedisStructureWithExpiry
     {
-        #region IRedisStructure implementations
+        #region IRedisStructureWithExpiry implementations
         /// <summary>
         /// Gets connection.
         /// </summary>

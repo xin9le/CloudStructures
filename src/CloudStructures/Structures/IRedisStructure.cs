@@ -23,8 +23,17 @@ namespace CloudStructures.Structures
         /// Gets key.
         /// </summary>
         RedisKey Key { get; }
+        #endregion
+    }
 
 
+
+    /// <summary>
+    /// Represents a interface for Redis data structure with default expiration time.
+    /// </summary>
+    public interface IRedisStructureWithExpiry : IRedisStructure
+    {
+        #region Properties
         /// <summary>
         /// Gets default expiration time.
         /// </summary>
@@ -35,7 +44,7 @@ namespace CloudStructures.Structures
 
 
     /// <summary>
-    /// Provides extension methods for <see cref="IRedisStructure"/>.
+    /// Provides extension methods for <see cref="IRedisStructure"/> and <seealso cref="IRedisStructureWithExpiry"/>.
     /// </summary>
     public static class RedisStructureExtensions
     {
