@@ -23,12 +23,6 @@ namespace CloudStructures.Structures
         /// Gets key.
         /// </summary>
         public RedisKey Key { get; }
-
-
-        /// <summary>
-        /// Gets default expiration time.
-        /// </summary>
-        public TimeSpan? DefaultExpiry { get; }
         #endregion
 
 
@@ -38,12 +32,10 @@ namespace CloudStructures.Structures
         /// </summary>
         /// <param name="connection"></param>
         /// <param name="key"></param>
-        /// <param name="defaultExpiry"></param>
-        public RedisLua(RedisConnection connection, RedisKey key, TimeSpan? defaultExpiry)
+        public RedisLua(RedisConnection connection, RedisKey key)
         {
             this.Connection = connection ?? throw new ArgumentNullException(nameof(connection));
             this.Key = key;
-            this.DefaultExpiry = defaultExpiry;
         }
         #endregion
 

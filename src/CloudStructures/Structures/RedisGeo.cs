@@ -14,9 +14,9 @@ namespace CloudStructures.Structures
     /// Provides geometry related commands.
     /// </summary>
     /// <typeparam name="T">Data type</typeparam>
-    public readonly struct RedisGeo<T> : IRedisStructure
+    public readonly struct RedisGeo<T> : IRedisStructureWithExpiry
     {
-        #region IRedisStructure implementations
+        #region IRedisStructureWithExpiry implementations
         /// <summary>
         /// Gets connection.
         /// </summary>

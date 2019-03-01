@@ -11,9 +11,9 @@ namespace CloudStructures.Structures
     /// <summary>
     /// Provides bit related commands.
     /// </summary>
-    public readonly struct RedisBit : IRedisStructure
+    public readonly struct RedisBit : IRedisStructureWithExpiry
     {
-        #region IRedisStructure implementations
+        #region IRedisStructureWithExpiry implementations
         /// <summary>
         /// Gets connection.
         /// </summary>

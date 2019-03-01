@@ -13,9 +13,9 @@ namespace CloudStructures.Structures
     /// Provides HyperLogLog related commands.
     /// </summary>
     /// <typeparam name="T">Data type</typeparam>
-    public readonly struct RedisHyperLogLog<T> : IRedisStructure
+    public readonly struct RedisHyperLogLog<T> : IRedisStructureWithExpiry
     {
-        #region IRedisStructure implementations
+        #region IRedisStructureWithExpiry implementations
         /// <summary>
         /// Gets connection.
         /// </summary>

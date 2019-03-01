@@ -23,12 +23,6 @@ namespace CloudStructures.Structures
         /// Gets key.
         /// </summary>
         public RedisKey Key { get; }
-
-
-        /// <summary>
-        /// Gets default expiration time.
-        /// </summary>
-        public TimeSpan? DefaultExpiry { get; }
         #endregion
 
 
@@ -42,7 +36,6 @@ namespace CloudStructures.Structures
         {
             this.Connection = connection ?? throw new ArgumentNullException(nameof(connection));
             this.Key = key;
-            this.DefaultExpiry = default;
         }
         #endregion
 

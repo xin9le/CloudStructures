@@ -13,9 +13,9 @@ namespace CloudStructures.Structures
     /// Provides list related commands.
     /// </summary>
     /// <typeparam name="T">Data type</typeparam>
-    public readonly struct RedisList<T> : IRedisStructure
+    public readonly struct RedisList<T> : IRedisStructureWithExpiry
     {
-        #region IRedisStructure implementations
+        #region IRedisStructureWithExpiry implementations
         /// <summary>
         /// Gets connection.
         /// </summary>
