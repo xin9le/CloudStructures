@@ -160,7 +160,7 @@ namespace CloudStructures.Structures
         /// <summary>
         /// GEORADIUS : https://redis.io/commands/georadius
         /// </summary>
-        public async Task<RedisGeoRadiusResult<T>[]> RadiusAsync(RedisKey key, double longitude, double latitude, double radius, GeoUnit unit = GeoUnit.Meters, int count = -1, Order? order = null, GeoRadiusOptions options = GeoRadiusOptions.Default, CommandFlags flags = CommandFlags.None)
+        public async Task<RedisGeoRadiusResult<T>[]> RadiusAsync(double longitude, double latitude, double radius, GeoUnit unit = GeoUnit.Meters, int count = -1, Order? order = null, GeoRadiusOptions options = GeoRadiusOptions.Default, CommandFlags flags = CommandFlags.None)
         {
             var results = await this.Connection.Database.GeoRadiusAsync(this.Key, longitude, latitude, radius, unit, count, order, options, flags).ConfigureAwait(false);
             return results.Select(this.Connection.Converter, (x, c) => x.ToGenerics<T>(c)).ToArray();
