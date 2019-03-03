@@ -64,8 +64,8 @@ var redis = new RedisString<Person>(RedisServer.Connectioon, key, defaultExpiry)
 
 // 2. Call command
 var neuecc = new Person("neuecc", 35);
-await redis.Set(neuecc);
-var result = await redis.Get();
+await redis.SetAsync(neuecc);
+var result = await redis.GetAsync();
 ```
 
 
