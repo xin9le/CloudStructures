@@ -64,11 +64,11 @@ namespace CloudStructures.Structures
         /// <summary>
         /// GEOADD : https://redis.io/commands/geoadd
         /// </summary>
-        public Task<bool> Add(RedisGeoEntry<T> value, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
+        public Task<bool> AddAsync(RedisGeoEntry<T> value, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
             expiry = expiry ?? this.DefaultExpiry;
             var entry = value.ToNonGenerics(this.Connection.Converter);
-            return this.ExecuteWithExpiry
+            return this.ExecuteWithExpiryAsync
             (
                 (db, a) => db.GeoAddAsync(a.key, a.entry, a.flags),
                 (key: this.Key, entry, flags),
@@ -81,11 +81,11 @@ namespace CloudStructures.Structures
         /// <summary>
         /// GEOADD : https://redis.io/commands/geoadd
         /// </summary>
-        public Task<long> Add(IEnumerable<RedisGeoEntry<T>> values, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
+        public Task<long> AddAsync(IEnumerable<RedisGeoEntry<T>> values, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
             expiry = expiry ?? this.DefaultExpiry;
             var entries = values.Select(this.Connection.Converter, (x, c) => x.ToNonGenerics(c)).ToArray();
-            return this.ExecuteWithExpiry
+            return this.ExecuteWithExpiryAsync
             (
                 (db, a) => db.GeoAddAsync(a.key, a.entries, a.flags),
                 (key: this.Key, entries, flags),
@@ -98,18 +98,18 @@ namespace CloudStructures.Structures
         /// <summary>
         /// GEOADD : https://redis.io/commands/geoadd
         /// </summary>
-        public Task<bool> Add(double longitude, double latitude, T member, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
+        public Task<bool> AddAsync(double longitude, double latitude, T member, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
             expiry = expiry ?? this.DefaultExpiry;
             var entry = new RedisGeoEntry<T>(longitude, latitude, member);
-            return this.Add(entry, expiry, flags);
+            return this.AddAsync(entry, expiry, flags);
         }
 
 
         /// <summary>
         /// GEODIST : https://redis.io/commands/geodist
         /// </summary>
-        public Task<double?> Distance(T member1, T member2, GeoUnit unit = GeoUnit.Meters, CommandFlags flags = CommandFlags.None)
+        public Task<double?> DistanceAsync(T member1, T member2, GeoUnit unit = GeoUnit.Meters, CommandFlags flags = CommandFlags.None)
         {
             var value1 = this.Connection.Converter.Serialize(member1);
             var value2 = this.Connection.Converter.Serialize(member2);
@@ -120,7 +120,7 @@ namespace CloudStructures.Structures
         /// <summary>
         /// GEOHASH : https://redis.io/commands/geohash
         /// </summary>
-        public Task<string> Hash(T member, CommandFlags flags = CommandFlags.None)
+        public Task<string> HashAsync(T member, CommandFlags flags = CommandFlags.None)
         {
             var value = this.Connection.Converter.Serialize(member);
             return this.Connection.Database.GeoHashAsync(this.Key, value, flags);
@@ -130,7 +130,7 @@ namespace CloudStructures.Structures
         /// <summary>
         /// GEOHASH : https://redis.io/commands/geohash
         /// </summary>
-        public Task<string[]> Hash(IEnumerable<T> members, CommandFlags flags = CommandFlags.None)
+        public Task<string[]> HashAsync(IEnumerable<T> members, CommandFlags flags = CommandFlags.None)
         {
             var values = members.Select(this.Connection.Converter.Serialize).ToArray();
             return this.Connection.Database.GeoHashAsync(this.Key, values, flags);
@@ -140,7 +140,7 @@ namespace CloudStructures.Structures
         /// <summary>
         /// GEOPOS : https://redis.io/commands/geopos
         /// </summary>
-        public Task<GeoPosition?> Position(T member, CommandFlags flags = CommandFlags.None)
+        public Task<GeoPosition?> PositionAsync(T member, CommandFlags flags = CommandFlags.None)
         {
             var value = this.Connection.Converter.Serialize(member);
             return this.Connection.Database.GeoPositionAsync(this.Key, value, flags);
@@ -150,7 +150,7 @@ namespace CloudStructures.Structures
         /// <summary>
         /// GEOPOS  https://redis.io/commands/geopos
         /// </summary>
-        public Task<GeoPosition?[]> Position(IEnumerable<T> members, CommandFlags flags = CommandFlags.None)
+        public Task<GeoPosition?[]> PositionAsync(IEnumerable<T> members, CommandFlags flags = CommandFlags.None)
         {
             var values = members.Select(this.Connection.Converter.Serialize).ToArray();
             return this.Connection.Database.GeoPositionAsync(this.Key, values, flags);
@@ -160,7 +160,7 @@ namespace CloudStructures.Structures
         /// <summary>
         /// GEORADIUS : https://redis.io/commands/georadius
         /// </summary>
-        public async Task<RedisGeoRadiusResult<T>[]> Radius(RedisKey key, double longitude, double latitude, double radius, GeoUnit unit = GeoUnit.Meters, int count = -1, Order? order = null, GeoRadiusOptions options = GeoRadiusOptions.Default, CommandFlags flags = CommandFlags.None)
+        public async Task<RedisGeoRadiusResult<T>[]> RadiusAsync(RedisKey key, double longitude, double latitude, double radius, GeoUnit unit = GeoUnit.Meters, int count = -1, Order? order = null, GeoRadiusOptions options = GeoRadiusOptions.Default, CommandFlags flags = CommandFlags.None)
         {
             var results = await this.Connection.Database.GeoRadiusAsync(this.Key, longitude, latitude, radius, unit, count, order, options, flags).ConfigureAwait(false);
             return results.Select(this.Connection.Converter, (x, c) => x.ToGenerics<T>(c)).ToArray();
@@ -170,7 +170,7 @@ namespace CloudStructures.Structures
         /// <summary>
         /// GEORADIUSBYMEMBER : https://redis.io/commands/georadiusbymember
         /// </summary>
-        public async Task<RedisGeoRadiusResult<T>[]> Radius(T member, double radius, GeoUnit unit = GeoUnit.Meters, int count = -1, Order? order = null, GeoRadiusOptions options = GeoRadiusOptions.Default, CommandFlags flags = CommandFlags.None)
+        public async Task<RedisGeoRadiusResult<T>[]> RadiusAsync(T member, double radius, GeoUnit unit = GeoUnit.Meters, int count = -1, Order? order = null, GeoRadiusOptions options = GeoRadiusOptions.Default, CommandFlags flags = CommandFlags.None)
         {
             var value = this.Connection.Converter.Serialize(member);
             var results = await this.Connection.Database.GeoRadiusAsync(this.Key, value, radius, unit, count, order, options, flags).ConfigureAwait(false);
@@ -182,7 +182,7 @@ namespace CloudStructures.Structures
         /// ZREM : https://redis.io/commands/zrem
         /// </summary>
         /// <remarks>There is no GEODEL command.</remarks>
-        public Task<bool> Remove(T member, CommandFlags flags = CommandFlags.None)
+        public Task<bool> RemoveAsync(T member, CommandFlags flags = CommandFlags.None)
         {
             var value = this.Connection.Converter.Serialize(member);
             return this.Connection.Database.GeoRemoveAsync(this.Key, value, flags);

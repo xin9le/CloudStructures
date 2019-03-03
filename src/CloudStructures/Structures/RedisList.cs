@@ -72,7 +72,7 @@ namespace CloudStructures.Structures
         /// <summary>
         /// LINDEX : https://redis.io/commands/lindex
         /// </summary>
-        public async Task<RedisResult<T>> GetByIndex(long index, CommandFlags flags = CommandFlags.None)
+        public async Task<RedisResult<T>> GetByIndexAsync(long index, CommandFlags flags = CommandFlags.None)
         {
             var value = await this.Connection.Database.ListGetByIndexAsync(this.Key, index, flags).ConfigureAwait(false);
             return value.ToResult<T>(this.Connection.Converter);
@@ -82,12 +82,12 @@ namespace CloudStructures.Structures
         /// <summary>
         /// LINSERT : https://redis.io/commands/linsert
         /// </summary>
-        public Task<long> InsertAfter(T pivot, T value, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
+        public Task<long> InsertAfterAsync(T pivot, T value, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
             expiry = expiry ?? this.DefaultExpiry;
             var p = this.Connection.Converter.Serialize(pivot);
             var v = this.Connection.Converter.Serialize(value);
-            return this.ExecuteWithExpiry
+            return this.ExecuteWithExpiryAsync
             (
                 (db, a) => db.ListInsertAfterAsync(a.key, a.p, a.v, a.flags),
                 (key: this.Key, p, v, flags),
@@ -100,12 +100,12 @@ namespace CloudStructures.Structures
         /// <summary>
         /// LINSERT : https://redis.io/commands/linsert
         /// </summary>
-        public Task<long> InsertBefore(T pivot, T value, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
+        public Task<long> InsertBeforeAsync(T pivot, T value, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
             expiry = expiry ?? this.DefaultExpiry;
             var p = this.Connection.Converter.Serialize(pivot);
             var v = this.Connection.Converter.Serialize(value);
-            return this.ExecuteWithExpiry
+            return this.ExecuteWithExpiryAsync
             (
                 (db, a) => db.ListInsertBeforeAsync(a.key, a.p, a.v, a.flags),
                 (key: this.Key, p, v, flags),
@@ -118,7 +118,7 @@ namespace CloudStructures.Structures
         /// <summary>
         /// LPOP : https://redis.io/commands/lpop
         /// </summary>
-        public async Task<RedisResult<T>> LeftPop(CommandFlags flags = CommandFlags.None)
+        public async Task<RedisResult<T>> LeftPopAsync(CommandFlags flags = CommandFlags.None)
         {
             var value = await this.Connection.Database.ListLeftPopAsync(this.Key, flags).ConfigureAwait(false);
             return value.ToResult<T>(this.Connection.Converter);
@@ -128,11 +128,11 @@ namespace CloudStructures.Structures
         /// <summary>
         /// LPUSH : https://redis.io/commands/lpush
         /// </summary>
-        public Task<long> LeftPush(T value, TimeSpan? expiry = null, When when = When.Always, CommandFlags flags = CommandFlags.None)
+        public Task<long> LeftPushAsync(T value, TimeSpan? expiry = null, When when = When.Always, CommandFlags flags = CommandFlags.None)
         {
             expiry = expiry ?? this.DefaultExpiry;
             var serialized = this.Connection.Converter.Serialize(value);
-            return this.ExecuteWithExpiry
+            return this.ExecuteWithExpiryAsync
             (
                 (db, a) => db.ListLeftPushAsync(a.key, a.serialized, a.when, a.flags),
                 (key: this.Key, serialized, when, flags),
@@ -145,11 +145,11 @@ namespace CloudStructures.Structures
         /// <summary>
         /// LPUSH : https://redis.io/commands/lpush
         /// </summary>
-        public Task<long> LeftPush(IEnumerable<T> values, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
+        public Task<long> LeftPushAsync(IEnumerable<T> values, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
             expiry = expiry ?? this.DefaultExpiry;
             var serialized = values.Select(this.Connection.Converter.Serialize).ToArray();
-            return this.ExecuteWithExpiry
+            return this.ExecuteWithExpiryAsync
             (
                 (db, a) => db.ListLeftPushAsync(a.key, a.serialized, a.flags),
                 (key: this.Key, serialized, flags),
@@ -162,14 +162,14 @@ namespace CloudStructures.Structures
         /// <summary>
         /// LLEN : https://redis.io/commands/llen
         /// </summary>
-        public Task<long> Length(CommandFlags flags = CommandFlags.None)
+        public Task<long> LengthAsync(CommandFlags flags = CommandFlags.None)
             => this.Connection.Database.ListLengthAsync(this.Key, flags);
 
 
         /// <summary>
         /// LRANGE : https://redis.io/commands/lrange
         /// </summary>
-        public async Task<T[]> Range(long start = 0, long stop = -1, CommandFlags flags = CommandFlags.None)
+        public async Task<T[]> RangeAsync(long start = 0, long stop = -1, CommandFlags flags = CommandFlags.None)
         {
             var values = await this.Connection.Database.ListRangeAsync(this.Key, start, stop, flags).ConfigureAwait(false);
             return values.Select(this.Connection.Converter, (x, c) => c.Deserialize<T>(x)).ToArray();
@@ -185,7 +185,7 @@ namespace CloudStructures.Structures
         /// <para>count &lt; 0 : 末尾から先頭に向かって検索しつつ削除</para>
         /// <para>count = 0 : 一致するものを全件削除</para>
         /// </param>
-        public Task<long> Remove(T value, long count = 0, CommandFlags flags = CommandFlags.None)
+        public Task<long> RemoveAsync(T value, long count = 0, CommandFlags flags = CommandFlags.None)
         {
             var serialized = this.Connection.Converter.Serialize(value);
             return this.Connection.Database.ListRemoveAsync(this.Key, serialized, count, flags);
@@ -195,7 +195,7 @@ namespace CloudStructures.Structures
         /// <summary>
         /// RPOP : https://redis.io/commands/rpop
         /// </summary>
-        public async Task<RedisResult<T>> RightPop(CommandFlags flags = CommandFlags.None)
+        public async Task<RedisResult<T>> RightPopAsync(CommandFlags flags = CommandFlags.None)
         {
             var value = await this.Connection.Database.ListRightPopAsync(this.Key, flags).ConfigureAwait(false);
             return value.ToResult<T>(this.Connection.Converter);
@@ -205,7 +205,7 @@ namespace CloudStructures.Structures
         /// <summary>
         /// RPOPLPUSH : https://redis.io/commands/rpoplpush
         /// </summary>
-        public async Task<RedisResult<T>> RightPopLeftPush(RedisList<T> destination, CommandFlags flags = CommandFlags.None)
+        public async Task<RedisResult<T>> RightPopLeftPushAsync(RedisList<T> destination, CommandFlags flags = CommandFlags.None)
         {
             var value = await this.Connection.Database.ListRightPopLeftPushAsync(this.Key, destination.Key, flags).ConfigureAwait(false);
             return value.ToResult<T>(this.Connection.Converter);
@@ -215,11 +215,11 @@ namespace CloudStructures.Structures
         /// <summary>
         /// RPUSH : https://redis.io/commands/rpush
         /// </summary>
-        public Task<long> RightPush(T value, TimeSpan? expiry = null, When when = When.Always, CommandFlags flags = CommandFlags.None)
+        public Task<long> RightPushAsync(T value, TimeSpan? expiry = null, When when = When.Always, CommandFlags flags = CommandFlags.None)
         {
             expiry = expiry ?? this.DefaultExpiry;
             var serialized = this.Connection.Converter.Serialize(value);
-            return this.ExecuteWithExpiry
+            return this.ExecuteWithExpiryAsync
             (
                 (db, a) => db.ListRightPushAsync(a.key, a.serialized, a.when, a.flags),
                 (key: this.Key, serialized, when, flags),
@@ -232,11 +232,11 @@ namespace CloudStructures.Structures
         /// <summary>
         /// RPUSH : https://redis.io/commands/rpush
         /// </summary>
-        public Task<long> RightPush(IEnumerable<T> values, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
+        public Task<long> RightPushAsync(IEnumerable<T> values, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
             expiry = expiry ?? this.DefaultExpiry;
             var serialized = values.Select(this.Connection.Converter.Serialize).ToArray();
-            return this.ExecuteWithExpiry
+            return this.ExecuteWithExpiryAsync
             (
                 (db, a) => db.ListRightPushAsync(a.key, a.serialized, a.flags),
                 (key: this.Key, serialized, flags),
@@ -249,11 +249,11 @@ namespace CloudStructures.Structures
         /// <summary>
         /// LSET : https://redis.io/commands/lset
         /// </summary>
-        public Task SetByIndex(long index, T value, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
+        public Task SetByIndexAsync(long index, T value, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
             expiry = expiry ?? this.DefaultExpiry;
             var serialized = this.Connection.Converter.Serialize(value);
-            return this.ExecuteWithExpiry
+            return this.ExecuteWithExpiryAsync
             (
                 (db, a) => db.ListSetByIndexAsync(a.key, a.index, a.serialized, a.flags),
                 (key: this.Key, index, serialized, flags),
@@ -266,14 +266,14 @@ namespace CloudStructures.Structures
         /// <summary>
         /// LTRIM : https://redis.io/commands/ltrim
         /// </summary>
-        public Task Trim(long start, long stop, CommandFlags flags = CommandFlags.None)
+        public Task TrimAsync(long start, long stop, CommandFlags flags = CommandFlags.None)
             => this.Connection.Database.ListTrimAsync(this.Key, start, stop, flags);
 
 
         /// <summary>
         /// SORT : https://redis.io/commands/sort
         /// </summary>
-        public Task<long> SortAndStore(RedisList<T> destination, long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, /*RedisValue by = default, RedisValue[] get = null,*/ CommandFlags flags = CommandFlags.None)
+        public Task<long> SortAndStoreAsync(RedisList<T> destination, long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, /*RedisValue by = default, RedisValue[] get = null,*/ CommandFlags flags = CommandFlags.None)
         {
             //--- I don't know if serialization is necessary or not, so I will fix the default value.
             RedisValue by = default;
@@ -285,7 +285,7 @@ namespace CloudStructures.Structures
         /// <summary>
         /// SORT : https://redis.io/commands/sort
         /// </summary>
-        public async Task<T[]> Sort(long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, /*RedisValue by = default, RedisValue[] get = null,*/ CommandFlags flags = CommandFlags.None)
+        public async Task<T[]> SortAsync(long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, /*RedisValue by = default, RedisValue[] get = null,*/ CommandFlags flags = CommandFlags.None)
         {
             //--- I don't know if serialization is necessary or not, so I will fix the default value.
             RedisValue by = default;
@@ -300,7 +300,7 @@ namespace CloudStructures.Structures
         /// <summary>
         /// First LPUSH, then LTRIM to the specified list length.
         /// </summary>
-        public async Task<long> FixedLengthLeftPush(T value, long length, TimeSpan? expiry = null, When when = When.Always, CommandFlags flags = CommandFlags.None)
+        public async Task<long> FixedLengthLeftPushAsync(T value, long length, TimeSpan? expiry = null, When when = When.Always, CommandFlags flags = CommandFlags.None)
         {
             expiry = expiry ?? this.DefaultExpiry;
             var serialized = this.Connection.Converter.Serialize(value);
@@ -324,7 +324,7 @@ namespace CloudStructures.Structures
         /// <summary>
         /// First LPUSH, then LTRIM to the specified list length.
         /// </summary>
-        public async Task<long> FixedLengthLeftPush(IEnumerable<T> values, long length, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
+        public async Task<long> FixedLengthLeftPushAsync(IEnumerable<T> values, long length, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
             expiry = expiry ?? this.DefaultExpiry;
             var serialized = values.Select(this.Connection.Converter.Serialize).ToArray();

@@ -60,11 +60,11 @@ namespace CloudStructures.Structures
         /// <summary>
         /// PFADD : http://redis.io/commands/pfadd
         /// </summary>
-        public Task<bool> Add(T value, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
+        public Task<bool> AddAsync(T value, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
             expiry = expiry ?? this.DefaultExpiry;
             var serialized = this.Connection.Converter.Serialize(value);
-            return this.ExecuteWithExpiry
+            return this.ExecuteWithExpiryAsync
             (
                 (db, a) => db.HyperLogLogAddAsync(a.key, a.serialized, a.flags),
                 (key: this.Key, serialized, flags),
@@ -77,11 +77,11 @@ namespace CloudStructures.Structures
         /// <summary>
         /// PFADD : http://redis.io/commands/pfadd
         /// </summary>
-        public Task<bool> Add(IEnumerable<T> values, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
+        public Task<bool> AddAsync(IEnumerable<T> values, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
             expiry = expiry ?? this.DefaultExpiry;
             var serialized = values.Select(this.Connection.Converter.Serialize).ToArray();
-            return this.ExecuteWithExpiry
+            return this.ExecuteWithExpiryAsync
             (
                 (db, a) => db.HyperLogLogAddAsync(a.key, a.serialized, a.flags),
                 (key: this.Key, serialized, flags),
@@ -94,21 +94,21 @@ namespace CloudStructures.Structures
         /// <summary>
         /// PFCOUNT : http://redis.io/commands/pfcount
         /// </summary>
-        public Task<long> Length(CommandFlags flags = CommandFlags.None)
+        public Task<long> LengthAsync(CommandFlags flags = CommandFlags.None)
             => this.Connection.Database.HyperLogLogLengthAsync(this.Key, flags);
 
 
         /// <summary>
         /// PFMERGE : https://redis.io/commands/pfmerge
         /// </summary>
-        public Task Merge(RedisKey first, RedisKey second, CommandFlags flags = CommandFlags.None)
+        public Task MergeAsync(RedisKey first, RedisKey second, CommandFlags flags = CommandFlags.None)
             => this.Connection.Database.HyperLogLogMergeAsync(this.Key, first, second, flags);
 
 
         /// <summary>
         /// PFMERGE : https://redis.io/commands/pfmerge
         /// </summary>
-        public Task Merge(RedisKey[] sourceKeys, CommandFlags flags = CommandFlags.None)
+        public Task MergeAsync(RedisKey[] sourceKeys, CommandFlags flags = CommandFlags.None)
             => this.Connection.Database.HyperLogLogMergeAsync(this.Key, sourceKeys, flags);
         #endregion
     }

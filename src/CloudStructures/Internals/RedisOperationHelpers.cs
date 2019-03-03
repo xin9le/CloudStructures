@@ -22,7 +22,7 @@ namespace CloudStructures.Internals
         /// <param name="expiry"></param>
         /// <param name="flags"></param>
         /// <returns></returns>
-        public static async Task ExecuteWithExpiry<TRedis, TArgs>(this TRedis structure, Func<IDatabaseAsync, TArgs, Task> command, TArgs args, TimeSpan? expiry, CommandFlags flags)
+        public static async Task ExecuteWithExpiryAsync<TRedis, TArgs>(this TRedis structure, Func<IDatabaseAsync, TArgs, Task> command, TArgs args, TimeSpan? expiry, CommandFlags flags)
             where TRedis : IRedisStructure
         {
             if (structure == null) throw new ArgumentNullException(nameof(structure));
@@ -57,7 +57,7 @@ namespace CloudStructures.Internals
         /// <param name="expiry"></param>
         /// <param name="flags"></param>
         /// <returns></returns>
-        public static async Task<TResult> ExecuteWithExpiry<TRedis, TArgs, TResult>(this TRedis structure, Func<IDatabaseAsync, TArgs, Task<TResult>> command, TArgs args, TimeSpan? expiry, CommandFlags flags)
+        public static async Task<TResult> ExecuteWithExpiryAsync<TRedis, TArgs, TResult>(this TRedis structure, Func<IDatabaseAsync, TArgs, Task<TResult>> command, TArgs args, TimeSpan? expiry, CommandFlags flags)
             where TRedis : IRedisStructure
         {
             if (structure == null) throw new ArgumentNullException(nameof(structure));

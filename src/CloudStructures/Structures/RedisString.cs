@@ -65,10 +65,10 @@ namespace CloudStructures.Structures
         /// <summary>
         /// DECRBY : http://redis.io/commands/decrby
         /// </summary>
-        public Task<long> Decrement(long value = 1, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
+        public Task<long> DecrementAsync(long value = 1, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
             expiry = expiry ?? this.DefaultExpiry;
-            return this.ExecuteWithExpiry
+            return this.ExecuteWithExpiryAsync
             (
                 (db, a) => db.StringDecrementAsync(a.key, a.value, a.flags),
                 (key: this.Key, value, flags),
@@ -81,10 +81,10 @@ namespace CloudStructures.Structures
         /// <summary>
         /// INCRBYFLOAT : http://redis.io/commands/incrbyfloat
         /// </summary>
-        public Task<double> Decrement(double value, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
+        public Task<double> DecrementAsync(double value, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
             expiry = expiry ?? this.DefaultExpiry;
-            return this.ExecuteWithExpiry
+            return this.ExecuteWithExpiryAsync
             (
                 (db, a) => db.StringDecrementAsync(a.key, a.value, a.flags),
                 (key: this.Key, value, flags),
@@ -97,7 +97,7 @@ namespace CloudStructures.Structures
         /// <summary>
         /// GET : http://redis.io/commands/get
         /// </summary>
-        public async Task<RedisResult<T>> Get(CommandFlags flags = CommandFlags.None)
+        public async Task<RedisResult<T>> GetAsync(CommandFlags flags = CommandFlags.None)
         {
             var value = await this.Connection.Database.StringGetAsync(Key, flags).ConfigureAwait(false);
             return value.ToResult<T>(this.Connection.Converter);
@@ -107,12 +107,12 @@ namespace CloudStructures.Structures
         /// <summary>
         /// GETSET : http://redis.io/commands/getset
         /// </summary>
-        public async Task<RedisResult<T>> GetSet(T value, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
+        public async Task<RedisResult<T>> GetSetAsync(T value, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
             expiry = expiry ?? this.DefaultExpiry;
             var serialized = this.Connection.Converter.Serialize(value);
             var result
-                = await this.ExecuteWithExpiry
+                = await this.ExecuteWithExpiryAsync
                 (
                     (db, a) => db.StringGetSetAsync(a.key, a.serialized, a.flags),
                     (key: this.Key, serialized, flags),
@@ -127,7 +127,7 @@ namespace CloudStructures.Structures
         /// <summary>
         /// GET : http://redis.io/commands/get
         /// </summary>
-        public async Task<RedisResultWithExpiry<T>> GetWithExpiry(CommandFlags flags = CommandFlags.None)
+        public async Task<RedisResultWithExpiry<T>> GetWithExpiryAsync(CommandFlags flags = CommandFlags.None)
         {
             var value = await this.Connection.Database.StringGetWithExpiryAsync(this.Key, flags).ConfigureAwait(false);
             return value.ToResult<T>(this.Connection.Converter);
@@ -137,10 +137,10 @@ namespace CloudStructures.Structures
         /// <summary>
         /// INCRBY : http://redis.io/commands/incrby
         /// </summary>
-        public Task<long> Increment(long value = 1, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
+        public Task<long> IncrementAsync(long value = 1, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
             expiry = expiry ?? this.DefaultExpiry;
-            return this.ExecuteWithExpiry
+            return this.ExecuteWithExpiryAsync
             (
                 (db, a) => db.StringIncrementAsync(a.key, a.value, a.flags),
                 (key: this.Key, value, flags),
@@ -153,10 +153,10 @@ namespace CloudStructures.Structures
         /// <summary>
         /// INCRBYFLOAT : http://redis.io/commands/incrbyfloat
         /// </summary>
-        public Task<double> Increment(double value, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
+        public Task<double> IncrementAsync(double value, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
             expiry = expiry ?? this.DefaultExpiry;
-            return this.ExecuteWithExpiry
+            return this.ExecuteWithExpiryAsync
             (
                 (db, a) => db.StringIncrementAsync(a.key, a.value, a.flags),
                 (key: this.Key, value, flags),
@@ -169,14 +169,14 @@ namespace CloudStructures.Structures
         /// <summary>
         /// STRLEN : https://redis.io/commands/strlen
         /// </summary>
-        public Task<long> Length(CommandFlags flags = CommandFlags.None)
+        public Task<long> LengthAsync(CommandFlags flags = CommandFlags.None)
             => this.Connection.Database.StringLengthAsync(this.Key, flags);
 
 
         /// <summary>
         /// SET : http://redis.io/commands/set
         /// </summary>
-        public Task<bool> Set(T value, TimeSpan? expiry = null, When when = When.Always, CommandFlags flags = CommandFlags.None)
+        public Task<bool> SetAsync(T value, TimeSpan? expiry = null, When when = When.Always, CommandFlags flags = CommandFlags.None)
         {
             expiry = expiry ?? this.DefaultExpiry;
             var serialized = this.Connection.Converter.Serialize(value);
@@ -190,10 +190,10 @@ namespace CloudStructures.Structures
         /// GET : http://redis.io/commands/get
         /// SET : http://redis.io/commands/set
         /// </summary>
-        public async Task<T> GetOrSet(Func<T> valueFactory, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
+        public async Task<T> GetOrSetAsync(Func<T> valueFactory, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
             expiry = expiry ?? this.DefaultExpiry;
-            var value = await this.Get(flags).ConfigureAwait(false);
+            var value = await this.GetAsync(flags).ConfigureAwait(false);
             if (value.HasValue)
             {
                 return value.Value;
@@ -201,7 +201,7 @@ namespace CloudStructures.Structures
             else
             {
                 var newValue = valueFactory();
-                await this.Set(newValue, expiry, When.Always, flags).ConfigureAwait(false);
+                await this.SetAsync(newValue, expiry, When.Always, flags).ConfigureAwait(false);
                 return newValue;
             }
         }
@@ -211,10 +211,10 @@ namespace CloudStructures.Structures
         /// GET : http://redis.io/commands/get
         /// SET : http://redis.io/commands/set
         /// </summary>
-        public async Task<T> GetOrSet(Func<Task<T>> valueFactory, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
+        public async Task<T> GetOrSetAsync(Func<Task<T>> valueFactory, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
             expiry = expiry ?? this.DefaultExpiry;
-            var value = await this.Get(flags).ConfigureAwait(false);
+            var value = await this.GetAsync(flags).ConfigureAwait(false);
             if (value.HasValue)
             {
                 return value.Value;
@@ -222,7 +222,7 @@ namespace CloudStructures.Structures
             else
             {
                 var newValue = await valueFactory().ConfigureAwait(false);
-                await this.Set(newValue, expiry, When.Always, flags).ConfigureAwait(false);
+                await this.SetAsync(newValue, expiry, When.Always, flags).ConfigureAwait(false);
                 return newValue;
             }
         }
@@ -231,7 +231,7 @@ namespace CloudStructures.Structures
         /// <summary>
         /// LUA Script including incrby, set
         /// </summary>
-        public async Task<long> IncrementLimitByMax(long value, long max, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
+        public async Task<long> IncrementLimitByMaxAsync(long value, long max, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
             expiry = expiry ?? this.DefaultExpiry;
             var script =
@@ -246,7 +246,7 @@ return x";
             var keys = new[] { this.Key };
             var values = new RedisValue[] { value, max };
             var result
-                = await this.ExecuteWithExpiry
+                = await this.ExecuteWithExpiryAsync
                 (
                     (db, a) => db.ScriptEvaluateAsync(a.script, a.keys, a.values, a.flags),
                     (script, keys, values, flags),
@@ -261,7 +261,7 @@ return x";
         /// <summary>
         /// LUA Script including incrbyfloat, set
         /// </summary>
-        public async Task<double> IncrementLimitByMax(double value, double max, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
+        public async Task<double> IncrementLimitByMaxAsync(double value, double max, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
             expiry = expiry ?? this.DefaultExpiry;
             var script =
@@ -276,7 +276,7 @@ return tostring(x)";
             var keys = new[] { this.Key };
             var values = new RedisValue[] { value, max };
             var result
-                = await this.ExecuteWithExpiry
+                = await this.ExecuteWithExpiryAsync
                 (
                     (db, a) => db.ScriptEvaluateAsync(a.script, a.keys, a.values, a.flags),
                     (script, keys, values, flags),
@@ -291,7 +291,7 @@ return tostring(x)";
         /// <summary>
         /// LUA Script including incrby, set
         /// </summary>
-        public async Task<long> IncrementLimitByMin(long value, long min, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
+        public async Task<long> IncrementLimitByMinAsync(long value, long min, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
             expiry = expiry ?? this.DefaultExpiry;
             var script =
@@ -306,7 +306,7 @@ return x";
             var keys = new[] { this.Key };
             var values = new RedisValue[] { value, min };
             var result
-                = await this.ExecuteWithExpiry
+                = await this.ExecuteWithExpiryAsync
                 (
                     (db, a) => db.ScriptEvaluateAsync(a.script, a.keys, a.values, a.flags),
                     (script, keys, values, flags),
@@ -321,7 +321,7 @@ return x";
         /// <summary>
         /// LUA Script including incrbyfloat, set
         /// </summary>
-        public async Task<double> IncrementLimitByMin(double value, double min, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
+        public async Task<double> IncrementLimitByMinAsync(double value, double min, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
             expiry = expiry ?? this.DefaultExpiry;
             var script =
@@ -336,7 +336,7 @@ return tostring(x)";
             var keys = new[] { this.Key };
             var values = new RedisValue[] { value, min };
             var result
-                = await this.ExecuteWithExpiry
+                = await this.ExecuteWithExpiryAsync
                 (
                     (db, a) => db.ScriptEvaluateAsync(a.script, a.keys, a.values, a.flags),
                     (script, keys, values, flags),

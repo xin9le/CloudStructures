@@ -60,14 +60,14 @@ namespace CloudStructures.Structures
         /// <summary>
         /// BITCOUNT : http://redis.io/commands/bitcount
         /// </summary>
-        public Task<long> Count(long start = 0, long end = -1, CommandFlags flags = CommandFlags.None)
+        public Task<long> CountAsync(long start = 0, long end = -1, CommandFlags flags = CommandFlags.None)
             => this.Connection.Database.StringBitCountAsync(this.Key, start, end, flags);
 
 
         /// <summary>
         /// BITOP : https://redis.io/commands/bitop
         /// </summary>
-        public Task<long> Operation(Bitwise operation, RedisBit first, RedisBit? second = null, CommandFlags flags = CommandFlags.None)
+        public Task<long> OperationAsync(Bitwise operation, RedisBit first, RedisBit? second = null, CommandFlags flags = CommandFlags.None)
         {
             var firstKey = first.Key;
             var secondKey = second?.Key ?? default; 
@@ -78,7 +78,7 @@ namespace CloudStructures.Structures
         /// <summary>
         /// BITOP : https://redis.io/commands/bitop
         /// </summary>
-        public Task<long> Operation(Bitwise operation, RedisBit[] bits, CommandFlags flags = CommandFlags.None)
+        public Task<long> OperationAsync(Bitwise operation, RedisBit[] bits, CommandFlags flags = CommandFlags.None)
         {
             if (bits == null) throw new ArgumentNullException(nameof(bits));
             if (bits.Length == 0) throw new ArgumentException("bits length is 0.");
@@ -91,24 +91,24 @@ namespace CloudStructures.Structures
         /// <summary>
         /// BITPOSITION : http://redis.io/commands/bitpos
         /// </summary>
-        public Task<long> Position(bool bit, long start = 0, long end = -1, CommandFlags flags = CommandFlags.None)
+        public Task<long> PositionAsync(bool bit, long start = 0, long end = -1, CommandFlags flags = CommandFlags.None)
             => this.Connection.Database.StringBitPositionAsync(this.Key, bit, start, end, flags);
 
 
         /// <summary>
         /// GETBIT : http://redis.io/commands/getbit
         /// </summary>
-        public Task<bool> Get(long offset, CommandFlags flags = CommandFlags.None)
+        public Task<bool> GetAsync(long offset, CommandFlags flags = CommandFlags.None)
             => this.Connection.Database.StringGetBitAsync(this.Key, offset, flags);
 
 
         /// <summary>
         /// SETBIT : http://redis.io/commands/setbit
         /// </summary>
-        public Task<bool> Set(long offset, bool bit, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
+        public Task<bool> SetAsync(long offset, bool bit, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
             expiry = expiry ?? this.DefaultExpiry;
-            return this.ExecuteWithExpiry
+            return this.ExecuteWithExpiryAsync
             (
                 (db, a) => db.StringSetBitAsync(a.key, a.offset, a.bit, a.flags),
                 (key: this.Key, offset, bit, flags),
