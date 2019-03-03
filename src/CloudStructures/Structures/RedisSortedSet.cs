@@ -77,11 +77,11 @@ namespace CloudStructures.Structures
         /// <summary>
         /// ZADD : http://redis.io/commands/zadd
         /// </summary>
-        public Task<bool> Add(T value, double score, TimeSpan? expiry = null, When when = When.Always, CommandFlags flags = CommandFlags.None)
+        public Task<bool> AddAsync(T value, double score, TimeSpan? expiry = null, When when = When.Always, CommandFlags flags = CommandFlags.None)
         {
             expiry = expiry ?? this.DefaultExpiry;
             var serialized = this.Connection.Converter.Serialize(value);
-            return this.ExecuteWithExpiry
+            return this.ExecuteWithExpiryAsync
             (
                 (db, a) => db.SortedSetAddAsync(a.key, a.serialized, a.score, a.when, a.flags),
                 (key: this.Key, serialized, score, when, flags),
@@ -94,14 +94,14 @@ namespace CloudStructures.Structures
         /// <summary>
         /// ZADD : http://redis.io/commands/zadd
         /// </summary>
-        public Task<long> Add(IEnumerable<RedisSortedSetEntry<T>> entries, TimeSpan? expiry = null, When when = When.Always, CommandFlags flags = CommandFlags.None)
+        public Task<long> AddAsync(IEnumerable<RedisSortedSetEntry<T>> entries, TimeSpan? expiry = null, When when = When.Always, CommandFlags flags = CommandFlags.None)
         {
             expiry = expiry ?? this.DefaultExpiry;
             var values
                 = entries
                 .Select(this.Connection.Converter, (x, c) => x.ToNonGenerics(c))
                 .ToArray();
-            return this.ExecuteWithExpiry
+            return this.ExecuteWithExpiryAsync
             (
                 (db, a) => db.SortedSetAddAsync(a.key, a.values, a.when, a.flags),
                 (key: this.Key, values, when, flags),
@@ -115,7 +115,7 @@ namespace CloudStructures.Structures
         /// ZUNIONSTORE : https://redis.io/commands/zunionstore
         /// ZINTERSTORE : https://redis.io/commands/zinterstore
         /// </summary>
-        public Task<long> CombineAndStore(SetOperation operation, RedisSortedSet<T> destination, RedisSortedSet<T> other, Aggregate aggregate = Aggregate.Sum, CommandFlags flags = CommandFlags.None)
+        public Task<long> CombineAndStoreAsync(SetOperation operation, RedisSortedSet<T> destination, RedisSortedSet<T> other, Aggregate aggregate = Aggregate.Sum, CommandFlags flags = CommandFlags.None)
             => this.Connection.Database.SortedSetCombineAndStoreAsync(operation, destination.Key, this.Key, other.Key, aggregate, flags);
 
 
@@ -123,7 +123,7 @@ namespace CloudStructures.Structures
         /// ZUNIONSTORE : https://redis.io/commands/zunionstore
         /// ZINTERSTORE : https://redis.io/commands/zinterstore
         /// </summary>
-        public Task<long> CombineAndStore(SetOperation operation, RedisSortedSet<T> destination, IReadOnlyCollection<RedisSortedSet<T>> others, double[] weights = default, Aggregate aggregate = Aggregate.Sum, CommandFlags flags = CommandFlags.None)
+        public Task<long> CombineAndStoreAsync(SetOperation operation, RedisSortedSet<T> destination, IReadOnlyCollection<RedisSortedSet<T>> others, double[] weights = default, Aggregate aggregate = Aggregate.Sum, CommandFlags flags = CommandFlags.None)
         {
             if (others == null) throw new ArgumentNullException(nameof(others));
             if (others.Count == 0) throw new ArgumentNullException("others length is 0.");
@@ -136,11 +136,11 @@ namespace CloudStructures.Structures
         /// <summary>
         /// ZINCRBY : http://redis.io/commands/zincrby
         /// </summary>
-        public Task<double> Decrement(T member, double value, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
+        public Task<double> DecrementAsync(T member, double value, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
             expiry = expiry ?? this.DefaultExpiry;
             var serialized = this.Connection.Converter.Serialize(member);
-            return this.ExecuteWithExpiry
+            return this.ExecuteWithExpiryAsync
             (
                 (db, a) => db.SortedSetDecrementAsync(a.key, a.serialized, a.value, a.flags),
                 (key: this.Key, serialized, value, flags),
@@ -153,11 +153,11 @@ namespace CloudStructures.Structures
         /// <summary>
         /// ZINCRBY : http://redis.io/commands/zincrby
         /// </summary>
-        public Task<double> Increment(T member, double value, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
+        public Task<double> IncrementAsync(T member, double value, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
             expiry = expiry ?? this.DefaultExpiry;
             var serialized = this.Connection.Converter.Serialize(member);
-            return this.ExecuteWithExpiry
+            return this.ExecuteWithExpiryAsync
             (
                 (db, a) => db.SortedSetIncrementAsync(a.key, a.serialized, a.value, a.flags),
                 (key: this.Key, serialized, value, flags),
@@ -171,7 +171,7 @@ namespace CloudStructures.Structures
         /// ZCARD  : http://redis.io/commands/zcard
         /// ZCOUNT : http://redis.io/commands/zcount
         /// </summary>
-        public Task<long> Length(double min = double.NegativeInfinity, double max = double.PositiveInfinity, Exclude exclude = Exclude.None, CommandFlags flags = CommandFlags.None)
+        public Task<long> LengthAsync(double min = double.NegativeInfinity, double max = double.PositiveInfinity, Exclude exclude = Exclude.None, CommandFlags flags = CommandFlags.None)
             => this.Connection.Database.SortedSetLengthAsync(this.Key, min, max, exclude, flags);
 
 
@@ -179,7 +179,7 @@ namespace CloudStructures.Structures
         /// ZCARD  : http://redis.io/commands/zcard
         /// ZCOUNT : http://redis.io/commands/zcount
         /// </summary>
-        public Task<long> LengthByValue(T min, T max, Exclude exclude = Exclude.None, CommandFlags flags = CommandFlags.None)
+        public Task<long> LengthByValueAsync(T min, T max, Exclude exclude = Exclude.None, CommandFlags flags = CommandFlags.None)
         {
             var serializedMin = this.Connection.Converter.Serialize(min);
             var serializedMax = this.Connection.Converter.Serialize(max);
@@ -191,7 +191,7 @@ namespace CloudStructures.Structures
         /// ZRANGE    : https://redis.io/commands/zrange
         /// ZREVRANGE : https://redis.io/commands/zrevrange
         /// </summary>
-        public async Task<T[]> RangeByRank(long start = 0, long stop = -1, Order order = Order.Ascending, CommandFlags flags = CommandFlags.None)
+        public async Task<T[]> RangeByRankAsync(long start = 0, long stop = -1, Order order = Order.Ascending, CommandFlags flags = CommandFlags.None)
         {
             var values = await this.Connection.Database.SortedSetRangeByRankAsync(this.Key, start, stop, order, flags).ConfigureAwait(false);
             return values
@@ -204,7 +204,7 @@ namespace CloudStructures.Structures
         /// ZRANGE    : https://redis.io/commands/zrange
         /// ZREVRANGE : https://redis.io/commands/zrevrange
         /// </summary>
-        public async Task<RedisSortedSetEntry<T>[]> RangeByRankWithScores(long start = 0, long stop = -1, Order order = Order.Ascending, CommandFlags flags = CommandFlags.None)
+        public async Task<RedisSortedSetEntry<T>[]> RangeByRankWithScoresAsync(long start = 0, long stop = -1, Order order = Order.Ascending, CommandFlags flags = CommandFlags.None)
         {
             var values = await this.Connection.Database.SortedSetRangeByRankWithScoresAsync(this.Key, start, stop, order, flags).ConfigureAwait(false);
             return values
@@ -217,7 +217,7 @@ namespace CloudStructures.Structures
         /// ZRANGEBYSCORE    : https://redis.io/commands/zrangebyscore
         /// ZREVRANGEBYSCORE : https://redis.io/commands/zrevrangebyscore
         /// </summary>
-        public async Task<T[]> RangeByScore(double start = double.NegativeInfinity, double stop = double.PositiveInfinity, Exclude exclude = Exclude.None, Order order = Order.Ascending, long skip = 0, long take = -1, CommandFlags flags = CommandFlags.None)
+        public async Task<T[]> RangeByScoreAsync(double start = double.NegativeInfinity, double stop = double.PositiveInfinity, Exclude exclude = Exclude.None, Order order = Order.Ascending, long skip = 0, long take = -1, CommandFlags flags = CommandFlags.None)
         {
             var values = await this.Connection.Database.SortedSetRangeByScoreAsync(this.Key, start, stop, exclude, order, skip, take, flags).ConfigureAwait(false);
             return values
@@ -230,7 +230,7 @@ namespace CloudStructures.Structures
         /// ZRANGEBYSCORE    : https://redis.io/commands/zrangebyscore
         /// ZREVRANGEBYSCORE : https://redis.io/commands/zrevrangebyscore
         /// </summary>
-        public async Task<RedisSortedSetEntry<T>[]> RangeByScoreWithScores(double start = double.NegativeInfinity, double stop = double.PositiveInfinity, Exclude exclude = Exclude.None, Order order = Order.Ascending, long skip = 0, long take = -1, CommandFlags flags = CommandFlags.None)
+        public async Task<RedisSortedSetEntry<T>[]> RangeByScoreWithScoresAsync(double start = double.NegativeInfinity, double stop = double.PositiveInfinity, Exclude exclude = Exclude.None, Order order = Order.Ascending, long skip = 0, long take = -1, CommandFlags flags = CommandFlags.None)
         {
             var values = await this.Connection.Database.SortedSetRangeByScoreWithScoresAsync(this.Key, start, stop, exclude, order, skip, take, flags).ConfigureAwait(false);
             return values
@@ -243,7 +243,7 @@ namespace CloudStructures.Structures
         /// ZRANGEBYLEX    : https://redis.io/commands/zrangebylex
         /// ZREVRANGEBYLEX : https://redis.io/commands/zrevrangebylex
         /// </summary>
-        public async Task<T[]> RangeByValue(T min = default, T max = default, Exclude exclude = Exclude.None, long skip = 0, long take = -1, CommandFlags flags = CommandFlags.None)
+        public async Task<T[]> RangeByValueAsync(T min = default, T max = default, Exclude exclude = Exclude.None, long skip = 0, long take = -1, CommandFlags flags = CommandFlags.None)
         {
             var minValue = this.Connection.Converter.Serialize(min);
             var maxValue = this.Connection.Converter.Serialize(max);
@@ -257,7 +257,7 @@ namespace CloudStructures.Structures
         /// <summary>
         /// ZRANK : https://redis.io/commands/zrank
         /// </summary>
-        public Task<long?> Rank(T member, Order order = Order.Ascending, CommandFlags flags = CommandFlags.None)
+        public Task<long?> RankAsync(T member, Order order = Order.Ascending, CommandFlags flags = CommandFlags.None)
         {
             var serialized = this.Connection.Converter.Serialize(member);
             return this.Connection.Database.SortedSetRankAsync(this.Key, serialized, order, flags);
@@ -267,7 +267,7 @@ namespace CloudStructures.Structures
         /// <summary>
         /// ZREM : https://redis.io/commands/zrem
         /// </summary>
-        public Task<bool> Remove(T member, CommandFlags flags = CommandFlags.None)
+        public Task<bool> RemoveAsync(T member, CommandFlags flags = CommandFlags.None)
         {
             var serialized = this.Connection.Converter.Serialize(member);
             return this.Connection.Database.SortedSetRemoveAsync(this.Key, serialized, flags);
@@ -277,7 +277,7 @@ namespace CloudStructures.Structures
         /// <summary>
         /// ZREM : https://redis.io/commands/zrem
         /// </summary>
-        public Task<long> Remove(IEnumerable<T> members, CommandFlags flags = CommandFlags.None)
+        public Task<long> RemoveAsync(IEnumerable<T> members, CommandFlags flags = CommandFlags.None)
         {
             var serialized = members.Select(this.Connection.Converter.Serialize).ToArray();
             return this.Connection.Database.SortedSetRemoveAsync(this.Key, serialized, flags);
@@ -287,21 +287,21 @@ namespace CloudStructures.Structures
         /// <summary>
         /// ZREMRANGEBYRANK : http://redis.io/commands/zremrangebyrank
         /// </summary>
-        public Task<long> RemoveRangeByRank(long start, long stop, CommandFlags flags = CommandFlags.None)
+        public Task<long> RemoveRangeByRankAsync(long start, long stop, CommandFlags flags = CommandFlags.None)
             => this.Connection.Database.SortedSetRemoveRangeByRankAsync(this.Key, start, stop, flags);
 
 
         /// <summary>
         /// ZREMRANGEBYSCORE : https://redis.io/commands/zremrangebyscore
         /// </summary>
-        public Task<long> RemoveRangeByScore(double start, double stop, Exclude exclude = Exclude.None, CommandFlags flags = CommandFlags.None)
+        public Task<long> RemoveRangeByScoreAsync(double start, double stop, Exclude exclude = Exclude.None, CommandFlags flags = CommandFlags.None)
             => this.Connection.Database.SortedSetRemoveRangeByScoreAsync(this.Key, start, stop, exclude, flags);
 
 
         /// <summary>
         /// ZREMRANGEBYLEX : https://redis.io/commands/zremrangebylex
         /// </summary>
-        public Task<long> RemoveRangeByValue(T min, T max, Exclude exclude = Exclude.None, CommandFlags flags = CommandFlags.None)
+        public Task<long> RemoveRangeByValueAsync(T min, T max, Exclude exclude = Exclude.None, CommandFlags flags = CommandFlags.None)
         {
             var minValue = this.Connection.Converter.Serialize(min);
             var maxValue = this.Connection.Converter.Serialize(max);
@@ -312,7 +312,7 @@ namespace CloudStructures.Structures
         /// <summary>
         /// ZSCORE : https://redis.io/commands/zscore
         /// </summary>
-        public Task<double?> Score(T member, CommandFlags flags = CommandFlags.None)
+        public Task<double?> ScoreAsync(T member, CommandFlags flags = CommandFlags.None)
         {
             var serialized = this.Connection.Converter.Serialize(member);
             return this.Connection.Database.SortedSetScoreAsync(this.Key, serialized, flags);
@@ -322,7 +322,7 @@ namespace CloudStructures.Structures
         /// <summary>
         /// SORT : https://redis.io/commands/sort
         /// </summary>
-        public Task<long> SortAndStore(RedisSortedSet<T> destination, long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, /*RedisValue by = default, RedisValue[] get = null,*/ CommandFlags flags = CommandFlags.None)
+        public Task<long> SortAndStoreAsync(RedisSortedSet<T> destination, long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, /*RedisValue by = default, RedisValue[] get = null,*/ CommandFlags flags = CommandFlags.None)
         {
             //--- I don't know if serialization is necessary or not, so I will fix the default value.
             RedisValue by = default;
@@ -334,7 +334,7 @@ namespace CloudStructures.Structures
         /// <summary>
         /// SORT : https://redis.io/commands/sort
         /// </summary>
-        public async Task<T[]> Sort(long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, /*RedisValue by = default, RedisValue[] get = null,*/ CommandFlags flags = CommandFlags.None)
+        public async Task<T[]> SortAsync(long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, /*RedisValue by = default, RedisValue[] get = null,*/ CommandFlags flags = CommandFlags.None)
         {
             //--- I don't know if serialization is necessary or not, so I will fix the default value.
             RedisValue by = default;
@@ -349,7 +349,7 @@ namespace CloudStructures.Structures
         /// <summary>
         /// LUA Script including zincrby, zadd
         /// </summary>
-        public async Task<double> IncrementLimitByMin(T member, double value, double min, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
+        public async Task<double> IncrementLimitByMinAsync(T member, double value, double min, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
             expiry = expiry ?? this.DefaultExpiry;
             var script =
@@ -366,7 +366,7 @@ return tostring(x)";
             var serialized = this.Connection.Converter.Serialize(member);
             var values = new RedisValue[] { serialized, value, min };
             var result
-                = await this.ExecuteWithExpiry
+                = await this.ExecuteWithExpiryAsync
                 (
                     (db, a) => db.ScriptEvaluateAsync(a.script, a.keys, a.values, a.flags),
                     (script, keys, values, flags),
@@ -381,7 +381,7 @@ return tostring(x)";
         /// <summary>
         /// LUA Script including zincrby, zadd
         /// </summary>
-        public async Task<double> IncrementLimitByMax(T member, double value, double max, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
+        public async Task<double> IncrementLimitByMaxAsync(T member, double value, double max, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
             expiry = expiry ?? this.DefaultExpiry;
             var script =
@@ -398,7 +398,7 @@ return tostring(x)";
             var serialized = this.Connection.Converter.Serialize(member);
             var values = new RedisValue[] { serialized, value, max };
             var result
-                = await this.ExecuteWithExpiry
+                = await this.ExecuteWithExpiryAsync
                 (
                     (db, a) => db.ScriptEvaluateAsync(a.script, a.keys, a.values, a.flags),
                     (script, keys, values, flags),

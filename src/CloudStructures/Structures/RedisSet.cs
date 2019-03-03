@@ -70,11 +70,11 @@ namespace CloudStructures.Structures
         /// <summary>
         /// SADD : http://redis.io/commands/sadd
         /// </summary>
-        public Task<bool> Add(T value, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
+        public Task<bool> AddAsync(T value, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
             expiry = expiry ?? this.DefaultExpiry;
             var serialised = this.Connection.Converter.Serialize(value);
-            return this.ExecuteWithExpiry
+            return this.ExecuteWithExpiryAsync
             (
                 (db, a) => db.SetAddAsync(a.key, a.serialised, a.flags),
                 (key: this.Key, serialised, flags),
@@ -87,11 +87,11 @@ namespace CloudStructures.Structures
         /// <summary>
         /// SADD : http://redis.io/commands/sadd
         /// </summary>
-        public Task<long> Add(IEnumerable<T> values, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
+        public Task<long> AddAsync(IEnumerable<T> values, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
             expiry = expiry ?? this.DefaultExpiry;
             var serialised = values.Select(this.Connection.Converter.Serialize).ToArray();
-            return this.ExecuteWithExpiry
+            return this.ExecuteWithExpiryAsync
             (
                 (db, a) => db.SetAddAsync(a.key, a.serialised, a.flags),
                 (key: this.Key, serialised, flags),
@@ -110,7 +110,7 @@ namespace CloudStructures.Structures
         /// Combine self and other, then save it to the destination.
         /// It does not work unless you pass keys located the same server.
         /// </remarks>
-        public Task<long> CombineAndStore(SetOperation operation, RedisSet<T> destination, RedisSet<T> other, CommandFlags flags = CommandFlags.None)
+        public Task<long> CombineAndStoreAsync(SetOperation operation, RedisSet<T> destination, RedisSet<T> other, CommandFlags flags = CommandFlags.None)
             => this.Connection.Database.SetCombineAndStoreAsync(operation, destination.Key, this.Key, other.Key, flags);
 
 
@@ -123,7 +123,7 @@ namespace CloudStructures.Structures
         /// Combine self and other, then save it to the destination.
         /// It does not work unless you pass keys located the same server.
         /// </remarks>
-        public Task<long> CombineAndStore(SetOperation operation, RedisSet<T> destination, IReadOnlyCollection<RedisSet<T>> others, CommandFlags flags = CommandFlags.None)
+        public Task<long> CombineAndStoreAsync(SetOperation operation, RedisSet<T> destination, IReadOnlyCollection<RedisSet<T>> others, CommandFlags flags = CommandFlags.None)
         {
             if (others == null) throw new ArgumentNullException(nameof(others));
             if (others.Count == 0) throw new ArgumentException("others length is 0.");
@@ -139,7 +139,7 @@ namespace CloudStructures.Structures
         /// SUNION : https://redis.io/commands/sunion
         /// </summary>
         /// <remarks>It does not work unless you pass keys located the same server.</remarks>
-        public async Task<T[]> Combine(SetOperation operation, RedisSet<T> other, CommandFlags flags = CommandFlags.None)
+        public async Task<T[]> CombineAsync(SetOperation operation, RedisSet<T> other, CommandFlags flags = CommandFlags.None)
         {
             var values = await this.Connection.Database.SetCombineAsync(operation, this.Key, other.Key, flags).ConfigureAwait(false);
             return values.Select(this.Connection.Converter, (x, c) => c.Deserialize<T>(x)).ToArray();
@@ -152,7 +152,7 @@ namespace CloudStructures.Structures
         /// SUNION : https://redis.io/commands/sunion
         /// </summary>
         /// <remarks>It does not work unless you pass keys located the same server.</remarks>
-        public async Task<T[]> Combine(SetOperation operation, IReadOnlyCollection<RedisSet<T>> others, CommandFlags flags = CommandFlags.None)
+        public async Task<T[]> CombineAsync(SetOperation operation, IReadOnlyCollection<RedisSet<T>> others, CommandFlags flags = CommandFlags.None)
         {
             if (others == null) throw new ArgumentNullException(nameof(others));
             if (others.Count == 0) throw new ArgumentException("others length is 0.");
@@ -166,7 +166,7 @@ namespace CloudStructures.Structures
         /// <summary>
         /// SISMEMBER : http://redis.io/commands/sismember
         /// </summary>
-        public Task<bool> Contains(T value, CommandFlags flags = CommandFlags.None)
+        public Task<bool> ContainsAsync(T value, CommandFlags flags = CommandFlags.None)
         {
             var serialized = this.Connection.Converter.Serialize(value);
             return this.Connection.Database.SetContainsAsync(this.Key, serialized, flags);
@@ -176,14 +176,14 @@ namespace CloudStructures.Structures
         /// <summary>
         /// SCARD : http://redis.io/commands/scard
         /// </summary>
-        public Task<long> Length(CommandFlags flags = CommandFlags.None)
+        public Task<long> LengthAsync(CommandFlags flags = CommandFlags.None)
             => this.Connection.Database.SetLengthAsync(this.Key, flags);
 
 
         /// <summary>
         /// SMEMBERS : https://redis.io/commands/smembers
         /// </summary>
-        public async Task<T[]> Members(CommandFlags flags = CommandFlags.None)
+        public async Task<T[]> MembersAsync(CommandFlags flags = CommandFlags.None)
         {
             var members = await this.Connection.Database.SetMembersAsync(this.Key, flags).ConfigureAwait(false);
             return members
@@ -195,7 +195,7 @@ namespace CloudStructures.Structures
         /// <summary>
         /// SMOVE : https://redis.io/commands/smove
         /// </summary>
-        public Task<bool> Move(RedisSet<T> destination, T value, CommandFlags flags = CommandFlags.None)
+        public Task<bool> MoveAsync(RedisSet<T> destination, T value, CommandFlags flags = CommandFlags.None)
         {
             var serialized = this.Connection.Converter.Serialize(value);
             return this.Connection.Database.SetMoveAsync(this.Key, destination.Key, serialized, flags);
@@ -205,7 +205,7 @@ namespace CloudStructures.Structures
         /// <summary>
         /// SPOP : http://redis.io/commands/spop
         /// </summary>
-        public async Task<RedisResult<T>> Pop(CommandFlags flags = CommandFlags.None)
+        public async Task<RedisResult<T>> PopAsync(CommandFlags flags = CommandFlags.None)
         {
             var value = await this.Connection.Database.SetPopAsync(this.Key, flags).ConfigureAwait(false);
             return value.ToResult<T>(this.Connection.Converter);
@@ -215,7 +215,7 @@ namespace CloudStructures.Structures
         /// <summary>
         /// SRANDMEMBER : https://redis.io/commands/srandmember
         /// </summary>
-        public async Task<RedisResult<T>> RandomMember(CommandFlags flags = CommandFlags.None)
+        public async Task<RedisResult<T>> RandomMemberAsync(CommandFlags flags = CommandFlags.None)
         {
             var value = await this.Connection.Database.SetRandomMemberAsync(this.Key, flags).ConfigureAwait(false);
             return value.ToResult<T>(this.Connection.Converter);
@@ -225,7 +225,7 @@ namespace CloudStructures.Structures
         /// <summary>
         /// SRANDMEMBER : https://redis.io/commands/srandmember
         /// </summary>
-        public async Task<T[]> RandomMember(long count, CommandFlags flags = CommandFlags.None)
+        public async Task<T[]> RandomMemberAsync(long count, CommandFlags flags = CommandFlags.None)
         {
             var values = await this.Connection.Database.SetRandomMembersAsync(this.Key, count, flags).ConfigureAwait(false);
             return values
@@ -237,7 +237,7 @@ namespace CloudStructures.Structures
         /// <summary>
         /// SREM : http://redis.io/commands/srem
         /// </summary>
-        public Task<bool> Remove(T value, CommandFlags flags = CommandFlags.None)
+        public Task<bool> RemoveAsync(T value, CommandFlags flags = CommandFlags.None)
         {
             var serialized = this.Connection.Converter.Serialize(value);
             return this.Connection.Database.SetRemoveAsync(this.Key, serialized, flags);
@@ -247,7 +247,7 @@ namespace CloudStructures.Structures
         /// <summary>
         /// SORT : https://redis.io/commands/sort
         /// </summary>
-        public Task<long> SortAndStore(RedisSet<T> destination, long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, /*RedisValue by = default, RedisValue[] get = null,*/ CommandFlags flags = CommandFlags.None)
+        public Task<long> SortAndStoreAsync(RedisSet<T> destination, long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, /*RedisValue by = default, RedisValue[] get = null,*/ CommandFlags flags = CommandFlags.None)
         {
             //--- I don't know if serialization is necessary or not, so I will fix the default value.
             RedisValue by = default;
@@ -259,7 +259,7 @@ namespace CloudStructures.Structures
         /// <summary>
         /// SORT : https://redis.io/commands/sort
         /// </summary>
-        public async Task<T[]> Sort(long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, /*RedisValue by = default, RedisValue[] get = null,*/ CommandFlags flags = CommandFlags.None)
+        public async Task<T[]> SortAsync(long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, /*RedisValue by = default, RedisValue[] get = null,*/ CommandFlags flags = CommandFlags.None)
         {
             //--- I don't know if serialization is necessary or not, so I will fix the default value.
             RedisValue by = default;

@@ -68,11 +68,11 @@ namespace CloudStructures.Structures
         /// <summary>
         /// HINCRBY : https://redis.io/commands/hincrby
         /// </summary>
-        public Task<long> Decrement(TKey field, long value = 1, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
+        public Task<long> DecrementAsync(TKey field, long value = 1, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
             expiry = expiry ?? this.DefaultExpiry;
             var hashField = this.Connection.Converter.Serialize(field);
-            return this.ExecuteWithExpiry
+            return this.ExecuteWithExpiryAsync
             (
                 (db, a) => db.HashDecrementAsync(a.key, a.hashField, a.value, a.flags),
                 (key: this.Key, hashField, value, flags),
@@ -85,11 +85,11 @@ namespace CloudStructures.Structures
         /// <summary>
         /// HINCRBYFLOAT : https://redis.io/commands/hincrbyfloat
         /// </summary>
-        public Task Decrement(TKey field, double value, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
+        public Task DecrementAsync(TKey field, double value, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
             expiry = expiry ?? this.DefaultExpiry;
             var hashField = this.Connection.Converter.Serialize(field);
-            return this.ExecuteWithExpiry
+            return this.ExecuteWithExpiryAsync
             (
                 (db, a) => db.HashDecrementAsync(a.key, a.hashField, a.value, a.flags),
                 (key: this.Key, hashField, value, flags),
@@ -102,7 +102,7 @@ namespace CloudStructures.Structures
         /// <summary>
         /// HDEL : https://redis.io/commands/hdel
         /// </summary>
-        public Task<bool> Delete(TKey field, CommandFlags flags = CommandFlags.None)
+        public Task<bool> DeleteAsync(TKey field, CommandFlags flags = CommandFlags.None)
         {
             var hashField = this.Connection.Converter.Serialize(field);
             return this.Connection.Database.HashDeleteAsync(this.Key, hashField, flags);
@@ -112,7 +112,7 @@ namespace CloudStructures.Structures
         /// <summary>
         /// HDEL : https://redis.io/commands/hdel
         /// </summary>
-        public Task<long> Delete(IEnumerable<TKey> fields, CommandFlags flags = CommandFlags.None)
+        public Task<long> DeleteAsync(IEnumerable<TKey> fields, CommandFlags flags = CommandFlags.None)
         {
             var hashFields = fields.Select(this.Connection.Converter.Serialize).ToArray();
             return this.Connection.Database.HashDeleteAsync(this.Key, hashFields, flags);
@@ -122,7 +122,7 @@ namespace CloudStructures.Structures
         /// <summary>
         /// HEXISTS : https://redis.io/commands/hexists
         /// </summary>
-        public Task<bool> Exists(TKey field, CommandFlags flags = CommandFlags.None)
+        public Task<bool> ExistsAsync(TKey field, CommandFlags flags = CommandFlags.None)
         {
             var hashField = this.Connection.Converter.Serialize(field);
             return this.Connection.Database.HashExistsAsync(this.Key, hashField, flags);
@@ -132,7 +132,7 @@ namespace CloudStructures.Structures
         /// <summary>
         /// HGETALL : https://redis.io/commands/hgetall
         /// </summary>
-        public async Task<Dictionary<TKey, TValue>> GetAll(IEqualityComparer<TKey> dictionaryEqualityComparer = null, CommandFlags flags = CommandFlags.None)
+        public async Task<Dictionary<TKey, TValue>> GetAllAsync(IEqualityComparer<TKey> dictionaryEqualityComparer = null, CommandFlags flags = CommandFlags.None)
         {
             var comparer = dictionaryEqualityComparer ?? EqualityComparer<TKey>.Default;
             var entries = await this.Connection.Database.HashGetAllAsync(this.Key, flags).ConfigureAwait(false);
@@ -150,7 +150,7 @@ namespace CloudStructures.Structures
         /// <summary>
         /// HGET : https://redis.io/commands/hget
         /// </summary>
-        public async Task<RedisResult<TValue>> Get(TKey field, CommandFlags flags = CommandFlags.None)
+        public async Task<RedisResult<TValue>> GetAsync(TKey field, CommandFlags flags = CommandFlags.None)
         {
             var hashField = this.Connection.Converter.Serialize(field);
             var value = await this.Connection.Database.HashGetAsync(this.Key, hashField, flags).ConfigureAwait(false);
@@ -161,7 +161,7 @@ namespace CloudStructures.Structures
         /// <summary>
         /// HMGET : https://redis.io/commands/hmget
         /// </summary>
-        public async Task<Dictionary<TKey, TValue>> Get(IEnumerable<TKey> fields, IEqualityComparer<TKey> dictionaryEqualityComparer = null, CommandFlags flags = CommandFlags.None)
+        public async Task<Dictionary<TKey, TValue>> GetAsync(IEnumerable<TKey> fields, IEqualityComparer<TKey> dictionaryEqualityComparer = null, CommandFlags flags = CommandFlags.None)
         {
             fields = fields.Materialize(false);
             var comparer = dictionaryEqualityComparer ?? EqualityComparer<TKey>.Default;
@@ -182,11 +182,11 @@ namespace CloudStructures.Structures
         /// <summary>
         /// HINCRBY : https://redis.io/commands/hincrby
         /// </summary>
-        public Task<long> Increment(TKey field, long value = 1, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
+        public Task<long> IncrementAsync(TKey field, long value = 1, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
             expiry = expiry ?? this.DefaultExpiry;
             var hashField = this.Connection.Converter.Serialize(field);
-            return this.ExecuteWithExpiry
+            return this.ExecuteWithExpiryAsync
             (
                 (db, a) => db.HashIncrementAsync(a.key, a.hashField, a.value, a.flags),
                 (key: this.Key, hashField, value, flags),
@@ -199,11 +199,11 @@ namespace CloudStructures.Structures
         /// <summary>
         /// HINCRBYFLOAT : https://redis.io/commands/hincrbyfloat
         /// </summary>
-        public Task Increment(TKey field, double value, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
+        public Task IncrementAsync(TKey field, double value, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
             expiry = expiry ?? this.DefaultExpiry;
             var hashField = this.Connection.Converter.Serialize(field);
-            return this.ExecuteWithExpiry
+            return this.ExecuteWithExpiryAsync
             (
                 (db, a) => db.HashIncrementAsync(a.key, a.hashField, a.value, a.flags),
                 (key: this.Key, hashField, value, flags),
@@ -216,7 +216,7 @@ namespace CloudStructures.Structures
         /// <summary>
         /// HKEYS : https://redis.io/commands/hkeys
         /// </summary>
-        public async Task<TKey[]> Keys(CommandFlags flags = CommandFlags.None)
+        public async Task<TKey[]> KeysAsync(CommandFlags flags = CommandFlags.None)
         {
             var keys = await this.Connection.Database.HashKeysAsync(this.Key, flags).ConfigureAwait(false);
             return keys.Select(this.Connection.Converter, (x, c) => c.Deserialize<TKey>(x)).ToArray();
@@ -226,19 +226,19 @@ namespace CloudStructures.Structures
         /// <summary>
         /// HLEN : https://redis.io/commands/hlen
         /// </summary>
-        public Task<long> Length(CommandFlags flags = CommandFlags.None)
+        public Task<long> LengthAsync(CommandFlags flags = CommandFlags.None)
             => this.Connection.Database.HashLengthAsync(this.Key, flags);
 
 
         /// <summary>
         /// HSET : https://redis.io/commands/hset
         /// </summary>
-        public Task<bool> Set(TKey field, TValue value, TimeSpan? expiry = null, When when = When.Always, CommandFlags flags = CommandFlags.None)
+        public Task<bool> SetAsync(TKey field, TValue value, TimeSpan? expiry = null, When when = When.Always, CommandFlags flags = CommandFlags.None)
         {
             expiry = expiry ?? this.DefaultExpiry;
             var f = this.Connection.Converter.Serialize(field);
             var v = this.Connection.Converter.Serialize(value);
-            return this.ExecuteWithExpiry
+            return this.ExecuteWithExpiryAsync
             (
                 (db, a) => db.HashSetAsync(a.key, a.f, a.v, a.when, a.flags),
                 (key: this.Key, f, v, when, flags),
@@ -251,7 +251,7 @@ namespace CloudStructures.Structures
         /// <summary>
         /// HMSET : https://redis.io/commands/hmset
         /// </summary>
-        public Task Set(IEnumerable<KeyValuePair<TKey, TValue>> entries, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
+        public Task SetAsync(IEnumerable<KeyValuePair<TKey, TValue>> entries, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
             expiry = expiry ?? this.DefaultExpiry;
             var hashEntries
@@ -265,7 +265,7 @@ namespace CloudStructures.Structures
                 .ToArray();
             return (hashEntries.Length == 0)
                 ? Task.CompletedTask
-                : this.ExecuteWithExpiry
+                : this.ExecuteWithExpiryAsync
                 (
                     (db, a) => db.HashSetAsync(a.key, a.hashEntries, a.flags),
                     (key: this.Key, hashEntries, flags),
@@ -278,7 +278,7 @@ namespace CloudStructures.Structures
         /// <summary>
         /// HVALS : https://redis.io/commands/hvals
         /// </summary>
-        public async Task<TValue[]> Values(CommandFlags flags = CommandFlags.None)
+        public async Task<TValue[]> ValuesAsync(CommandFlags flags = CommandFlags.None)
         {
             var values = await this.Connection.Database.HashValuesAsync(this.Key, flags).ConfigureAwait(false);
             return values.Select(this.Connection.Converter, (x, c) => c.Deserialize<TValue>(x)).ToArray();
@@ -291,7 +291,7 @@ namespace CloudStructures.Structures
         /// HGET : https://redis.io/commands/hget
         /// HSET : https://redis.io/commands/hset
         /// </summary>
-        public async Task<TValue> GetOrSet(TKey field, Func<TKey, TValue> valueFactory, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
+        public async Task<TValue> GetOrSetAsync(TKey field, Func<TKey, TValue> valueFactory, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
             if (valueFactory == null)
                 throw new ArgumentNullException(nameof(valueFactory));
@@ -305,7 +305,7 @@ namespace CloudStructures.Structures
             else
             {
                 var newValue = valueFactory(field);
-                await this.Set(field, newValue, expiry, When.Always, flags).ConfigureAwait(false);
+                await this.SetAsync(field, newValue, expiry, When.Always, flags).ConfigureAwait(false);
                 return newValue;
             }
         }
@@ -315,7 +315,7 @@ namespace CloudStructures.Structures
         /// HGET : https://redis.io/commands/hget
         /// HSET : https://redis.io/commands/hset
         /// </summary>
-        public async Task<TValue> GetOrSet(TKey field, Func<TKey, Task<TValue>> valueFactory, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
+        public async Task<TValue> GetOrSetAsync(TKey field, Func<TKey, Task<TValue>> valueFactory, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
             if (valueFactory == null)
                 throw new ArgumentNullException(nameof(valueFactory));
@@ -329,7 +329,7 @@ namespace CloudStructures.Structures
             else
             {
                 var newValue = await valueFactory(field).ConfigureAwait(false);
-                await this.Set(field, newValue, expiry, When.Always, flags).ConfigureAwait(false);
+                await this.SetAsync(field, newValue, expiry, When.Always, flags).ConfigureAwait(false);
                 return newValue;
             }
         }
@@ -339,7 +339,7 @@ namespace CloudStructures.Structures
         /// HMGET : https://redis.io/commands/hmget
         /// HMSET : https://redis.io/commands/hmset
         /// </summary>
-        public async Task<Dictionary<TKey, TValue>> GetOrSet(IEnumerable<TKey> fields, Func<IEnumerable<TKey>, IEnumerable<KeyValuePair<TKey, TValue>>> valueFactory, TimeSpan? expiry = null, IEqualityComparer<TKey> dictionaryEqualityComparer = null, CommandFlags flags = CommandFlags.None)
+        public async Task<Dictionary<TKey, TValue>> GetOrSetAsync(IEnumerable<TKey> fields, Func<IEnumerable<TKey>, IEnumerable<KeyValuePair<TKey, TValue>>> valueFactory, TimeSpan? expiry = null, IEqualityComparer<TKey> dictionaryEqualityComparer = null, CommandFlags flags = CommandFlags.None)
         {
             if (valueFactory == null)
                 throw new ArgumentNullException(nameof(valueFactory));
@@ -368,7 +368,7 @@ namespace CloudStructures.Structures
             if (notCached.Count > 0)
             {
                 var loaded = valueFactory(notCached).Materialize();
-                await this.Set(loaded, expiry, flags).ConfigureAwait(false);
+                await this.SetAsync(loaded, expiry, flags).ConfigureAwait(false);
                 foreach (var x in loaded)
                     cached[x.Key] = x.Value;
             }
@@ -380,7 +380,7 @@ namespace CloudStructures.Structures
         /// HMGET : https://redis.io/commands/hmget
         /// HMSET : https://redis.io/commands/hmset
         /// </summary>
-        public async Task<Dictionary<TKey, TValue>> GetOrSet(IEnumerable<TKey> fields, Func<IEnumerable<TKey>, Task<IEnumerable<KeyValuePair<TKey, TValue>>>> valueFactory, TimeSpan? expiry = null, IEqualityComparer<TKey> dictionaryEqualityComparer = null, CommandFlags flags = CommandFlags.None)
+        public async Task<Dictionary<TKey, TValue>> GetOrSetAsync(IEnumerable<TKey> fields, Func<IEnumerable<TKey>, Task<IEnumerable<KeyValuePair<TKey, TValue>>>> valueFactory, TimeSpan? expiry = null, IEqualityComparer<TKey> dictionaryEqualityComparer = null, CommandFlags flags = CommandFlags.None)
         {
             if (valueFactory == null)
                 throw new ArgumentNullException(nameof(valueFactory));
@@ -409,7 +409,7 @@ namespace CloudStructures.Structures
             if (notCached.Count > 0)
             {
                 var loaded = (await valueFactory(notCached).ConfigureAwait(false)).Materialize();
-                await this.Set(loaded, expiry, flags).ConfigureAwait(false);
+                await this.SetAsync(loaded, expiry, flags).ConfigureAwait(false);
                 foreach (var x in loaded)
                     cached[x.Key] = x.Value;
             }

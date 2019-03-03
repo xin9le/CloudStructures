@@ -56,7 +56,7 @@ namespace CloudStructures.Structures
         /// <summary>
         /// Deletes specified element.
         /// </summary>
-        public Task<bool> Delete(T value, CommandFlags flags = CommandFlags.None)
+        public Task<bool> DeleteAsync(T value, CommandFlags flags = CommandFlags.None)
         {
             // HDEL
             // https://redis.io/commands/hdel
@@ -69,7 +69,7 @@ namespace CloudStructures.Structures
         /// <summary>
         /// Deletes specified elements.
         /// </summary>
-        public Task<long> Delete(IEnumerable<T> values, CommandFlags flags = CommandFlags.None)
+        public Task<long> DeleteAsync(IEnumerable<T> values, CommandFlags flags = CommandFlags.None)
         {
             // HDEL
             // https://redis.io/commands/hdel
@@ -82,7 +82,7 @@ namespace CloudStructures.Structures
         /// <summary>
         /// Checks specified element existence.
         /// </summary>
-        public async Task<bool> Contains(T value, CommandFlags flags = CommandFlags.None)
+        public async Task<bool> ContainsAsync(T value, CommandFlags flags = CommandFlags.None)
         {
             // HGET
             // https://redis.io/commands/hget
@@ -96,7 +96,7 @@ namespace CloudStructures.Structures
         /// <summary>
         /// Checks specified elements existence.
         /// </summary>
-        public async Task<Dictionary<T, bool>> Contains(IEnumerable<T> values, CommandFlags flags = CommandFlags.None)
+        public async Task<Dictionary<T, bool>> ContainsAsync(IEnumerable<T> values, CommandFlags flags = CommandFlags.None)
         {
             // HMGET
             // https://redis.io/commands/hmget
@@ -113,7 +113,7 @@ namespace CloudStructures.Structures
         /// <summary>
         /// Gets all elements.
         /// </summary>
-        public async Task<T[]> Values(CommandFlags flags = CommandFlags.None)
+        public async Task<T[]> ValuesAsync(CommandFlags flags = CommandFlags.None)
         {
             // HKEYS で OK
             // https://redis.io/commands/hkeys
@@ -126,14 +126,14 @@ namespace CloudStructures.Structures
         /// <summary>
         /// Gets length.
         /// </summary>
-        public Task<long> Length(CommandFlags flags = CommandFlags.None)
+        public Task<long> LengthAsync(CommandFlags flags = CommandFlags.None)
             => this.Connection.Database.HashLengthAsync(this.Key, flags);  // HLEN https://redis.io/commands/hlen
 
 
         /// <summary>
         /// Adds value.
         /// </summary>
-        public Task<bool> Add(T value, TimeSpan? expiry = null, When when = When.Always, CommandFlags flags = CommandFlags.None)
+        public Task<bool> AddAsync(T value, TimeSpan? expiry = null, When when = When.Always, CommandFlags flags = CommandFlags.None)
         {
             // HSET
             // https://redis.io/commands/hset
@@ -141,7 +141,7 @@ namespace CloudStructures.Structures
             expiry = expiry ?? this.DefaultExpiry;
             var f = this.Connection.Converter.Serialize(value);
             var v = this.Connection.Converter.Serialize(true);
-            return this.ExecuteWithExpiry
+            return this.ExecuteWithExpiryAsync
             (
                 (db, a) => db.HashSetAsync(a.key, a.f, a.v, a.when, a.flags),
                 (key: this.Key, f, v, when, flags),
@@ -154,7 +154,7 @@ namespace CloudStructures.Structures
         /// <summary>
         /// Adds values.
         /// </summary>
-        public Task Add(IEnumerable<T> values, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
+        public Task AddAsync(IEnumerable<T> values, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
             // HMSET
             // https://redis.io/commands/hmset
@@ -169,7 +169,7 @@ namespace CloudStructures.Structures
                     return new HashEntry(f, v);
                 })
                 .ToArray();
-            return this.ExecuteWithExpiry
+            return this.ExecuteWithExpiryAsync
             (
                 (db, a) => db.HashSetAsync(a.key, a.hashEntries, a.flags),
                 (key: this.Key, hashEntries, flags),

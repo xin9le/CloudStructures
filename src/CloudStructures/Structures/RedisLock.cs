@@ -50,7 +50,7 @@ namespace CloudStructures.Structures
         /// <summary>
         /// Extends a lock, if the token value is correct.
         /// </summary>
-        public Task<bool> Extend(T value, TimeSpan expiry, CommandFlags flags = CommandFlags.None)
+        public Task<bool> ExtendAsync(T value, TimeSpan expiry, CommandFlags flags = CommandFlags.None)
         {
             var serialized = this.Connection.Converter.Serialize(value);
             return this.Connection.Database.LockExtendAsync(this.Key, serialized, expiry, flags);
@@ -60,7 +60,7 @@ namespace CloudStructures.Structures
         /// <summary>
         /// Queries the token held against a lock.
         /// </summary>
-        public async Task<RedisResult<T>> Query(CommandFlags flags = CommandFlags.None)
+        public async Task<RedisResult<T>> QueryAsync(CommandFlags flags = CommandFlags.None)
         {
             var value = await this.Connection.Database.LockQueryAsync(this.Key, flags).ConfigureAwait(false);
             return value.ToResult<T>(this.Connection.Converter);
@@ -70,7 +70,7 @@ namespace CloudStructures.Structures
         /// <summary>
         /// Releases a lock, if the token value is correct.
         /// </summary>
-        public Task<bool> Release(T value, CommandFlags flags = CommandFlags.None)
+        public Task<bool> ReleaseAsync(T value, CommandFlags flags = CommandFlags.None)
         {
             var serialized = this.Connection.Converter.Serialize(value);
             return this.Connection.Database.LockReleaseAsync(this.Key, serialized, flags);
@@ -80,7 +80,7 @@ namespace CloudStructures.Structures
         /// <summary>
         /// Takes a lock (specifying a token value) if it is not already taken.
         /// </summary>
-        public Task<bool> Take(T value, TimeSpan expiry, CommandFlags flags = CommandFlags.None)
+        public Task<bool> TakeAsync(T value, TimeSpan expiry, CommandFlags flags = CommandFlags.None)
         {
             var serialized = this.Connection.Converter.Serialize(value);
             return this.Connection.Database.LockTakeAsync(this.Key, serialized, expiry, flags);
