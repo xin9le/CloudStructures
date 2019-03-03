@@ -60,7 +60,7 @@ public class Person
 // 1. Create redis structure
 var key = "test-key";
 var defaultExpiry = TimeSpan.FromDays(1);
-var redis = new RedisString<Person>(RedisServer.Connectioon, key, defaultExpiry)
+var redis = new RedisString<Person>(RedisServer.Connection, key, defaultExpiry)
 
 // 2. Call command
 var neuecc = new Person("neuecc", 35);
