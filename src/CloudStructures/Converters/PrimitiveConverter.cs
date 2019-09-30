@@ -31,8 +31,8 @@ namespace CloudStructures.Converters
     /// </summary>
     internal sealed class CharConverter : IRedisValueConverter<char>
     {
-        public RedisValue Serialize(char value) => value;
-        public char Deserialize(RedisValue value) => (char)value;
+        public RedisValue Serialize(char value) => (int)value;
+        public char Deserialize(RedisValue value) => (char)(int)value;
     }
 
 
@@ -42,8 +42,8 @@ namespace CloudStructures.Converters
     /// </summary>
     internal sealed class NullableCharConverter : IRedisValueConverter<char?>
     {
-        public RedisValue Serialize(char? value) => value;
-        public char? Deserialize(RedisValue value) => (char?)value;
+        public RedisValue Serialize(char? value) => (int?)value;
+        public char? Deserialize(RedisValue value) => (char?)(int?)value;
     }
 
 
@@ -75,8 +75,8 @@ namespace CloudStructures.Converters
     /// </summary>
     internal sealed class ByteConverter : IRedisValueConverter<byte>
     {
-        public RedisValue Serialize(byte value) => value;
-        public byte Deserialize(RedisValue value) => (byte)value;
+        public RedisValue Serialize(byte value) => (uint)value;
+        public byte Deserialize(RedisValue value) => (byte)(uint)value;
     }
 
 
@@ -86,8 +86,8 @@ namespace CloudStructures.Converters
     /// </summary>
     internal sealed class NullableByteConverter : IRedisValueConverter<byte?>
     {
-        public RedisValue Serialize(byte? value) => value;
-        public byte? Deserialize(RedisValue value) => (byte?)value;
+        public RedisValue Serialize(byte? value) => (uint?)value;
+        public byte? Deserialize(RedisValue value) => (byte?)(uint?)value;
     }
 
 
@@ -119,8 +119,8 @@ namespace CloudStructures.Converters
     /// </summary>
     internal sealed class UInt16Converter : IRedisValueConverter<ushort>
     {
-        public RedisValue Serialize(ushort value) => value;
-        public ushort Deserialize(RedisValue value) => (ushort)value;
+        public RedisValue Serialize(ushort value) => (uint)value;
+        public ushort Deserialize(RedisValue value) => (ushort)(uint)value;
     }
 
 
@@ -130,8 +130,8 @@ namespace CloudStructures.Converters
     /// </summary>
     internal sealed class NullableUInt16Converter : IRedisValueConverter<ushort?>
     {
-        public RedisValue Serialize(ushort? value) => value;
-        public ushort? Deserialize(RedisValue value) => (ushort?)value;
+        public RedisValue Serialize(ushort? value) => (uint?)value;
+        public ushort? Deserialize(RedisValue value) => (ushort?)(uint?)value;
     }
 
 
