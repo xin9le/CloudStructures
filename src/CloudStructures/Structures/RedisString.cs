@@ -67,7 +67,7 @@ namespace CloudStructures.Structures
         /// </summary>
         public Task<long> DecrementAsync(long value = 1, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
-            expiry = expiry ?? this.DefaultExpiry;
+            expiry ??= this.DefaultExpiry;
             return this.ExecuteWithExpiryAsync
             (
                 (db, a) => db.StringDecrementAsync(a.key, a.value, a.flags),
@@ -83,7 +83,7 @@ namespace CloudStructures.Structures
         /// </summary>
         public Task<double> DecrementAsync(double value, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
-            expiry = expiry ?? this.DefaultExpiry;
+            expiry ??= this.DefaultExpiry;
             return this.ExecuteWithExpiryAsync
             (
                 (db, a) => db.StringDecrementAsync(a.key, a.value, a.flags),
@@ -109,7 +109,7 @@ namespace CloudStructures.Structures
         /// </summary>
         public async Task<RedisResult<T>> GetSetAsync(T value, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
-            expiry = expiry ?? this.DefaultExpiry;
+            expiry ??= this.DefaultExpiry;
             var serialized = this.Connection.Converter.Serialize(value);
             var result
                 = await this.ExecuteWithExpiryAsync
@@ -139,7 +139,7 @@ namespace CloudStructures.Structures
         /// </summary>
         public Task<long> IncrementAsync(long value = 1, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
-            expiry = expiry ?? this.DefaultExpiry;
+            expiry ??= this.DefaultExpiry;
             return this.ExecuteWithExpiryAsync
             (
                 (db, a) => db.StringIncrementAsync(a.key, a.value, a.flags),
@@ -155,7 +155,7 @@ namespace CloudStructures.Structures
         /// </summary>
         public Task<double> IncrementAsync(double value, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
-            expiry = expiry ?? this.DefaultExpiry;
+            expiry ??= this.DefaultExpiry;
             return this.ExecuteWithExpiryAsync
             (
                 (db, a) => db.StringIncrementAsync(a.key, a.value, a.flags),
@@ -178,7 +178,7 @@ namespace CloudStructures.Structures
         /// </summary>
         public Task<bool> SetAsync(T value, TimeSpan? expiry = null, When when = When.Always, CommandFlags flags = CommandFlags.None)
         {
-            expiry = expiry ?? this.DefaultExpiry;
+            expiry ??= this.DefaultExpiry;
             var serialized = this.Connection.Converter.Serialize(value);
             return this.Connection.Database.StringSetAsync(this.Key, serialized, expiry, when, flags);
         }
@@ -192,7 +192,7 @@ namespace CloudStructures.Structures
         /// </summary>
         public async Task<T> GetOrSetAsync(Func<T> valueFactory, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
-            expiry = expiry ?? this.DefaultExpiry;
+            expiry ??= this.DefaultExpiry;
             var value = await this.GetAsync(flags).ConfigureAwait(false);
             if (value.HasValue)
             {
@@ -213,7 +213,7 @@ namespace CloudStructures.Structures
         /// </summary>
         public async Task<T> GetOrSetAsync(Func<Task<T>> valueFactory, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
-            expiry = expiry ?? this.DefaultExpiry;
+            expiry ??= this.DefaultExpiry;
             var value = await this.GetAsync(flags).ConfigureAwait(false);
             if (value.HasValue)
             {
@@ -233,7 +233,7 @@ namespace CloudStructures.Structures
         /// </summary>
         public async Task<long> IncrementLimitByMaxAsync(long value, long max, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
-            expiry = expiry ?? this.DefaultExpiry;
+            expiry ??= this.DefaultExpiry;
             var script =
 @"local inc = tonumber(ARGV[1])
 local max = tonumber(ARGV[2])
@@ -263,7 +263,7 @@ return x";
         /// </summary>
         public async Task<double> IncrementLimitByMaxAsync(double value, double max, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
-            expiry = expiry ?? this.DefaultExpiry;
+            expiry ??= this.DefaultExpiry;
             var script =
 @"local inc = tonumber(ARGV[1])
 local max = tonumber(ARGV[2])
@@ -293,7 +293,7 @@ return tostring(x)";
         /// </summary>
         public async Task<long> IncrementLimitByMinAsync(long value, long min, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
-            expiry = expiry ?? this.DefaultExpiry;
+            expiry ??= this.DefaultExpiry;
             var script =
 @"local inc = tonumber(ARGV[1])
 local min = tonumber(ARGV[2])
@@ -323,7 +323,7 @@ return x";
         /// </summary>
         public async Task<double> IncrementLimitByMinAsync(double value, double min, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
-            expiry = expiry ?? this.DefaultExpiry;
+            expiry ??= this.DefaultExpiry;
             var script =
 @"local inc = tonumber(ARGV[1])
 local min = tonumber(ARGV[2])

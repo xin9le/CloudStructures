@@ -107,7 +107,7 @@ namespace CloudStructures.Structures
         /// </summary>
         public Task<bool> SetAsync(long offset, bool bit, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
-            expiry = expiry ?? this.DefaultExpiry;
+            expiry ??= this.DefaultExpiry;
             return this.ExecuteWithExpiryAsync
             (
                 (db, a) => db.StringSetBitAsync(a.key, a.offset, a.bit, a.flags),

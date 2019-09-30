@@ -70,7 +70,7 @@ namespace CloudStructures.Structures
         /// </summary>
         public Task<long> DecrementAsync(TKey field, long value = 1, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
-            expiry = expiry ?? this.DefaultExpiry;
+            expiry ??= this.DefaultExpiry;
             var hashField = this.Connection.Converter.Serialize(field);
             return this.ExecuteWithExpiryAsync
             (
@@ -87,7 +87,7 @@ namespace CloudStructures.Structures
         /// </summary>
         public Task DecrementAsync(TKey field, double value, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
-            expiry = expiry ?? this.DefaultExpiry;
+            expiry ??= this.DefaultExpiry;
             var hashField = this.Connection.Converter.Serialize(field);
             return this.ExecuteWithExpiryAsync
             (
@@ -184,7 +184,7 @@ namespace CloudStructures.Structures
         /// </summary>
         public Task<long> IncrementAsync(TKey field, long value = 1, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
-            expiry = expiry ?? this.DefaultExpiry;
+            expiry ??= this.DefaultExpiry;
             var hashField = this.Connection.Converter.Serialize(field);
             return this.ExecuteWithExpiryAsync
             (
@@ -201,7 +201,7 @@ namespace CloudStructures.Structures
         /// </summary>
         public Task IncrementAsync(TKey field, double value, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
-            expiry = expiry ?? this.DefaultExpiry;
+            expiry ??= this.DefaultExpiry;
             var hashField = this.Connection.Converter.Serialize(field);
             return this.ExecuteWithExpiryAsync
             (
@@ -235,7 +235,7 @@ namespace CloudStructures.Structures
         /// </summary>
         public Task<bool> SetAsync(TKey field, TValue value, TimeSpan? expiry = null, When when = When.Always, CommandFlags flags = CommandFlags.None)
         {
-            expiry = expiry ?? this.DefaultExpiry;
+            expiry ??= this.DefaultExpiry;
             var f = this.Connection.Converter.Serialize(field);
             var v = this.Connection.Converter.Serialize(value);
             return this.ExecuteWithExpiryAsync
@@ -253,7 +253,7 @@ namespace CloudStructures.Structures
         /// </summary>
         public Task SetAsync(IEnumerable<KeyValuePair<TKey, TValue>> entries, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
-            expiry = expiry ?? this.DefaultExpiry;
+            expiry ??= this.DefaultExpiry;
             var hashEntries
                 = entries
                 .Select(this.Connection.Converter, (x, c) =>

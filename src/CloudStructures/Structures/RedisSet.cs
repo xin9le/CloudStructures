@@ -72,7 +72,7 @@ namespace CloudStructures.Structures
         /// </summary>
         public Task<bool> AddAsync(T value, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
-            expiry = expiry ?? this.DefaultExpiry;
+            expiry ??= this.DefaultExpiry;
             var serialised = this.Connection.Converter.Serialize(value);
             return this.ExecuteWithExpiryAsync
             (
@@ -89,7 +89,7 @@ namespace CloudStructures.Structures
         /// </summary>
         public Task<long> AddAsync(IEnumerable<T> values, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
-            expiry = expiry ?? this.DefaultExpiry;
+            expiry ??= this.DefaultExpiry;
             var serialised = values.Select(this.Connection.Converter.Serialize).ToArray();
             return this.ExecuteWithExpiryAsync
             (

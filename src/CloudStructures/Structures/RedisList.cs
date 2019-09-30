@@ -84,7 +84,7 @@ namespace CloudStructures.Structures
         /// </summary>
         public Task<long> InsertAfterAsync(T pivot, T value, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
-            expiry = expiry ?? this.DefaultExpiry;
+            expiry ??= this.DefaultExpiry;
             var p = this.Connection.Converter.Serialize(pivot);
             var v = this.Connection.Converter.Serialize(value);
             return this.ExecuteWithExpiryAsync
@@ -102,7 +102,7 @@ namespace CloudStructures.Structures
         /// </summary>
         public Task<long> InsertBeforeAsync(T pivot, T value, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
-            expiry = expiry ?? this.DefaultExpiry;
+            expiry ??= this.DefaultExpiry;
             var p = this.Connection.Converter.Serialize(pivot);
             var v = this.Connection.Converter.Serialize(value);
             return this.ExecuteWithExpiryAsync
@@ -130,7 +130,7 @@ namespace CloudStructures.Structures
         /// </summary>
         public Task<long> LeftPushAsync(T value, TimeSpan? expiry = null, When when = When.Always, CommandFlags flags = CommandFlags.None)
         {
-            expiry = expiry ?? this.DefaultExpiry;
+            expiry ??= this.DefaultExpiry;
             var serialized = this.Connection.Converter.Serialize(value);
             return this.ExecuteWithExpiryAsync
             (
@@ -147,7 +147,7 @@ namespace CloudStructures.Structures
         /// </summary>
         public Task<long> LeftPushAsync(IEnumerable<T> values, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
-            expiry = expiry ?? this.DefaultExpiry;
+            expiry ??= this.DefaultExpiry;
             var serialized = values.Select(this.Connection.Converter.Serialize).ToArray();
             return this.ExecuteWithExpiryAsync
             (
@@ -217,7 +217,7 @@ namespace CloudStructures.Structures
         /// </summary>
         public Task<long> RightPushAsync(T value, TimeSpan? expiry = null, When when = When.Always, CommandFlags flags = CommandFlags.None)
         {
-            expiry = expiry ?? this.DefaultExpiry;
+            expiry ??= this.DefaultExpiry;
             var serialized = this.Connection.Converter.Serialize(value);
             return this.ExecuteWithExpiryAsync
             (
@@ -234,7 +234,7 @@ namespace CloudStructures.Structures
         /// </summary>
         public Task<long> RightPushAsync(IEnumerable<T> values, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
-            expiry = expiry ?? this.DefaultExpiry;
+            expiry ??= this.DefaultExpiry;
             var serialized = values.Select(this.Connection.Converter.Serialize).ToArray();
             return this.ExecuteWithExpiryAsync
             (
@@ -251,7 +251,7 @@ namespace CloudStructures.Structures
         /// </summary>
         public Task SetByIndexAsync(long index, T value, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
-            expiry = expiry ?? this.DefaultExpiry;
+            expiry ??= this.DefaultExpiry;
             var serialized = this.Connection.Converter.Serialize(value);
             return this.ExecuteWithExpiryAsync
             (
@@ -302,7 +302,7 @@ namespace CloudStructures.Structures
         /// </summary>
         public async Task<long> FixedLengthLeftPushAsync(T value, long length, TimeSpan? expiry = null, When when = When.Always, CommandFlags flags = CommandFlags.None)
         {
-            expiry = expiry ?? this.DefaultExpiry;
+            expiry ??= this.DefaultExpiry;
             var serialized = this.Connection.Converter.Serialize(value);
 
             //--- execute multiple commands in transaction
@@ -326,7 +326,7 @@ namespace CloudStructures.Structures
         /// </summary>
         public async Task<long> FixedLengthLeftPushAsync(IEnumerable<T> values, long length, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
-            expiry = expiry ?? this.DefaultExpiry;
+            expiry ??= this.DefaultExpiry;
             var serialized = values.Select(this.Connection.Converter.Serialize).ToArray();
 
             //--- execute multiple commands in transaction

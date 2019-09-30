@@ -138,7 +138,7 @@ namespace CloudStructures.Structures
             // HSET
             // https://redis.io/commands/hset
 
-            expiry = expiry ?? this.DefaultExpiry;
+            expiry ??= this.DefaultExpiry;
             var f = this.Connection.Converter.Serialize(value);
             var v = this.Connection.Converter.Serialize(true);
             return this.ExecuteWithExpiryAsync
@@ -159,7 +159,7 @@ namespace CloudStructures.Structures
             // HMSET
             // https://redis.io/commands/hmset
 
-            expiry = expiry ?? this.DefaultExpiry;
+            expiry ??= this.DefaultExpiry;
             var hashEntries
                 = values
                 .Select(this.Connection.Converter, (x, c) =>

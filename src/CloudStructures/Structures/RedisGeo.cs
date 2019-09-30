@@ -66,7 +66,7 @@ namespace CloudStructures.Structures
         /// </summary>
         public Task<bool> AddAsync(RedisGeoEntry<T> value, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
-            expiry = expiry ?? this.DefaultExpiry;
+            expiry ??= this.DefaultExpiry;
             var entry = value.ToNonGenerics(this.Connection.Converter);
             return this.ExecuteWithExpiryAsync
             (
@@ -83,7 +83,7 @@ namespace CloudStructures.Structures
         /// </summary>
         public Task<long> AddAsync(IEnumerable<RedisGeoEntry<T>> values, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
-            expiry = expiry ?? this.DefaultExpiry;
+            expiry ??= this.DefaultExpiry;
             var entries = values.Select(this.Connection.Converter, (x, c) => x.ToNonGenerics(c)).ToArray();
             return this.ExecuteWithExpiryAsync
             (
@@ -100,7 +100,7 @@ namespace CloudStructures.Structures
         /// </summary>
         public Task<bool> AddAsync(double longitude, double latitude, T member, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
-            expiry = expiry ?? this.DefaultExpiry;
+            expiry ??= this.DefaultExpiry;
             var entry = new RedisGeoEntry<T>(longitude, latitude, member);
             return this.AddAsync(entry, expiry, flags);
         }
