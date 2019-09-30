@@ -1,32 +1,34 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <RootNamespace>CloudStructures.Converters</RootNamespace>
-    <LangVersion>latest</LangVersion>
-    <IsPackable>true</IsPackable>
-    <VersionPrefix>2.1.0</VersionPrefix>
-    <VersionSuffix></VersionSuffix>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <PackageLicenseUrl>http://opensource.org/licenses/MIT</PackageLicenseUrl>
-    <PackageProjectUrl>https://github.com/neuecc/CloudStructures</PackageProjectUrl>
-    <Description>Provides MessagePackConverter for CloudStructures.</Description>
-    <Copyright>Copyright© neuecc, xin9le</Copyright>
-    <PackageTags>Redis, Redis Client, O/R Mapping, MessagePack, Converter</PackageTags>
-    <RepositoryUrl>https://github.com/neuecc/CloudStructures</RepositoryUrl>
-    <RepositoryType>Git</RepositoryType>
-    <PackageIconUrl></PackageIconUrl>
-    <Authors>neuecc, xin9le</Authors>
-    <Product>CloudStructures</Product>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <RootNamespace>CloudStructures.Converters</RootNamespace>
+        <LangVersion>8.0</LangVersion>
+        <Nullable>disable</Nullable>
+        <!-- NuGet -->
+        <IsPackable>true</IsPackable>
+        <PackageId>CloudStructures</PackageId>
+        <Version>2.1.0.0</Version>
+        <Description>Provides MessagePackConverter for CloudStructures.</Description>
+        <PackageProjectUrl>https://github.com/neuecc/CloudStructures</PackageProjectUrl>
+        <PackageIconUrl></PackageIconUrl>
+        <PackageTags>Redis, Redis Client, O/R Mapping, MessagePack, Converter</PackageTags>
+        <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <RepositoryUrl>$(PackageProjectUrl)</RepositoryUrl>
+        <RepositoryType>Git</RepositoryType>
+        <Company />
+        <Authors>neuecc, xin9le</Authors>
+        <Copyright>Copyright© neuecc, xin9le</Copyright>
+        <PackageReleaseNotes></PackageReleaseNotes>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="MessagePack" Version="1.7.3.7" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="MessagePack" Version="1.7.3.7" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\CloudStructures\CloudStructures.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\CloudStructures\CloudStructures.csproj" />
+    </ItemGroup>
 
 </Project>
