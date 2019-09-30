@@ -2,23 +2,24 @@
 
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
-        <LangVersion>latest</LangVersion>
+        <LangVersion>8.0</LangVersion>
+        <Nullable>disable</Nullable>
+        <!-- NuGet -->
         <IsPackable>true</IsPackable>
-        <VersionPrefix>2.1.0</VersionPrefix>
-        <VersionSuffix></VersionSuffix>
-        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-        <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-        <PackageLicenseUrl>http://opensource.org/licenses/MIT</PackageLicenseUrl>
-        <PackageProjectUrl>https://github.com/neuecc/CloudStructures</PackageProjectUrl>
+        <PackageId>CloudStructures</PackageId>
+        <Version>2.1.0.0</Version>
         <Description>Redis Client based on StackExchange.Redis.</Description>
-        <PackageReleaseNotes>- Adds async suffix.</PackageReleaseNotes>
-        <Copyright>Copyright© neuecc, xin9le</Copyright>
-        <PackageTags>Redis, Redis Client, O/R Mapping</PackageTags>
-        <RepositoryUrl>https://github.com/neuecc/CloudStructures</RepositoryUrl>
-        <RepositoryType>Git</RepositoryType>
+        <PackageProjectUrl>https://github.com/neuecc/CloudStructures</PackageProjectUrl>
         <PackageIconUrl></PackageIconUrl>
+        <PackageTags>Redis, Redis Client, O/R Mapping</PackageTags>
+        <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <RepositoryUrl>$(PackageProjectUrl)</RepositoryUrl>
+        <RepositoryType>Git</RepositoryType>
+        <Company />
         <Authors>neuecc, xin9le</Authors>
-        <Product>CloudStructures</Product>
+        <Copyright>Copyright© neuecc, xin9le</Copyright>
+        <PackageReleaseNotes>- Adds async suffix.</PackageReleaseNotes>
     </PropertyGroup>
 
     <ItemGroup>
