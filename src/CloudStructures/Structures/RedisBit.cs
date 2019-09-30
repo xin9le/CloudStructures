@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using CloudStructures.Internals;
@@ -40,7 +41,7 @@ namespace CloudStructures.Structures
         /// <param name="connection"></param>
         /// <param name="key"></param>
         /// <param name="defaultExpiry"></param>
-        public RedisBit(RedisConnection connection, RedisKey key, TimeSpan? defaultExpiry)
+        public RedisBit(RedisConnection connection, in RedisKey key, TimeSpan? defaultExpiry)
         {
             this.Connection = connection ?? throw new ArgumentNullException(nameof(connection));
             this.Key = key;
@@ -67,7 +68,7 @@ namespace CloudStructures.Structures
         /// <summary>
         /// BITOP : https://redis.io/commands/bitop
         /// </summary>
-        public Task<long> OperationAsync(Bitwise operation, RedisBit first, RedisBit? second = null, CommandFlags flags = CommandFlags.None)
+        public Task<long> OperationAsync(Bitwise operation, in RedisBit first, RedisBit? second = null, CommandFlags flags = CommandFlags.None)
         {
             var firstKey = first.Key;
             var secondKey = second?.Key ?? default; 
@@ -78,10 +79,10 @@ namespace CloudStructures.Structures
         /// <summary>
         /// BITOP : https://redis.io/commands/bitop
         /// </summary>
-        public Task<long> OperationAsync(Bitwise operation, RedisBit[] bits, CommandFlags flags = CommandFlags.None)
+        public Task<long> OperationAsync(Bitwise operation, IReadOnlyCollection<RedisBit> bits, CommandFlags flags = CommandFlags.None)
         {
             if (bits == null) throw new ArgumentNullException(nameof(bits));
-            if (bits.Length == 0) throw new ArgumentException("bits length is 0.");
+            if (bits.Count == 0) throw new ArgumentException("bits length is 0.");
 
             var keys = bits.Select(x => x.Key).ToArray();
             return this.Connection.Database.StringBitOperationAsync(operation, this.Key, keys, flags);

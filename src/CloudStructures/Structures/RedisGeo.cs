@@ -43,7 +43,7 @@ namespace CloudStructures.Structures
         /// <param name="connection"></param>
         /// <param name="key"></param>
         /// <param name="defaultExpiry"></param>
-        public RedisGeo(RedisConnection connection, RedisKey key, TimeSpan? defaultExpiry)
+        public RedisGeo(RedisConnection connection, in RedisKey key, TimeSpan? defaultExpiry)
         {
             this.Connection = connection ?? throw new ArgumentNullException(nameof(connection));
             this.Key = key;
@@ -64,7 +64,7 @@ namespace CloudStructures.Structures
         /// <summary>
         /// GEOADD : https://redis.io/commands/geoadd
         /// </summary>
-        public Task<bool> AddAsync(RedisGeoEntry<T> value, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
+        public Task<bool> AddAsync(in RedisGeoEntry<T> value, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
             expiry ??= this.DefaultExpiry;
             var entry = value.ToNonGenerics(this.Connection.Converter);
@@ -297,7 +297,7 @@ namespace CloudStructures.Structures
         /// <param name="distance"></param>
         /// <param name="hash"></param>
         /// <param name="position"></param>
-        internal RedisGeoRadiusResult(RedisResult<T> member, double? distance, long? hash, GeoPosition? position)
+        internal RedisGeoRadiusResult(in RedisResult<T> member, double? distance, long? hash, GeoPosition? position)
         {
             this.Member = member;
             this.Distance = distance;

@@ -32,7 +32,7 @@ namespace CloudStructures.Structures
         /// </summary>
         /// <param name="connection"></param>
         /// <param name="key"></param>
-        public RedisLock(RedisConnection connection, RedisKey key)
+        public RedisLock(RedisConnection connection, in RedisKey key)
         {
             this.Connection = connection ?? throw new ArgumentNullException(nameof(connection));
             this.Key = key;

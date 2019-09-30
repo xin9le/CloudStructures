@@ -43,7 +43,7 @@ namespace CloudStructures.Structures
         /// <param name="connection"></param>
         /// <param name="key"></param>
         /// <param name="defaultExpiry"></param>
-        public RedisHashSet(RedisConnection connection, RedisKey key, TimeSpan? defaultExpiry)
+        public RedisHashSet(RedisConnection connection, in RedisKey key, TimeSpan? defaultExpiry)
         {
             this.Connection = connection ?? throw new ArgumentNullException(nameof(connection));
             this.Key = key;

@@ -43,7 +43,7 @@ namespace CloudStructures.Structures
         /// <param name="connection"></param>
         /// <param name="key"></param>
         /// <param name="defaultExpiry"></param>
-        public RedisSortedSet(RedisConnection connection, RedisKey key, TimeSpan? defaultExpiry)
+        public RedisSortedSet(RedisConnection connection, in RedisKey key, TimeSpan? defaultExpiry)
         {
             this.Connection = connection ?? throw new ArgumentNullException(nameof(connection));
             this.Key = key;
@@ -115,7 +115,7 @@ namespace CloudStructures.Structures
         /// ZUNIONSTORE : https://redis.io/commands/zunionstore
         /// ZINTERSTORE : https://redis.io/commands/zinterstore
         /// </summary>
-        public Task<long> CombineAndStoreAsync(SetOperation operation, RedisSortedSet<T> destination, RedisSortedSet<T> other, Aggregate aggregate = Aggregate.Sum, CommandFlags flags = CommandFlags.None)
+        public Task<long> CombineAndStoreAsync(SetOperation operation, in RedisSortedSet<T> destination, in RedisSortedSet<T> other, Aggregate aggregate = Aggregate.Sum, CommandFlags flags = CommandFlags.None)
             => this.Connection.Database.SortedSetCombineAndStoreAsync(operation, destination.Key, this.Key, other.Key, aggregate, flags);
 
 
@@ -123,7 +123,7 @@ namespace CloudStructures.Structures
         /// ZUNIONSTORE : https://redis.io/commands/zunionstore
         /// ZINTERSTORE : https://redis.io/commands/zinterstore
         /// </summary>
-        public Task<long> CombineAndStoreAsync(SetOperation operation, RedisSortedSet<T> destination, IReadOnlyCollection<RedisSortedSet<T>> others, double[] weights = default, Aggregate aggregate = Aggregate.Sum, CommandFlags flags = CommandFlags.None)
+        public Task<long> CombineAndStoreAsync(SetOperation operation, in RedisSortedSet<T> destination, IReadOnlyCollection<RedisSortedSet<T>> others, double[] weights = default, Aggregate aggregate = Aggregate.Sum, CommandFlags flags = CommandFlags.None)
         {
             if (others == null) throw new ArgumentNullException(nameof(others));
             if (others.Count == 0) throw new ArgumentNullException("others length is 0.");
@@ -322,7 +322,7 @@ namespace CloudStructures.Structures
         /// <summary>
         /// SORT : https://redis.io/commands/sort
         /// </summary>
-        public Task<long> SortAndStoreAsync(RedisSortedSet<T> destination, long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, /*RedisValue by = default, RedisValue[] get = null,*/ CommandFlags flags = CommandFlags.None)
+        public Task<long> SortAndStoreAsync(in RedisSortedSet<T> destination, long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, /*RedisValue by = default, RedisValue[] get = null,*/ CommandFlags flags = CommandFlags.None)
         {
             //--- I don't know if serialization is necessary or not, so I will fix the default value.
             RedisValue by = default;
