@@ -7,7 +7,7 @@
         <Nullable>disable</Nullable>
         <!-- NuGet -->
         <IsPackable>true</IsPackable>
-        <PackageId>CloudStructures</PackageId>
+        <PackageId>CloudStructures.Converters.MessagePack</PackageId>
         <Version>2.1.0.0</Version>
         <Description>Provides MessagePackConverter for CloudStructures.</Description>
         <PackageProjectUrl>https://github.com/neuecc/CloudStructures</PackageProjectUrl>
