@@ -19,7 +19,7 @@
         <Company />
         <Authors>neuecc, xin9le</Authors>
         <Copyright>Copyright© neuecc, xin9le</Copyright>
-        <PackageReleaseNotes>- Adds async suffix.</PackageReleaseNotes>
+        <PackageReleaseNotes></PackageReleaseNotes>
     </PropertyGroup>
 
     <ItemGroup>
