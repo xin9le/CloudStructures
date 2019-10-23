@@ -86,12 +86,12 @@ namespace CloudStructures
         #endregion
 
 
-        #region Inner connection management
+        #region Connection management
         /// <summary>
-        /// Gets inner connection.
+        /// Gets underlying connection.
         /// </summary>
         /// <returns></returns>
-        private ConnectionMultiplexer GetConnection()
+        public ConnectionMultiplexer GetConnection()
         {
             lock (this.gate)
             {
