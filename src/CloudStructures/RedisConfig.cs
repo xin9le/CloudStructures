@@ -41,14 +41,22 @@ namespace CloudStructures
         /// <param name="name"></param>
         /// <param name="connectionString"></param>
         /// <param name="database"></param>
-        public RedisConfig(string name, string connectionString, int? database = null)
-        {
-            if (connectionString == null)
-                throw new ArgumentNullException(nameof(connectionString));
+        public RedisConfig(string name, string connectionString, int? database = default)
+            : this(name, ConfigurationOptions.Parse(connectionString), database)
+        { }
 
+
+        /// <summary>
+        /// Creates instance.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="options"></param>
+        /// <param name="database"></param>
+        public RedisConfig(string name, ConfigurationOptions options, int? database = default)
+        {
             this.Name = name ?? throw new ArgumentNullException(nameof(name));
-            this.Options = ConfigurationOptions.Parse(connectionString);
-            this.Database = database;
+            this.Options = options ?? throw new ArgumentNullException(nameof(options));
+            this.Database = database ?? options.DefaultDatabase;
         }
         #endregion
     }
