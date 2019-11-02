@@ -237,7 +237,8 @@ namespace CloudStructures.Structures
         public async Task<RedisResult<T>> GetAndDeleteAsync(CommandFlags flags = CommandFlags.None)
         {
             var result = await this.GetAsync(flags).ConfigureAwait(false);
-            await this.DeleteAsync(flags).ConfigureAwait(false);
+            if (result.HasValue)
+                await this.DeleteAsync(flags).ConfigureAwait(false);
             return result;
         }
 

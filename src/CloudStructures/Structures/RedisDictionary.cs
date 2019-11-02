@@ -426,12 +426,13 @@ namespace CloudStructures.Structures
             //--- GetAsync
             var hashField = this.Connection.Converter.Serialize(field);
             var value = await this.Connection.Database.HashGetAsync(this.Key, hashField, flags).ConfigureAwait(false);
+            var result = value.ToResult<TValue>(this.Connection.Converter);
 
             //--- DeleteAsync
-            await this.Connection.Database.HashDeleteAsync(this.Key, hashField, flags).ConfigureAwait(false);
+            if (result.HasValue)
+                await this.Connection.Database.HashDeleteAsync(this.Key, hashField, flags).ConfigureAwait(false);
 
-            //--- Result
-            return value.ToResult<TValue>(this.Connection.Converter);
+            return result;
         }
 
 
@@ -446,12 +447,8 @@ namespace CloudStructures.Structures
             var comparer = dictionaryEqualityComparer ?? EqualityComparer<TKey>.Default;
             var hashFields = fields.Select(this.Connection.Converter.Serialize).ToArray();
             var values = await this.Connection.Database.HashGetAsync(this.Key, hashFields, flags).ConfigureAwait(false);
-
-            //--- DeleteAsync
-            await this.Connection.Database.HashDeleteAsync(this.Key, hashFields, flags).ConfigureAwait(false);
-
-            //--- Result
-            return fields
+            var result
+                = fields
                 .Zip(values, (f, v) => (field: f, value: v))
                 .Select(this.Connection.Converter, (x, c) =>
                 {
@@ -460,6 +457,12 @@ namespace CloudStructures.Structures
                 })
                 .Where(x => x.result.HasValue)
                 .ToDictionary(x => x.field, x => x.result.Value, comparer);
+
+            //--- DeleteAsync
+            if (0 < result.Count)
+                await this.Connection.Database.HashDeleteAsync(this.Key, hashFields, flags).ConfigureAwait(false);
+
+            return result;
         }
         #endregion
     }
