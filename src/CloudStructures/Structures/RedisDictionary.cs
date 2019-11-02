@@ -169,13 +169,13 @@ namespace CloudStructures.Structures
             var values = await this.Connection.Database.HashGetAsync(this.Key, hashFields, flags).ConfigureAwait(false);
             return fields
                 .Zip(values, (f, v) => (field: f, value: v))
-                .Where(x => x.value.HasValue)
                 .Select(this.Connection.Converter, (x, c) =>
                 {
-                    var value = c.Deserialize<TValue>(x.value);
-                    return (x.field, value);
+                    var result = x.value.ToResult<TValue>(c);
+                    return (x.field, result);
                 })
-                .ToDictionary(x => x.field, x => x.value, comparer);
+                .Where(x => x.result.HasValue)
+                .ToDictionary(x => x.field, x => x.result.Value, comparer);
         }
 
 
@@ -453,7 +453,7 @@ namespace CloudStructures.Structures
             //--- Result
             return fields
                 .Zip(values, (f, v) => (field: f, value: v))
-                .Where(x => x.value.HasValue)
+                .Where(!x => x.value.IsNull)
                 .Select(this.Connection.Converter, (x, c) =>
                 {
                     var value = c.Deserialize<TValue>(x.value);
