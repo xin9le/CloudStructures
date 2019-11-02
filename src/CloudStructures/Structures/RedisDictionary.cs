@@ -415,6 +415,52 @@ namespace CloudStructures.Structures
             }
             return cached;
         }
+
+
+        /// <summary>
+        /// HGET : https://redis.io/commands/hget
+        /// HDEL : https://redis.io/commands/hdel
+        /// </summary>
+        public async Task<RedisResult<TValue>> GetAndDeleteAsync(TKey field, CommandFlags flags = CommandFlags.None)
+        {
+            //--- GetAsync
+            var hashField = this.Connection.Converter.Serialize(field);
+            var value = await this.Connection.Database.HashGetAsync(this.Key, hashField, flags).ConfigureAwait(false);
+
+            //--- DeleteAsync
+            await this.Connection.Database.HashDeleteAsync(this.Key, hashField, flags).ConfigureAwait(false);
+
+            //--- Result
+            return value.ToResult<TValue>(this.Connection.Converter);
+        }
+
+
+        /// <summary>
+        /// HMGET : https://redis.io/commands/hmget
+        /// HDEL : https://redis.io/commands/hdel
+        /// </summary>
+        public async Task<Dictionary<TKey, TValue>> GetAndDeleteAsync(IEnumerable<TKey> fields, IEqualityComparer<TKey> dictionaryEqualityComparer = null, CommandFlags flags = CommandFlags.None)
+        {
+            //--- GetAsync
+            fields = fields.Materialize(false);
+            var comparer = dictionaryEqualityComparer ?? EqualityComparer<TKey>.Default;
+            var hashFields = fields.Select(this.Connection.Converter.Serialize).ToArray();
+            var values = await this.Connection.Database.HashGetAsync(this.Key, hashFields, flags).ConfigureAwait(false);
+
+            //--- DeleteAsync
+            await this.Connection.Database.HashDeleteAsync(this.Key, hashFields, flags).ConfigureAwait(false);
+
+            //--- Result
+            return fields
+                .Zip(values, (f, v) => (field: f, value: v))
+                .Where(x => x.value.HasValue)
+                .Select(this.Connection.Converter, (x, c) =>
+                {
+                    var value = c.Deserialize<TValue>(x.value);
+                    return (x.field, value);
+                })
+                .ToDictionary(x => x.field, x => x.value, comparer);
+        }
         #endregion
     }
 }
