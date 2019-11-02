@@ -356,8 +356,9 @@ namespace CloudStructures.Structures
             var notCached = new LinkedList<TKey>();
             foreach (var x in fields.Zip(values, (f, v) => (f, v)))
             {
-                if (x.v.HasValue)
-                    cached[x.f] = this.Connection.Converter.Deserialize<TValue>(x.v);
+                var result = x.v.ToResult<TValue>(this.Connection.Converter);
+                if (result.HasValue)
+                    cached[x.f] = result.Value;
                 else
                     notCached.AddLast(x.f);
             }
@@ -397,8 +398,9 @@ namespace CloudStructures.Structures
             var notCached = new LinkedList<TKey>();
             foreach (var x in fields.Zip(values, (f, v) => (f, v)))
             {
-                if (x.v.HasValue)
-                    cached[x.f] = this.Connection.Converter.Deserialize<TValue>(x.v);
+                var result = x.v.ToResult<TValue>(this.Connection.Converter);
+                if (result.HasValue)
+                    cached[x.f] = result.Value;
                 else
                     notCached.AddLast(x.f);
             }
