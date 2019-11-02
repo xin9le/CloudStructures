@@ -193,16 +193,16 @@ namespace CloudStructures.Structures
         public async Task<T> GetOrSetAsync(Func<T> valueFactory, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
             expiry ??= this.DefaultExpiry;
-            var value = await this.GetAsync(flags).ConfigureAwait(false);
-            if (value.HasValue)
+            var result = await this.GetAsync(flags).ConfigureAwait(false);
+            if (result.HasValue)
             {
-                return value.Value;
+                return result.Value;
             }
             else
             {
-                var newValue = valueFactory();
-                await this.SetAsync(newValue, expiry, When.Always, flags).ConfigureAwait(false);
-                return newValue;
+                var value = valueFactory();
+                await this.SetAsync(value, expiry, When.Always, flags).ConfigureAwait(false);
+                return value;
             }
         }
 
@@ -214,16 +214,16 @@ namespace CloudStructures.Structures
         public async Task<T> GetOrSetAsync(Func<Task<T>> valueFactory, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
             expiry ??= this.DefaultExpiry;
-            var value = await this.GetAsync(flags).ConfigureAwait(false);
-            if (value.HasValue)
+            var result = await this.GetAsync(flags).ConfigureAwait(false);
+            if (result.HasValue)
             {
-                return value.Value;
+                return result.Value;
             }
             else
             {
-                var newValue = await valueFactory().ConfigureAwait(false);
-                await this.SetAsync(newValue, expiry, When.Always, flags).ConfigureAwait(false);
-                return newValue;
+                var value = await valueFactory().ConfigureAwait(false);
+                await this.SetAsync(value, expiry, When.Always, flags).ConfigureAwait(false);
+                return value;
             }
         }
 
