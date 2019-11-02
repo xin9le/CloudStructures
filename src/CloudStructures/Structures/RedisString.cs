@@ -229,6 +229,20 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
+        /// GET : http://redis.io/commands/get
+        /// DEL : http://redis.io/commands/del
+        /// </summary>
+        /// <param name="flags"></param>
+        /// <returns></returns>
+        public async Task<RedisResult<T>> GetAndDeleteAsync(CommandFlags flags = CommandFlags.None)
+        {
+            var result = await this.GetAsync(flags).ConfigureAwait(false);
+            await this.DeleteAsync(flags).ConfigureAwait(false);
+            return result;
+        }
+
+
+        /// <summary>
         /// LUA Script including incrby, set
         /// </summary>
         public async Task<long> IncrementLimitByMaxAsync(long value, long max, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
