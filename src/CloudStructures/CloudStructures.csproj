@@ -7,7 +7,7 @@
         <!-- NuGet -->
         <IsPackable>true</IsPackable>
         <PackageId>CloudStructures</PackageId>
-        <Version>2.3.0.0</Version>
+        <Version>2.3.1.0</Version>
         <Description>Redis Client based on StackExchange.Redis.</Description>
         <PackageProjectUrl>https://github.com/neuecc/CloudStructures</PackageProjectUrl>
         <PackageIconUrl></PackageIconUrl>
