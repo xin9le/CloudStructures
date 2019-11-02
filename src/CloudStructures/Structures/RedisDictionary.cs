@@ -296,11 +296,10 @@ namespace CloudStructures.Structures
             if (valueFactory == null)
                 throw new ArgumentNullException(nameof(valueFactory));
 
-            var hashField = this.Connection.Converter.Serialize(field);
-            var value = await this.Connection.Database.HashGetAsync(this.Key, hashField, flags).ConfigureAwait(false);
-            if (value.HasValue)
+            var result = await this.GetAsync(field, flags).ConfigureAwait(false);
+            if (result.HasValue)
             {
-                return this.Connection.Converter.Deserialize<TValue>(value);
+                return result.Value;
             }
             else
             {
@@ -320,11 +319,10 @@ namespace CloudStructures.Structures
             if (valueFactory == null)
                 throw new ArgumentNullException(nameof(valueFactory));
 
-            var hashField = this.Connection.Converter.Serialize(field);
-            var value = await this.Connection.Database.HashGetAsync(this.Key, hashField, flags).ConfigureAwait(false);
-            if (value.HasValue)
+            var result = await this.GetAsync(field, flags).ConfigureAwait(false);
+            if (result.HasValue)
             {
-                return this.Connection.Converter.Deserialize<TValue>(value);
+                return result.Value;
             }
             else
             {
@@ -453,7 +451,7 @@ namespace CloudStructures.Structures
             //--- Result
             return fields
                 .Zip(values, (f, v) => (field: f, value: v))
-                .Where(!x => x.value.IsNull)
+                .Where(x => x.value.HasValue)
                 .Select(this.Connection.Converter, (x, c) =>
                 {
                     var value = c.Deserialize<TValue>(x.value);
