@@ -89,7 +89,7 @@ namespace CloudStructures.Structures
 
             var hashField = this.Connection.Converter.Serialize(value);
             var element = await this.Connection.Database.HashGetAsync(this.Key, hashField, flags).ConfigureAwait(false);
-            return element.HasValue;
+            return !element.IsNull;
         }
 
 
@@ -106,7 +106,7 @@ namespace CloudStructures.Structures
             var elements = await this.Connection.Database.HashGetAsync(this.Key, hashFields, flags).ConfigureAwait(false);
             return values
                 .Zip(elements, (k, v) => (key: k, value: v))
-                .ToDictionary(x => x.key, x => x.value.HasValue);
+                .ToDictionary(x => x.key, x => !x.value.IsNull);
         }
 
 
