@@ -41,7 +41,7 @@ namespace CloudStructures.Structures
         /// <param name="connection"></param>
         /// <param name="key"></param>
         /// <param name="defaultExpiry"></param>
-        public RedisBit(RedisConnection connection, in RedisKey key, TimeSpan? defaultExpiry)
+        public RedisBit(RedisConnection connection, RedisKey key, TimeSpan? defaultExpiry)
         {
             this.Connection = connection ?? throw new ArgumentNullException(nameof(connection));
             this.Key = key;
@@ -68,7 +68,7 @@ namespace CloudStructures.Structures
         /// <summary>
         /// BITOP : https://redis.io/commands/bitop
         /// </summary>
-        public Task<long> OperationAsync(Bitwise operation, in RedisBit first, RedisBit? second = null, CommandFlags flags = CommandFlags.None)
+        public Task<long> OperationAsync(Bitwise operation, RedisBit first, RedisBit? second = null, CommandFlags flags = CommandFlags.None)
         {
             var firstKey = first.Key;
             var secondKey = second?.Key ?? default; 

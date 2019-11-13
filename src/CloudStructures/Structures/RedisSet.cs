@@ -42,7 +42,7 @@ namespace CloudStructures.Structures
         /// <param name="connection"></param>
         /// <param name="key"></param>
         /// <param name="defaultExpiry"></param>
-        public RedisSet(RedisConnection connection, in RedisKey key, TimeSpan? defaultExpiry)
+        public RedisSet(RedisConnection connection, RedisKey key, TimeSpan? defaultExpiry)
         {
             this.Connection = connection ?? throw new ArgumentNullException(nameof(connection));
             this.Key = key;
@@ -110,7 +110,7 @@ namespace CloudStructures.Structures
         /// Combine self and other, then save it to the destination.
         /// It does not work unless you pass keys located the same server.
         /// </remarks>
-        public Task<long> CombineAndStoreAsync(SetOperation operation, in RedisSet<T> destination, in RedisSet<T> other, CommandFlags flags = CommandFlags.None)
+        public Task<long> CombineAndStoreAsync(SetOperation operation, RedisSet<T> destination, RedisSet<T> other, CommandFlags flags = CommandFlags.None)
             => this.Connection.Database.SetCombineAndStoreAsync(operation, destination.Key, this.Key, other.Key, flags);
 
 
@@ -123,7 +123,7 @@ namespace CloudStructures.Structures
         /// Combine self and other, then save it to the destination.
         /// It does not work unless you pass keys located the same server.
         /// </remarks>
-        public Task<long> CombineAndStoreAsync(SetOperation operation, in RedisSet<T> destination, IReadOnlyCollection<RedisSet<T>> others, CommandFlags flags = CommandFlags.None)
+        public Task<long> CombineAndStoreAsync(SetOperation operation, RedisSet<T> destination, IReadOnlyCollection<RedisSet<T>> others, CommandFlags flags = CommandFlags.None)
         {
             if (others == null) throw new ArgumentNullException(nameof(others));
             if (others.Count == 0) throw new ArgumentException("others length is 0.");
@@ -195,7 +195,7 @@ namespace CloudStructures.Structures
         /// <summary>
         /// SMOVE : https://redis.io/commands/smove
         /// </summary>
-        public Task<bool> MoveAsync(in RedisSet<T> destination, T value, CommandFlags flags = CommandFlags.None)
+        public Task<bool> MoveAsync(RedisSet<T> destination, T value, CommandFlags flags = CommandFlags.None)
         {
             var serialized = this.Connection.Converter.Serialize(value);
             return this.Connection.Database.SetMoveAsync(this.Key, destination.Key, serialized, flags);
@@ -247,7 +247,7 @@ namespace CloudStructures.Structures
         /// <summary>
         /// SORT : https://redis.io/commands/sort
         /// </summary>
-        public Task<long> SortAndStoreAsync(in RedisSet<T> destination, long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, /*RedisValue by = default, RedisValue[] get = null,*/ CommandFlags flags = CommandFlags.None)
+        public Task<long> SortAndStoreAsync(RedisSet<T> destination, long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, /*RedisValue by = default, RedisValue[] get = null,*/ CommandFlags flags = CommandFlags.None)
         {
             //--- I don't know if serialization is necessary or not, so I will fix the default value.
             RedisValue by = default;
