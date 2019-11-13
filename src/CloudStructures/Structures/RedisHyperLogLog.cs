@@ -42,7 +42,7 @@ namespace CloudStructures.Structures
         /// <param name="connection"></param>
         /// <param name="key"></param>
         /// <param name="defaultExpiry"></param>
-        public RedisHyperLogLog(RedisConnection connection, in RedisKey key, TimeSpan? defaultExpiry)
+        public RedisHyperLogLog(RedisConnection connection, RedisKey key, TimeSpan? defaultExpiry)
         {
             this.Connection = connection ?? throw new ArgumentNullException(nameof(connection));
             this.Key = key;
@@ -101,7 +101,7 @@ namespace CloudStructures.Structures
         /// <summary>
         /// PFMERGE : https://redis.io/commands/pfmerge
         /// </summary>
-        public Task MergeAsync(in RedisKey first, in RedisKey second, CommandFlags flags = CommandFlags.None)
+        public Task MergeAsync(RedisKey first, RedisKey second, CommandFlags flags = CommandFlags.None)
             => this.Connection.Database.HyperLogLogMergeAsync(this.Key, first, second, flags);
 
 
