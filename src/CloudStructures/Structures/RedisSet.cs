@@ -128,7 +128,11 @@ namespace CloudStructures.Structures
             if (others.Count == 0)
                 throw new ArgumentException("others length is 0.");
 
-            var keys = others.Select(x => x.Key).Concat(new []{ this.Key }).ToArray();
+#if NETSTANDARD2_1 || NET5_0_OR_GREATER
+            var keys = others.Select(x => x.Key).Append(this.Key).ToArray();
+#else
+            var keys = others.Select(x => x.Key).Concat(new[] { this.Key }).ToArray();
+#endif
             return this.Connection.Database.SetCombineAndStoreAsync(operation, destination.Key, keys, flags);
         }
 
@@ -157,7 +161,11 @@ namespace CloudStructures.Structures
             if (others.Count == 0)
                 throw new ArgumentException("others length is 0.");
 
-            var keys = new []{ this.Key }.Concat(others.Select(x => x.Key)).ToArray();
+#if NETSTANDARD2_1 || NET5_0_OR_GREATER
+            var keys = others.Select(x => x.Key).Append(this.Key).ToArray();
+#else
+            var keys = others.Select(x => x.Key).Concat(new[] { this.Key }).ToArray();
+#endif
             var values = await this.Connection.Database.SetCombineAsync(operation, keys, flags).ConfigureAwait(false);
             return values.Select(this.Connection.Converter, (x, c) => c.Deserialize<T>(x)).ToArray();
         }
@@ -267,6 +275,6 @@ namespace CloudStructures.Structures
             var values = await this.Connection.Database.SortAsync(this.Key, skip, take, order, sortType, by, get, flags).ConfigureAwait(false);
             return values.Select(this.Connection.Converter, (x, c) => c.Deserialize<T>(x)).ToArray();
         }
-        #endregion
+#endregion
     }
 }
