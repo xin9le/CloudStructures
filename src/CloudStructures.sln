@@ -1,13 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.421
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31205.134
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{6516CC68-EBFC-4228-834A-301880E897CC}"
-	ProjectSection(SolutionItems) = preProject
-		.editorconfig = .editorconfig
-	EndProjectSection
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CloudStructures", "CloudStructures\CloudStructures.csproj", "{737EFD85-803D-48F6-AFB4-4637773E32A8}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CloudStructures.Converters.MessagePack", "CloudStructures.Converters.MessagePack\CloudStructures.Converters.MessagePack.csproj", "{FE910B93-6E35-4FCC-9EAD-A6C4E27D9EF5}"
