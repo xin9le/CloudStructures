@@ -126,7 +126,7 @@ namespace CloudStructures.Structures
         public Task<long> CombineAndStoreAsync(SetOperation operation, RedisSortedSet<T> destination, IReadOnlyCollection<RedisSortedSet<T>> others, double[]? weights = default, Aggregate aggregate = Aggregate.Sum, CommandFlags flags = CommandFlags.None)
         {
             if (others.Count == 0)
-                throw new ArgumentNullException("others length is 0.");
+                throw new ArgumentException("others length is 0.");
 
 #if NETSTANDARD2_1 || NET5_0_OR_GREATER
             var keys = others.Select(x => x.Key).Append(this.Key).ToArray();
