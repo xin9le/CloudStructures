@@ -1,5 +1,4 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using CloudStructures.Converters;
@@ -32,13 +31,13 @@ namespace CloudStructures
         /// <summary>
         /// Gets connection event handler.
         /// </summary>
-        private IConnectionEventHandler Handler { get; }
+        private IConnectionEventHandler? Handler { get; }
 
 
         /// <summary>
         /// Gets logger.
         /// </summary>
-        private TextWriter Logger { get; }
+        private TextWriter? Logger { get; }
 
 
         /// <summary>
@@ -76,9 +75,9 @@ namespace CloudStructures
         /// <param name="converter">If null, use Utf8JsonConverter as default.</param>
         /// <param name="handler"></param>
         /// <param name="logger"></param>
-        public RedisConnection(RedisConfig config, IValueConverter converter = null, IConnectionEventHandler handler = null, TextWriter logger = null)
+        public RedisConnection(RedisConfig config, IValueConverter? converter = null, IConnectionEventHandler? handler = null, TextWriter? logger = null)
         {
-            this.Config = config ?? throw new ArgumentNullException(nameof(config));
+            this.Config = config;
             this.Converter = new ValueConverter(converter);
             this.Handler = handler;
             this.Logger = logger;
@@ -124,7 +123,7 @@ namespace CloudStructures
             }
         }
         private readonly object gate = new object();
-        private ConnectionMultiplexer connection = null;
+        private ConnectionMultiplexer? connection = null;
         #endregion
     }
 }

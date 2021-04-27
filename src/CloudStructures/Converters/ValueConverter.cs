@@ -24,7 +24,7 @@ namespace CloudStructures.Converters
         /// Creates instance.
         /// </summary>
         /// <param name="customConverter"></param>
-        public ValueConverter(IValueConverter customConverter)
+        public ValueConverter(IValueConverter? customConverter)
             => this.CustomConverter = customConverter ?? new Utf8JsonConverter();  // fallback
         #endregion
 
@@ -40,7 +40,7 @@ namespace CloudStructures.Converters
         {
             var converter = PrimitiveConverterCache<T>.Converter;
             return converter == null
-                ? (RedisValue)this.CustomConverter.Serialize(value)
+                ? this.CustomConverter.Serialize(value)
                 : converter.Serialize(value);
         }
 
@@ -111,7 +111,7 @@ namespace CloudStructures.Converters
             /// <summary>
             /// Gets converter.
             /// </summary>
-            public static IRedisValueConverter<T> Converter { get; }
+            public static IRedisValueConverter<T>? Converter { get; }
 
 
             /// <summary>

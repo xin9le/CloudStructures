@@ -44,7 +44,7 @@ namespace CloudStructures.Structures
         /// <param name="defaultExpiry"></param>
         public RedisSet(RedisConnection connection, RedisKey key, TimeSpan? defaultExpiry)
         {
-            this.Connection = connection ?? throw new ArgumentNullException(nameof(connection));
+            this.Connection = connection;
             this.Key = key;
             this.DefaultExpiry = defaultExpiry;
         }
@@ -125,8 +125,8 @@ namespace CloudStructures.Structures
         /// </remarks>
         public Task<long> CombineAndStoreAsync(SetOperation operation, RedisSet<T> destination, IReadOnlyCollection<RedisSet<T>> others, CommandFlags flags = CommandFlags.None)
         {
-            if (others == null) throw new ArgumentNullException(nameof(others));
-            if (others.Count == 0) throw new ArgumentException("others length is 0.");
+            if (others.Count == 0)
+                throw new ArgumentException("others length is 0.");
 
             var keys = others.Select(x => x.Key).Concat(new []{ this.Key }).ToArray();
             return this.Connection.Database.SetCombineAndStoreAsync(operation, destination.Key, keys, flags);
@@ -154,8 +154,8 @@ namespace CloudStructures.Structures
         /// <remarks>It does not work unless you pass keys located the same server.</remarks>
         public async Task<T[]> CombineAsync(SetOperation operation, IReadOnlyCollection<RedisSet<T>> others, CommandFlags flags = CommandFlags.None)
         {
-            if (others == null) throw new ArgumentNullException(nameof(others));
-            if (others.Count == 0) throw new ArgumentException("others length is 0.");
+            if (others.Count == 0)
+                throw new ArgumentException("others length is 0.");
 
             var keys = new []{ this.Key }.Concat(others.Select(x => x.Key)).ToArray();
             var values = await this.Connection.Database.SetCombineAsync(operation, keys, flags).ConfigureAwait(false);
@@ -251,7 +251,7 @@ namespace CloudStructures.Structures
         {
             //--- I don't know if serialization is necessary or not, so I will fix the default value.
             RedisValue by = default;
-            RedisValue[] get = default;
+            RedisValue[]? get = default;
             return this.Connection.Database.SortAndStoreAsync(destination.Key, this.Key, skip, take, order, sortType, by, get, flags);
         }
 
@@ -263,7 +263,7 @@ namespace CloudStructures.Structures
         {
             //--- I don't know if serialization is necessary or not, so I will fix the default value.
             RedisValue by = default;
-            RedisValue[] get = default;
+            RedisValue[]? get = default;
             var values = await this.Connection.Database.SortAsync(this.Key, skip, take, order, sortType, by, get, flags).ConfigureAwait(false);
             return values.Select(this.Connection.Converter, (x, c) => c.Deserialize<T>(x)).ToArray();
         }

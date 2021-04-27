@@ -44,7 +44,7 @@ namespace CloudStructures.Structures
         /// <param name="defaultExpiry"></param>
         public RedisList(RedisConnection connection, RedisKey key, TimeSpan? defaultExpiry)
         {
-            this.Connection = connection ?? throw new ArgumentNullException(nameof(connection));
+            this.Connection = connection;
             this.Key = key;
             this.DefaultExpiry = defaultExpiry;
         }
@@ -277,7 +277,7 @@ namespace CloudStructures.Structures
         {
             //--- I don't know if serialization is necessary or not, so I will fix the default value.
             RedisValue by = default;
-            RedisValue[] get = default;
+            RedisValue[]? get = default;
             return this.Connection.Database.SortAndStoreAsync(destination.Key, this.Key, skip, take, order, sortType, by, get, flags);
         }
 
@@ -289,7 +289,7 @@ namespace CloudStructures.Structures
         {
             //--- I don't know if serialization is necessary or not, so I will fix the default value.
             RedisValue by = default;
-            RedisValue[] get = default;
+            RedisValue[]? get = default;
             var values = await this.Connection.Database.SortAsync(this.Key, skip, take, order, sortType, by, get, flags).ConfigureAwait(false);
             return values.Select(this.Connection.Converter, (x, c) => c.Deserialize<T>(x)).ToArray();
         }

@@ -30,8 +30,8 @@ namespace CloudStructures
         /// </summary>
         public T Value
             => this.HasValue
-            ?  this.value
-            :  throw new InvalidOperationException("has no value.");
+            ? this.value
+            : throw new InvalidOperationException("has no value.");
         private readonly T value;
         #endregion
 
@@ -54,8 +54,8 @@ namespace CloudStructures
         /// Converts to string.
         /// </summary>
         /// <returns></returns>
-        public override string ToString()
-            => this.HasValue ? this.Value.ToString() : null;
+        public override string? ToString()
+            => this.HasValue ? this.Value?.ToString() : null;
         #endregion
 
 
@@ -64,8 +64,8 @@ namespace CloudStructures
         /// Gets value. Returns null if value doesn't exists.
         /// </summary>
         /// <returns></returns>
-        public object GetValueOrNull()
-            => this.HasValue ? (object)this.Value : null;
+        public object? GetValueOrNull()
+            => this.HasValue ? this.Value : null;
 
 
         /// <summary>
@@ -73,7 +73,7 @@ namespace CloudStructures
         /// </summary>
         /// <param name="default"></param>
         /// <returns></returns>
-        public T GetValueOrDefault(T @default = default)
+        public T? GetValueOrDefault(T? @default = default)
             => this.HasValue ? this.Value : @default;
 
 
@@ -82,12 +82,8 @@ namespace CloudStructures
         /// </summary>
         /// <param name="valueFactory"></param>
         /// <returns></returns>
-        public T GetValueOrDefault(Func<T> valueFactory)
-        {
-            if (valueFactory == null)
-                throw new ArgumentNullException(nameof(valueFactory));
-            return this.HasValue ? this.Value : valueFactory();
-        }
+        public T? GetValueOrDefault(Func<T?> valueFactory)
+            => this.HasValue ? this.Value : valueFactory();
         #endregion
     }
 
@@ -117,8 +113,8 @@ namespace CloudStructures
         /// </summary>
         public T Value
             => this.HasValue
-            ?  this.value
-            :  throw new InvalidOperationException("has no value.");
+            ? this.value
+            : throw new InvalidOperationException("has no value.");
         private readonly T value;
 
 
@@ -149,8 +145,8 @@ namespace CloudStructures
         /// Converts to string.
         /// </summary>
         /// <returns></returns>
-        public override string ToString()
-            => this.HasValue ? this.Value.ToString() : null;
+        public override string? ToString()
+            => this.HasValue ? this.Value?.ToString() : null;
         #endregion
 
 
@@ -159,8 +155,8 @@ namespace CloudStructures
         /// Gets value. Returns null if value doesn't exists.
         /// </summary>
         /// <returns></returns>
-        public object GetValueOrNull()
-            => this.HasValue ? (object)this.Value : null;
+        public object? GetValueOrNull()
+            => this.HasValue ? this.Value : null;
 
 
         /// <summary>
@@ -168,7 +164,7 @@ namespace CloudStructures
         /// </summary>
         /// <param name="default"></param>
         /// <returns></returns>
-        public T GetValueOrDefault(T @default = default)
+        public T? GetValueOrDefault(T? @default = default)
             => this.HasValue ? this.Value : @default;
 
 
@@ -177,12 +173,8 @@ namespace CloudStructures
         /// </summary>
         /// <param name="valueFactory"></param>
         /// <returns></returns>
-        public T GetValueOrDefault(Func<T> valueFactory)
-        {
-            if (valueFactory == null)
-                throw new ArgumentNullException(nameof(valueFactory));
-            return this.HasValue ? this.Value : valueFactory();
-        }
+        public T? GetValueOrDefault(Func<T?> valueFactory)
+            => this.HasValue ? this.Value : valueFactory();
         #endregion
     }
 
@@ -206,7 +198,7 @@ namespace CloudStructures
                 return RedisResult<T>.Default;
 
             var converted = converter.Deserialize<T>(value);
-            return new RedisResult<T>(converted);
+            return new(converted);
         }
 
 
@@ -223,7 +215,7 @@ namespace CloudStructures
                 return RedisResultWithExpiry<T>.Default;
 
             var converted = converter.Deserialize<T>(value.Value);
-            return new RedisResultWithExpiry<T>(converted, value.Expiry);
+            return new(converted, value.Expiry);
         }
     }
 }
