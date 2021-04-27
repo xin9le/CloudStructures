@@ -125,10 +125,10 @@ namespace CloudStructures.Structures
         /// </summary>
         public Task<long> CombineAndStoreAsync(SetOperation operation, RedisSortedSet<T> destination, IReadOnlyCollection<RedisSortedSet<T>> others, double[]? weights = default, Aggregate aggregate = Aggregate.Sum, CommandFlags flags = CommandFlags.None)
         {
-            if (others == null) throw new ArgumentNullException(nameof(others));
-            if (others.Count == 0) throw new ArgumentNullException("others length is 0.");
+            if (others.Count == 0)
+                throw new ArgumentNullException("others length is 0.");
 
-            var keys = others.Select(x => x.Key).Concat(new []{ this.Key }).ToArray();
+            var keys = others.Select(x => x.Key).Concat(new[] { this.Key }).ToArray();
             return this.Connection.Database.SortedSetCombineAndStoreAsync(operation, destination.Key, keys, weights, aggregate, flags);
         }
 
@@ -321,7 +321,7 @@ namespace CloudStructures.Structures
             var minValue = this.Connection.Converter.Serialize(min);
             var maxValue = this.Connection.Converter.Serialize(max);
             return this.Connection.Database.SortedSetRemoveRangeByValueAsync(this.Key, minValue, maxValue, exclude, flags);
-        }   
+        }
 
 
         /// <summary>
@@ -479,7 +479,7 @@ return tostring(x)";
         public static SortedSetEntry ToNonGenerics<T>(this in RedisSortedSetEntry<T> entry, ValueConverter converter)
         {
             var value = converter.Serialize(entry.Value);
-            return new SortedSetEntry(value, entry.Score);
+            return new(value, entry.Score);
         }
 
 
@@ -493,7 +493,7 @@ return tostring(x)";
         public static RedisSortedSetEntry<T> ToGenerics<T>(this in SortedSetEntry entry, ValueConverter converter)
         {
             var value = converter.Deserialize<T>(entry.Element);
-            return new RedisSortedSetEntry<T>(value, entry.Score);
+            return new(value, entry.Score);
         }
     }
 }

@@ -78,7 +78,7 @@ namespace CloudStructures
         public RedisConnection(RedisConfig config, IValueConverter? converter = null, IConnectionEventHandler? handler = null, TextWriter? logger = null)
         {
             this.Config = config;
-            this.Converter = new ValueConverter(converter);
+            this.Converter = new(converter);
             this.Handler = handler;
             this.Logger = logger;
         }
@@ -94,7 +94,7 @@ namespace CloudStructures
         {
             lock (this.gate)
             {
-                if (this.connection == null || !this.connection.IsConnected)
+                if (this.connection is null || !this.connection.IsConnected)
                 {
                     try
                     {
@@ -102,7 +102,7 @@ namespace CloudStructures
                         var stopwatch = Stopwatch.StartNew();
                         this.connection = ConnectionMultiplexer.Connect(this.Config.Options, this.Logger);
                         stopwatch.Stop();
-                        this.Handler?.OnConnectionOpened(this, new ConnectionOpenedEventArgs(stopwatch.Elapsed));
+                        this.Handler?.OnConnectionOpened(this, new(stopwatch.Elapsed));
 
                         //--- attach events
                         this.connection.ConfigurationChanged += (_, e) => this.Handler?.OnConfigurationChanged(this, e);
@@ -122,7 +122,7 @@ namespace CloudStructures
                 return this.connection;
             }
         }
-        private readonly object gate = new object();
+        private readonly object gate = new();
         private ConnectionMultiplexer? connection = null;
         #endregion
     }

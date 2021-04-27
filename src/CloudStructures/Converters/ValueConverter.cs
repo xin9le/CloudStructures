@@ -39,7 +39,7 @@ namespace CloudStructures.Converters
         public RedisValue Serialize<T>(T value)
         {
             var converter = PrimitiveConverterCache<T>.Converter;
-            return converter == null
+            return converter is null
                 ? this.CustomConverter.Serialize(value)
                 : converter.Serialize(value);
         }
@@ -54,7 +54,7 @@ namespace CloudStructures.Converters
         public T Deserialize<T>(RedisValue value)
         {
             var converter = PrimitiveConverterCache<T>.Converter;
-            return converter == null
+            return converter is null
                 ? this.CustomConverter.Deserialize<T>(value)
                 : converter.Deserialize(value);
         }

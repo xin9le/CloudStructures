@@ -47,7 +47,7 @@ namespace CloudStructures.Internals
         /// <returns></returns>
         public static IEnumerable<T> Materialize<T>(this IEnumerable<T>? source, bool nullToEmpty = true)
         {
-            if (source == null)
+            if (source is null)
             {
                 if (nullToEmpty)
                     return Enumerable.Empty<T>();
