@@ -98,6 +98,8 @@ namespace CloudStructures.Converters
                 [typeof(double?)] = new NullableDoubleConverter(),
                 [typeof(string)] = new StringConverter(),
                 [typeof(byte[])] = new ByteArrayConverter(),
+                [typeof(Memory<byte>)] = new MemoryByteConverter(),
+                [typeof(ReadOnlyMemory<byte>)] = new ReadOnlyMemoryByteConverter(),
             };
         }
 
