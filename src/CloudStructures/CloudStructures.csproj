@@ -21,7 +21,7 @@
         <Copyright>Copyright© neuecc, xin9le</Copyright>
         <PackageReleaseNotes></PackageReleaseNotes>
     </PropertyGroup>
-    
+
     <ItemGroup>
         <PackageReference Include="StackExchange.Redis" Version="2.2.4" />
     </ItemGroup>
