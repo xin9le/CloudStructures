@@ -73,7 +73,7 @@ namespace CloudStructures
         /// Creates instance.
         /// </summary>
         /// <param name="config"></param>
-        /// <param name="converter">If null, use Utf8JsonConverter as default.</param>
+        /// <param name="converter">If null, use <see cref="SystemTextJsonConverter"/> as default.</param>
         /// <param name="handler"></param>
         /// <param name="logger"></param>
         public RedisConnection(RedisConfig config, IValueConverter converter = null, IConnectionEventHandler handler = null, TextWriter logger = null)
