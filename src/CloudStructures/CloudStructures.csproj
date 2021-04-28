@@ -21,9 +21,12 @@
         <Copyright>Copyright© neuecc, xin9le</Copyright>
         <PackageReleaseNotes></PackageReleaseNotes>
     </PropertyGroup>
-
+    
     <ItemGroup>
         <PackageReference Include="StackExchange.Redis" Version="2.0.601" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(TargetFramework)' != 'net5'">
         <PackageReference Include="System.Text.Json" Version="5.0.0" />
     </ItemGroup>
 
