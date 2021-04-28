@@ -14,7 +14,7 @@ namespace CloudStructures
     /// Provides connection to the server.
     /// </summary>
     /// <remarks>This connection needs to be used w/o destroying. Please hold as static field or static property.</remarks>
-    public sealed class RedisConnection
+    public sealed class RedisConnection : System.IDisposable
     {
         #region Properties
         /// <summary>
@@ -95,7 +95,7 @@ namespace CloudStructures
         {
             lock (this.gate)
             {
-                if (this.connection == null || !this.connection.IsConnected)
+                if (this.connection == null)
                 {
                     try
                     {
@@ -123,6 +123,16 @@ namespace CloudStructures
                 return this.connection;
             }
         }
+
+        public void Dispose()
+        {
+            if (connection != null)
+            {
+                connection.Dispose();
+                connection = null;
+            }
+        }
+
         private readonly object gate = new object();
         private ConnectionMultiplexer connection = null;
         #endregion
