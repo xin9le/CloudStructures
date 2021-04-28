@@ -15,6 +15,7 @@ namespace CloudStructures.Structures
     /// </summary>
     /// <typeparam name="T">Data type</typeparam>
     public readonly struct RedisHashSet<T> : IRedisStructureWithExpiry
+        where T : notnull
     {
         #region IRedisStructureWithExpiry implementations
         /// <summary>
@@ -45,7 +46,7 @@ namespace CloudStructures.Structures
         /// <param name="defaultExpiry"></param>
         public RedisHashSet(RedisConnection connection, RedisKey key, TimeSpan? defaultExpiry)
         {
-            this.Connection = connection ?? throw new ArgumentNullException(nameof(connection));
+            this.Connection = connection;
             this.Key = key;
             this.DefaultExpiry = defaultExpiry;
         }

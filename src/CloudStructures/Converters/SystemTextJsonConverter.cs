@@ -26,6 +26,6 @@ namespace CloudStructures.Converters
         /// <param name="value"></param>
         /// <returns></returns>
         public T Deserialize<T>(byte[] value)
-            => JsonSerializer.Deserialize<T>(value);
+            => JsonSerializer.Deserialize<T>(value)!;  // forgive
     }
 }

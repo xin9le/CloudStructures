@@ -18,11 +18,7 @@ namespace CloudStructures.Internals
         /// <param name="source"></param>
         /// <returns></returns>
         public static bool IsEmpty<T>(this IEnumerable<T> source)
-        {
-            if (source == null)
-                throw new ArgumentNullException(nameof(source));
-            return !source.Any();
-        }
+            => !source.Any();
 
 
         /// <summary>
@@ -37,9 +33,6 @@ namespace CloudStructures.Internals
         /// <returns></returns>
         public static IEnumerable<TResult> Select<T, TState, TResult>(this IEnumerable<T> source, TState state, Func<T, TState, TResult> selector)
         {
-            if (source == null) throw new ArgumentNullException(nameof(source));
-            if (selector == null) throw new ArgumentNullException(nameof(selector));
-
             foreach (var x in source)
                 yield return selector(x, state);
         }
@@ -52,13 +45,13 @@ namespace CloudStructures.Internals
         /// <param name="source"></param>
         /// <param name="nullToEmpty">If true, returns empty sequence when source collection is null. If false, throws <see cref="ArgumentNullException"/></param>
         /// <returns></returns>
-        public static IEnumerable<T> Materialize<T>(this IEnumerable<T> source, bool nullToEmpty = true)
+        public static IEnumerable<T> Materialize<T>(this IEnumerable<T>? source, bool nullToEmpty = true)
         {
-            if (source == null)
+            if (source is null)
             {
                 if (nullToEmpty)
                     return Enumerable.Empty<T>();
-                throw new ArgumentNullException("source is null.");
+                throw new ArgumentNullException(nameof(source));
             }
             if (source is ICollection<T>) return source;
             if (source is IReadOnlyCollection<T>) return source;

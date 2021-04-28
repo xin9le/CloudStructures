@@ -45,7 +45,7 @@ namespace CloudStructures.Structures
         /// <param name="defaultExpiry"></param>
         public RedisSortedSet(RedisConnection connection, RedisKey key, TimeSpan? defaultExpiry)
         {
-            this.Connection = connection ?? throw new ArgumentNullException(nameof(connection));
+            this.Connection = connection;
             this.Key = key;
             this.DefaultExpiry = defaultExpiry;
         }
@@ -123,12 +123,16 @@ namespace CloudStructures.Structures
         /// ZUNIONSTORE : https://redis.io/commands/zunionstore
         /// ZINTERSTORE : https://redis.io/commands/zinterstore
         /// </summary>
-        public Task<long> CombineAndStoreAsync(SetOperation operation, RedisSortedSet<T> destination, IReadOnlyCollection<RedisSortedSet<T>> others, double[] weights = default, Aggregate aggregate = Aggregate.Sum, CommandFlags flags = CommandFlags.None)
+        public Task<long> CombineAndStoreAsync(SetOperation operation, RedisSortedSet<T> destination, IReadOnlyCollection<RedisSortedSet<T>> others, double[]? weights = default, Aggregate aggregate = Aggregate.Sum, CommandFlags flags = CommandFlags.None)
         {
-            if (others == null) throw new ArgumentNullException(nameof(others));
-            if (others.Count == 0) throw new ArgumentNullException("others length is 0.");
+            if (others.Count == 0)
+                throw new ArgumentException("others length is 0.");
 
-            var keys = others.Select(x => x.Key).Concat(new []{ this.Key }).ToArray();
+#if NETSTANDARD2_1 || NET5_0_OR_GREATER
+            var keys = others.Select(x => x.Key).Append(this.Key).ToArray();
+#else
+            var keys = others.Select(x => x.Key).Concat(new[] { this.Key }).ToArray();
+#endif
             return this.Connection.Database.SortedSetCombineAndStoreAsync(operation, destination.Key, keys, weights, aggregate, flags);
         }
 
@@ -243,11 +247,26 @@ namespace CloudStructures.Structures
         /// ZRANGEBYLEX    : https://redis.io/commands/zrangebylex
         /// ZREVRANGEBYLEX : https://redis.io/commands/zrevrangebylex
         /// </summary>
-        public async Task<T[]> RangeByValueAsync(T min = default, T max = default, Exclude exclude = Exclude.None, long skip = 0, long take = -1, CommandFlags flags = CommandFlags.None)
+        public async Task<T[]> RangeByValueAsync(T min, T max, Exclude exclude, long skip, long take = -1, CommandFlags flags = CommandFlags.None)
         {
             var minValue = this.Connection.Converter.Serialize(min);
             var maxValue = this.Connection.Converter.Serialize(max);
             var values = await this.Connection.Database.SortedSetRangeByValueAsync(this.Key, minValue, maxValue, exclude, skip, take, flags).ConfigureAwait(false);
+            return values
+                .Select(this.Connection.Converter, (x, c) => c.Deserialize<T>(x))
+                .ToArray();
+        }
+
+
+        /// <summary>
+        /// ZRANGEBYLEX    : https://redis.io/commands/zrangebylex
+        /// ZREVRANGEBYLEX : https://redis.io/commands/zrevrangebylex
+        /// </summary>
+        public async Task<T[]> RangeByValueAsync(T? min = default, T? max = default, Exclude exclude = Exclude.None, Order order = Order.Ascending, long skip = 0, long take = -1, CommandFlags flags = CommandFlags.None)
+        {
+            var minValue = this.Connection.Converter.Serialize(min);
+            var maxValue = this.Connection.Converter.Serialize(max);
+            var values = await this.Connection.Database.SortedSetRangeByValueAsync(this.Key, minValue, maxValue, exclude, order, skip, take, flags).ConfigureAwait(false);
             return values
                 .Select(this.Connection.Converter, (x, c) => c.Deserialize<T>(x))
                 .ToArray();
@@ -306,7 +325,7 @@ namespace CloudStructures.Structures
             var minValue = this.Connection.Converter.Serialize(min);
             var maxValue = this.Connection.Converter.Serialize(max);
             return this.Connection.Database.SortedSetRemoveRangeByValueAsync(this.Key, minValue, maxValue, exclude, flags);
-        }   
+        }
 
 
         /// <summary>
@@ -326,7 +345,7 @@ namespace CloudStructures.Structures
         {
             //--- I don't know if serialization is necessary or not, so I will fix the default value.
             RedisValue by = default;
-            RedisValue[] get = default;
+            RedisValue[]? get = default;
             return this.Connection.Database.SortAndStoreAsync(destination.Key, this.Key, skip, take, order, sortType, by, get, flags);
         }
 
@@ -338,7 +357,7 @@ namespace CloudStructures.Structures
         {
             //--- I don't know if serialization is necessary or not, so I will fix the default value.
             RedisValue by = default;
-            RedisValue[] get = default;
+            RedisValue[]? get = default;
             var values = await this.Connection.Database.SortAsync(this.Key, skip, take, order, sortType, by, get, flags).ConfigureAwait(false);
             return values.Select(this.Connection.Converter, (x, c) => c.Deserialize<T>(x)).ToArray();
         }
@@ -464,7 +483,7 @@ return tostring(x)";
         public static SortedSetEntry ToNonGenerics<T>(this in RedisSortedSetEntry<T> entry, ValueConverter converter)
         {
             var value = converter.Serialize(entry.Value);
-            return new SortedSetEntry(value, entry.Score);
+            return new(value, entry.Score);
         }
 
 
@@ -478,7 +497,7 @@ return tostring(x)";
         public static RedisSortedSetEntry<T> ToGenerics<T>(this in SortedSetEntry entry, ValueConverter converter)
         {
             var value = converter.Deserialize<T>(entry.Element);
-            return new RedisSortedSetEntry<T>(value, entry.Score);
+            return new(value, entry.Score);
         }
     }
 }

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using CloudStructures.Converters;
@@ -32,13 +31,13 @@ namespace CloudStructures
         /// <summary>
         /// Gets connection event handler.
         /// </summary>
-        private IConnectionEventHandler Handler { get; }
+        private IConnectionEventHandler? Handler { get; }
 
 
         /// <summary>
         /// Gets logger.
         /// </summary>
-        private TextWriter Logger { get; }
+        private TextWriter? Logger { get; }
 
 
         /// <summary>
@@ -76,10 +75,10 @@ namespace CloudStructures
         /// <param name="converter">If null, use <see cref="SystemTextJsonConverter"/> as default.</param>
         /// <param name="handler"></param>
         /// <param name="logger"></param>
-        public RedisConnection(RedisConfig config, IValueConverter converter = null, IConnectionEventHandler handler = null, TextWriter logger = null)
+        public RedisConnection(RedisConfig config, IValueConverter? converter = null, IConnectionEventHandler? handler = null, TextWriter? logger = null)
         {
-            this.Config = config ?? throw new ArgumentNullException(nameof(config));
-            this.Converter = new ValueConverter(converter);
+            this.Config = config;
+            this.Converter = new(converter);
             this.Handler = handler;
             this.Logger = logger;
         }
@@ -95,7 +94,7 @@ namespace CloudStructures
         {
             lock (this.gate)
             {
-                if (this.connection == null || !this.connection.IsConnected)
+                if (this.connection is null || !this.connection.IsConnected)
                 {
                     try
                     {
@@ -103,7 +102,7 @@ namespace CloudStructures
                         var stopwatch = Stopwatch.StartNew();
                         this.connection = ConnectionMultiplexer.Connect(this.Config.Options, this.Logger);
                         stopwatch.Stop();
-                        this.Handler?.OnConnectionOpened(this, new ConnectionOpenedEventArgs(stopwatch.Elapsed));
+                        this.Handler?.OnConnectionOpened(this, new(stopwatch.Elapsed));
 
                         //--- attach events
                         this.connection.ConfigurationChanged += (_, e) => this.Handler?.OnConfigurationChanged(this, e);
@@ -123,8 +122,8 @@ namespace CloudStructures
                 return this.connection;
             }
         }
-        private readonly object gate = new object();
-        private ConnectionMultiplexer connection = null;
+        private readonly object gate = new();
+        private ConnectionMultiplexer? connection = null;
         #endregion
     }
 }

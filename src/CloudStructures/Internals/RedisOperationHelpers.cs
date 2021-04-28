@@ -25,9 +25,6 @@ namespace CloudStructures.Internals
         public static async Task ExecuteWithExpiryAsync<TRedis, TArgs>(this TRedis structure, Func<IDatabaseAsync, TArgs, Task> command, TArgs args, TimeSpan? expiry, CommandFlags flags)
             where TRedis : IRedisStructure
         {
-            if (structure == null) throw new ArgumentNullException(nameof(structure));
-            if (command == null) throw new ArgumentNullException(nameof(command));
-
             if (expiry.HasValue)
             {
                 //--- Execute multiple commands in tracsaction
@@ -60,9 +57,6 @@ namespace CloudStructures.Internals
         public static async Task<TResult> ExecuteWithExpiryAsync<TRedis, TArgs, TResult>(this TRedis structure, Func<IDatabaseAsync, TArgs, Task<TResult>> command, TArgs args, TimeSpan? expiry, CommandFlags flags)
             where TRedis : IRedisStructure
         {
-            if (structure == null) throw new ArgumentNullException(nameof(structure));
-            if (command == null) throw new ArgumentNullException(nameof(command));
-
             if (expiry.HasValue)
             {
                 //--- Execute multiple commands in tracsaction

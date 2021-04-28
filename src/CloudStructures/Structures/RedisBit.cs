@@ -43,7 +43,7 @@ namespace CloudStructures.Structures
         /// <param name="defaultExpiry"></param>
         public RedisBit(RedisConnection connection, RedisKey key, TimeSpan? defaultExpiry)
         {
-            this.Connection = connection ?? throw new ArgumentNullException(nameof(connection));
+            this.Connection = connection;
             this.Key = key;
             this.DefaultExpiry = defaultExpiry;
         }
@@ -81,8 +81,8 @@ namespace CloudStructures.Structures
         /// </summary>
         public Task<long> OperationAsync(Bitwise operation, IReadOnlyCollection<RedisBit> bits, CommandFlags flags = CommandFlags.None)
         {
-            if (bits == null) throw new ArgumentNullException(nameof(bits));
-            if (bits.Count == 0) throw new ArgumentException("bits length is 0.");
+            if (bits.Count == 0)
+                throw new ArgumentException("bits length is 0.");
 
             var keys = bits.Select(x => x.Key).ToArray();
             return this.Connection.Database.StringBitOperationAsync(operation, this.Key, keys, flags);
