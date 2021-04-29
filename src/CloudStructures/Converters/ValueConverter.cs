@@ -24,8 +24,8 @@ namespace CloudStructures.Converters
         /// Creates instance.
         /// </summary>
         /// <param name="customConverter"></param>
-        public ValueConverter(IValueConverter customConverter)
-            => this.CustomConverter = customConverter ?? new Utf8JsonConverter();  // fallback
+        public ValueConverter(IValueConverter? customConverter)
+            => this.CustomConverter = customConverter ?? new SystemTextJsonConverter();  // fallback
         #endregion
 
 
@@ -39,8 +39,8 @@ namespace CloudStructures.Converters
         public RedisValue Serialize<T>(T value)
         {
             var converter = PrimitiveConverterCache<T>.Converter;
-            return converter == null
-                ? (RedisValue)this.CustomConverter.Serialize(value)
+            return converter is null
+                ? this.CustomConverter.Serialize(value)
                 : converter.Serialize(value);
         }
 
@@ -54,7 +54,7 @@ namespace CloudStructures.Converters
         public T Deserialize<T>(RedisValue value)
         {
             var converter = PrimitiveConverterCache<T>.Converter;
-            return converter == null
+            return converter is null
                 ? this.CustomConverter.Deserialize<T>(value)
                 : converter.Deserialize(value);
         }
@@ -70,7 +70,7 @@ namespace CloudStructures.Converters
             /// <summary>
             /// Hold type and converter mapping table.
             /// </summary>
-            public static IDictionary<Type, object> Map { get; } = new Dictionary<Type, object>
+            public static IReadOnlyDictionary<Type, object> Map { get; } = new Dictionary<Type, object>
             {
                 [typeof(bool)] = new BooleanConverter(),
                 [typeof(bool?)] = new NullableBooleanConverter(),
@@ -98,6 +98,8 @@ namespace CloudStructures.Converters
                 [typeof(double?)] = new NullableDoubleConverter(),
                 [typeof(string)] = new StringConverter(),
                 [typeof(byte[])] = new ByteArrayConverter(),
+                [typeof(Memory<byte>)] = new MemoryByteConverter(),
+                [typeof(ReadOnlyMemory<byte>)] = new ReadOnlyMemoryByteConverter(),
             };
         }
 
@@ -111,7 +113,7 @@ namespace CloudStructures.Converters
             /// <summary>
             /// Gets converter.
             /// </summary>
-            public static IRedisValueConverter<T> Converter { get; }
+            public static IRedisValueConverter<T>? Converter { get; }
 
 
             /// <summary>

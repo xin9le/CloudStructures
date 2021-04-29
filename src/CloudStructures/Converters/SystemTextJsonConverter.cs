@@ -1,13 +1,13 @@
-﻿using MessagePack;
+﻿using System.Text.Json;
 
 
 
 namespace CloudStructures.Converters
 {
     /// <summary>
-    /// Provides value converter using MessagePack for C#.
+    /// Provides value converter using System.Text.Json.
     /// </summary>
-    public sealed class MessagePackConverter : IValueConverter
+    public sealed class SystemTextJsonConverter : IValueConverter
     {
         /// <summary>
         /// Serialize value to binary.
@@ -16,7 +16,7 @@ namespace CloudStructures.Converters
         /// <param name="value"></param>
         /// <returns></returns>
         public byte[] Serialize<T>(T value)
-            => LZ4MessagePackSerializer.Serialize(value);
+            => JsonSerializer.SerializeToUtf8Bytes(value);
 
 
         /// <summary>
@@ -26,7 +26,6 @@ namespace CloudStructures.Converters
         /// <param name="value"></param>
         /// <returns></returns>
         public T Deserialize<T>(byte[] value)
-            => LZ4MessagePackSerializer.Deserialize<T>(value);
+            => JsonSerializer.Deserialize<T>(value)!;  // forgive
     }
 }
-

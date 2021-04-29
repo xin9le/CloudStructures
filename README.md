@@ -1,7 +1,7 @@
 # CloudStructures
-CloudStructures is the [Redis](https://redis.io/) client based on [StackExchange.Redis](https://github.com/StackExchange/StackExchange.Redis). **Now supports .NET Standard!!**
+CloudStructures is the [Redis](https://redis.io/) client based on [StackExchange.Redis](https://github.com/StackExchange/StackExchange.Redis).
 
-StackExchange.Redis is very pure and low level library. It's Redis driver like ADO.NET. It's very difficult to use it as raw. CloudStructures provides simple O/R (Object / Redis) mapper like [Dapper](https://github.com/StackExchange/Dapper) for ADO.NET.
+StackExchange.Redis is very pure and low level library. It's Redis driver like ADO.NET. It's difficult to use it as raw. CloudStructures provides simple O/R (Object / Redis) mapper like [Dapper](https://github.com/StackExchange/Dapper) for ADO.NET.
 
 
 [![Releases](https://img.shields.io/github/release/neuecc/CloudStructures.svg)](https://github.com/neuecc/CloudStructures/releases)
@@ -9,7 +9,9 @@ StackExchange.Redis is very pure and low level library. It's Redis driver like A
 
 
 # Support framework
-- .NET Standard 2.0
+- .NET 5+
+- .NET Standard 2.0+
+- .NET Framework 4.6.1+
 
 
 
@@ -74,10 +76,50 @@ var result = await redis.GetAsync();
 
 
 # ValueConverter
-If you use this library, you must implement `IValueConverter` to serialize your original class. However, we provides default implementations using [MessagePack for C#](https://github.com/neuecc/MessagePack-CSharp) and [Utf8Json](https://github.com/neuecc/Utf8Json). Unless you pass custom `IValueConverter` to `RedisConnection` ctor, fallback to `Utf8JsonConverter` automatically. If you wanna use MessagePack version, you should install following package.
+If you use this library, you *should* implement `IValueConverter` to serialize your original class. Unless you pass custom `IValueConverter` to `RedisConnection` ctor, fallback to `SystemTextJsonConverter` automatically that is default converter we provide.
 
+
+## How to implement custom `IValueConverter`
+
+```cs
+using CloudStructures.Converters;
+using Utf8Json;
+using Utf8Json.Resolvers;
+
+namespace HowToImplement_CustomValueConverter
+{
+    public sealed class Utf8JsonConverter : IValueConverter
+    {
+        public byte[] Serialize<T>(T value)
+            => JsonSerializer.Serialize(value, StandardResolver.AllowPrivate);
+
+        public T Deserialize<T>(byte[] value)
+            => JsonSerializer.Deserialize<T>(value, StandardResolver.AllowPrivate);
+    }
+}
 ```
-PM> Install-Package CloudStructures.Converters.MessagePack
+
+```cs
+using CloudStructures.Converters;
+using MessagePack;
+using MessagePack.Resolvers;
+
+namespace HowToImplement_CustomValueConverter
+{
+    public sealed class MessagePackConverter : IValueConverter
+    {
+        private MessagePackSerializerOptions Options { get; }
+
+        public MessagePackConverter(MessagePackSerializerOptions options)
+            => this.Options = options;
+
+        public byte[] Serialize<T>(T value)
+            => MessagePackSerializer.Serialize(value, this.Options);
+
+        public T Deserialize<T>(byte[] value)
+            => MessagePackSerializer.Deserialize<T>(value, this.Options);
+    }
+}
 ```
 
 

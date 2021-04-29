@@ -15,6 +15,7 @@ namespace CloudStructures.Structures
     /// <typeparam name="TKey">Key type</typeparam>
     /// <typeparam name="TValue">Value type</typeparam>
     public readonly struct RedisDictionary<TKey, TValue> : IRedisStructureWithExpiry
+        where TKey : notnull
     {
         #region IRedisStructureWithExpiry implementations
         /// <summary>
@@ -45,7 +46,7 @@ namespace CloudStructures.Structures
         /// <param name="defaultExpiry"></param>
         public RedisDictionary(RedisConnection connection, RedisKey key, TimeSpan? defaultExpiry)
         {
-            this.Connection = connection ?? throw new ArgumentNullException(nameof(connection));
+            this.Connection = connection;
             this.Key = key;
             this.DefaultExpiry = defaultExpiry;
         }
@@ -132,7 +133,7 @@ namespace CloudStructures.Structures
         /// <summary>
         /// HGETALL : https://redis.io/commands/hgetall
         /// </summary>
-        public async Task<Dictionary<TKey, TValue>> GetAllAsync(IEqualityComparer<TKey> dictionaryEqualityComparer = null, CommandFlags flags = CommandFlags.None)
+        public async Task<Dictionary<TKey, TValue>> GetAllAsync(IEqualityComparer<TKey>? dictionaryEqualityComparer = null, CommandFlags flags = CommandFlags.None)
         {
             var comparer = dictionaryEqualityComparer ?? EqualityComparer<TKey>.Default;
             var entries = await this.Connection.Database.HashGetAllAsync(this.Key, flags).ConfigureAwait(false);
@@ -161,7 +162,7 @@ namespace CloudStructures.Structures
         /// <summary>
         /// HMGET : https://redis.io/commands/hmget
         /// </summary>
-        public async Task<Dictionary<TKey, TValue>> GetAsync(IEnumerable<TKey> fields, IEqualityComparer<TKey> dictionaryEqualityComparer = null, CommandFlags flags = CommandFlags.None)
+        public async Task<Dictionary<TKey, TValue>> GetAsync(IEnumerable<TKey> fields, IEqualityComparer<TKey>? dictionaryEqualityComparer = null, CommandFlags flags = CommandFlags.None)
         {
             fields = fields.Materialize(false);
             var comparer = dictionaryEqualityComparer ?? EqualityComparer<TKey>.Default;
@@ -293,9 +294,6 @@ namespace CloudStructures.Structures
         /// </summary>
         public async Task<TValue> GetOrSetAsync(TKey field, Func<TKey, TValue> valueFactory, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
-            if (valueFactory == null)
-                throw new ArgumentNullException(nameof(valueFactory));
-
             var result = await this.GetAsync(field, flags).ConfigureAwait(false);
             if (result.HasValue)
             {
@@ -316,9 +314,6 @@ namespace CloudStructures.Structures
         /// </summary>
         public async Task<TValue> GetOrSetAsync(TKey field, Func<TKey, Task<TValue>> valueFactory, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
-            if (valueFactory == null)
-                throw new ArgumentNullException(nameof(valueFactory));
-
             var result = await this.GetAsync(field, flags).ConfigureAwait(false);
             if (result.HasValue)
             {
@@ -337,11 +332,8 @@ namespace CloudStructures.Structures
         /// HMGET : https://redis.io/commands/hmget
         /// HMSET : https://redis.io/commands/hmset
         /// </summary>
-        public async Task<Dictionary<TKey, TValue>> GetOrSetAsync(IEnumerable<TKey> fields, Func<IEnumerable<TKey>, IEnumerable<KeyValuePair<TKey, TValue>>> valueFactory, TimeSpan? expiry = null, IEqualityComparer<TKey> dictionaryEqualityComparer = null, CommandFlags flags = CommandFlags.None)
+        public async Task<Dictionary<TKey, TValue>> GetOrSetAsync(IEnumerable<TKey> fields, Func<IEnumerable<TKey>, IEnumerable<KeyValuePair<TKey, TValue>>> valueFactory, TimeSpan? expiry = null, IEqualityComparer<TKey>? dictionaryEqualityComparer = null, CommandFlags flags = CommandFlags.None)
         {
-            if (valueFactory == null)
-                throw new ArgumentNullException(nameof(valueFactory));
-
             var comparer = dictionaryEqualityComparer ?? EqualityComparer<TKey>.Default;
             fields = fields.Materialize(false);
             if (fields.IsEmpty())
@@ -379,11 +371,8 @@ namespace CloudStructures.Structures
         /// HMGET : https://redis.io/commands/hmget
         /// HMSET : https://redis.io/commands/hmset
         /// </summary>
-        public async Task<Dictionary<TKey, TValue>> GetOrSetAsync(IEnumerable<TKey> fields, Func<IEnumerable<TKey>, Task<IEnumerable<KeyValuePair<TKey, TValue>>>> valueFactory, TimeSpan? expiry = null, IEqualityComparer<TKey> dictionaryEqualityComparer = null, CommandFlags flags = CommandFlags.None)
+        public async Task<Dictionary<TKey, TValue>> GetOrSetAsync(IEnumerable<TKey> fields, Func<IEnumerable<TKey>, Task<IEnumerable<KeyValuePair<TKey, TValue>>>> valueFactory, TimeSpan? expiry = null, IEqualityComparer<TKey>? dictionaryEqualityComparer = null, CommandFlags flags = CommandFlags.None)
         {
-            if (valueFactory == null)
-                throw new ArgumentNullException(nameof(valueFactory));
-
             var comparer = dictionaryEqualityComparer ?? EqualityComparer<TKey>.Default;
             fields = fields.Materialize(false);
             if (fields.IsEmpty())
@@ -440,7 +429,7 @@ namespace CloudStructures.Structures
         /// HMGET : https://redis.io/commands/hmget
         /// HDEL : https://redis.io/commands/hdel
         /// </summary>
-        public async Task<Dictionary<TKey, TValue>> GetAndDeleteAsync(IEnumerable<TKey> fields, IEqualityComparer<TKey> dictionaryEqualityComparer = null, CommandFlags flags = CommandFlags.None)
+        public async Task<Dictionary<TKey, TValue>> GetAndDeleteAsync(IEnumerable<TKey> fields, IEqualityComparer<TKey>? dictionaryEqualityComparer = null, CommandFlags flags = CommandFlags.None)
         {
             //--- GetAsync
             fields = fields.Materialize(false);

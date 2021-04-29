@@ -34,7 +34,7 @@ namespace CloudStructures.Structures
         /// <param name="key"></param>
         public RedisLock(RedisConnection connection, RedisKey key)
         {
-            this.Connection = connection ?? throw new ArgumentNullException(nameof(connection));
+            this.Connection = connection;
             this.Key = key;
         }
         #endregion

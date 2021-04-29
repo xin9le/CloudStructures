@@ -1,4 +1,5 @@
-﻿using StackExchange.Redis;
+﻿using System;
+using StackExchange.Redis;
 
 
 
@@ -286,5 +287,27 @@ namespace CloudStructures.Converters
     {
         public RedisValue Serialize(byte[] value) => value;
         public byte[] Deserialize(RedisValue value) => value;
+    }
+
+
+
+    /// <summary>
+    /// Provides <see cref="Memory{byte}"/> conversion function.
+    /// </summary>
+    internal sealed class MemoryByteConverter : IRedisValueConverter<Memory<byte>>
+    {
+        public RedisValue Serialize(Memory<byte> value) => value;
+        public Memory<byte> Deserialize(RedisValue value) => (byte[])value;
+    }
+
+
+
+    /// <summary>
+    /// Provides <see cref="ReadOnlyMemory{byte}"/> conversion function.
+    /// </summary>
+    internal sealed class ReadOnlyMemoryByteConverter : IRedisValueConverter<ReadOnlyMemory<byte>>
+    {
+        public RedisValue Serialize(ReadOnlyMemory<byte> value) => value;
+        public ReadOnlyMemory<byte> Deserialize(RedisValue value) => value;
     }
 }
