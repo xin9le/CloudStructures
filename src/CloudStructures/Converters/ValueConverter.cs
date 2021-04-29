@@ -70,7 +70,7 @@ namespace CloudStructures.Converters
             /// <summary>
             /// Hold type and converter mapping table.
             /// </summary>
-            public static IDictionary<Type, object> Map { get; } = new Dictionary<Type, object>
+            public static IReadOnlyDictionary<Type, object> Map { get; } = new Dictionary<Type, object>
             {
                 [typeof(bool)] = new BooleanConverter(),
                 [typeof(bool?)] = new NullableBooleanConverter(),
@@ -98,6 +98,8 @@ namespace CloudStructures.Converters
                 [typeof(double?)] = new NullableDoubleConverter(),
                 [typeof(string)] = new StringConverter(),
                 [typeof(byte[])] = new ByteArrayConverter(),
+                [typeof(Memory<byte>)] = new MemoryByteConverter(),
+                [typeof(ReadOnlyMemory<byte>)] = new ReadOnlyMemoryByteConverter(),
             };
         }
 
