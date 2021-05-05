@@ -70,7 +70,7 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// LINDEX : https://redis.io/commands/lindex
+        /// LINDEX : <a href="https://redis.io/commands/lindex"></a>
         /// </summary>
         public async Task<RedisResult<T>> GetByIndexAsync(long index, CommandFlags flags = CommandFlags.None)
         {
@@ -80,7 +80,7 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// LINSERT : https://redis.io/commands/linsert
+        /// LINSERT : <a href="https://redis.io/commands/linsert"></a>
         /// </summary>
         public Task<long> InsertAfterAsync(T pivot, T value, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
@@ -98,7 +98,7 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// LINSERT : https://redis.io/commands/linsert
+        /// LINSERT : <a href="https://redis.io/commands/linsert"></a>
         /// </summary>
         public Task<long> InsertBeforeAsync(T pivot, T value, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
@@ -116,7 +116,7 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// LPOP : https://redis.io/commands/lpop
+        /// LPOP : <a href="https://redis.io/commands/lpop"></a>
         /// </summary>
         public async Task<RedisResult<T>> LeftPopAsync(CommandFlags flags = CommandFlags.None)
         {
@@ -126,7 +126,7 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// LPUSH : https://redis.io/commands/lpush
+        /// LPUSH : <a href="https://redis.io/commands/lpush"></a>
         /// </summary>
         public Task<long> LeftPushAsync(T value, TimeSpan? expiry = null, When when = When.Always, CommandFlags flags = CommandFlags.None)
         {
@@ -143,7 +143,7 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// LPUSH : https://redis.io/commands/lpush
+        /// LPUSH : <a href="https://redis.io/commands/lpush"></a>
         /// </summary>
         public Task<long> LeftPushAsync(IEnumerable<T> values, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
@@ -160,14 +160,14 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// LLEN : https://redis.io/commands/llen
+        /// LLEN : <a href="https://redis.io/commands/llen"></a>
         /// </summary>
         public Task<long> LengthAsync(CommandFlags flags = CommandFlags.None)
             => this.Connection.Database.ListLengthAsync(this.Key, flags);
 
 
         /// <summary>
-        /// LRANGE : https://redis.io/commands/lrange
+        /// LRANGE : <a href="https://redis.io/commands/lrange"></a>
         /// </summary>
         public async Task<T[]> RangeAsync(long start = 0, long stop = -1, CommandFlags flags = CommandFlags.None)
         {
@@ -177,7 +177,7 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// LREM : http://redis.io/commands/lrem
+        /// LREM : <a href="http://redis.io/commands/lrem"></a>
         /// </summary>
         /// <param name="value">Value to be deleted</param>
         /// <param name="count">Number of items to be deleted
@@ -196,7 +196,7 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// RPOP : https://redis.io/commands/rpop
+        /// RPOP : <a href="https://redis.io/commands/rpop"></a>
         /// </summary>
         public async Task<RedisResult<T>> RightPopAsync(CommandFlags flags = CommandFlags.None)
         {
@@ -206,7 +206,7 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// RPOPLPUSH : https://redis.io/commands/rpoplpush
+        /// RPOPLPUSH : <a href="https://redis.io/commands/rpoplpush"></a>
         /// </summary>
         public async Task<RedisResult<T>> RightPopLeftPushAsync(RedisList<T> destination, CommandFlags flags = CommandFlags.None)
         {
@@ -216,7 +216,7 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// RPUSH : https://redis.io/commands/rpush
+        /// RPUSH : <a href="https://redis.io/commands/rpush"></a>
         /// </summary>
         public Task<long> RightPushAsync(T value, TimeSpan? expiry = null, When when = When.Always, CommandFlags flags = CommandFlags.None)
         {
@@ -233,7 +233,7 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// RPUSH : https://redis.io/commands/rpush
+        /// RPUSH : <a href="https://redis.io/commands/rpush"></a>
         /// </summary>
         public Task<long> RightPushAsync(IEnumerable<T> values, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
@@ -250,7 +250,7 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// LSET : https://redis.io/commands/lset
+        /// LSET : <a href="https://redis.io/commands/lset"></a>
         /// </summary>
         public Task SetByIndexAsync(long index, T value, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
@@ -267,14 +267,14 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// LTRIM : https://redis.io/commands/ltrim
+        /// LTRIM : <a href="https://redis.io/commands/ltrim"></a>
         /// </summary>
         public Task TrimAsync(long start, long stop, CommandFlags flags = CommandFlags.None)
             => this.Connection.Database.ListTrimAsync(this.Key, start, stop, flags);
 
 
         /// <summary>
-        /// SORT : https://redis.io/commands/sort
+        /// SORT : <a href="https://redis.io/commands/sort"></a>
         /// </summary>
         public Task<long> SortAndStoreAsync(RedisList<T> destination, long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, /*RedisValue by = default, RedisValue[] get = null,*/ CommandFlags flags = CommandFlags.None)
         {
@@ -286,7 +286,7 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// SORT : https://redis.io/commands/sort
+        /// SORT : <a href="https://redis.io/commands/sort"></a>
         /// </summary>
         public async Task<T[]> SortAsync(long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, /*RedisValue by = default, RedisValue[] get = null,*/ CommandFlags flags = CommandFlags.None)
         {

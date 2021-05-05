@@ -76,7 +76,7 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// DEL : http://redis.io/commands/del
+        /// DEL : <a href="http://redis.io/commands/del"></a>
         /// </summary>
         public static Task<bool> DeleteAsync<T>(this T redis, CommandFlags flags = CommandFlags.None)
             where T : IRedisStructure
@@ -84,7 +84,7 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// DUMP : https://redis.io/commands/dump
+        /// DUMP : <a href="https://redis.io/commands/dump"></a>
         /// </summary>
         public static Task<byte[]> DumpAsync<T>(this T redis, CommandFlags flags = CommandFlags.None)
             where T : IRedisStructure
@@ -92,7 +92,7 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// EXISTS : http://redis.io/commands/exists
+        /// EXISTS : <a href="http://redis.io/commands/exists"></a>
         /// </summary>
         public static Task<bool> ExistsAsync<T>(this T redis, CommandFlags flags = CommandFlags.None)
             where T : IRedisStructure
@@ -100,8 +100,8 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// SETEX  : http://redis.io/commands/setex
-        /// PSETEX : http://redis.io/commands/psetex
+        /// SETEX : <a href="http://redis.io/commands/setex"></a><br/>
+        /// PSETEX : <a href="http://redis.io/commands/psetex"></a>
         /// </summary>
         public static Task<bool> ExpireAsync<T>(this T redis, TimeSpan? expiry, CommandFlags flags = CommandFlags.None)
             where T : IRedisStructure
@@ -109,7 +109,7 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// MOVE : https://redis.io/commands/move
+        /// MOVE : <a href="https://redis.io/commands/move"></a>
         /// </summary>
         public static Task<bool> MoveAsync<T>(this T redis, int database, CommandFlags flags = CommandFlags.None)
             where T : IRedisStructure
@@ -117,7 +117,7 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// MIGRATE : https://redis.io/commands/migrate
+        /// MIGRATE : <a href="https://redis.io/commands/migrate"></a>
         /// </summary>
         public static Task MigrateAsync<T>(this T redis, EndPoint toServer, int toDatabase = 0, int timeoutMilliseconds = 0, MigrateOptions migrateOptions = MigrateOptions.None, CommandFlags flags = CommandFlags.None)
             where T : IRedisStructure
@@ -125,7 +125,7 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// PERSIST : https://redis.io/commands/persist
+        /// PERSIST : <a href="https://redis.io/commands/persist"></a>
         /// </summary>
         public static Task<bool> PersistAsync<T>(this T redis, CommandFlags flags = CommandFlags.None)
             where T : IRedisStructure
@@ -133,7 +133,7 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// RENAME : https://redis.io/commands/rename
+        /// RENAME : <a href="https://redis.io/commands/rename"></a>
         /// </summary>
         public static Task<bool> RenameAsync<T>(this T redis, RedisKey newKey, When when = When.Always, CommandFlags flags = CommandFlags.None)
             where T : IRedisStructure
@@ -141,7 +141,7 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// TTL http://redis.io/commands/ttl
+        /// TTL : <a href="http://redis.io/commands/ttl"></a>
         /// </summary>
         public static Task<TimeSpan?> TimeToLiveAsync<T>(this T redis, CommandFlags flags = CommandFlags.None)
             where T : IRedisStructure
@@ -149,7 +149,7 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// TYPE : https://redis.io/commands/type
+        /// TYPE : <a href="https://redis.io/commands/type"></a>
         /// </summary>
         public static Task<RedisType> TypeAsync<T>(this T redis, CommandFlags flags = CommandFlags.None)
             where T : IRedisStructure

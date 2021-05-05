@@ -43,14 +43,14 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// EVALSHA : http://redis.io/commands/evalsha
+        /// EVALSHA : <a href="http://redis.io/commands/evalsha"></a>
         /// </summary>
         public Task ScriptEvaluateAsync(string script, RedisKey[]? keys = null, RedisValue[]? values = null, CommandFlags flags = CommandFlags.None)
             => this.Connection.Database.ScriptEvaluateAsync(script, keys, values, flags);
 
 
         /// <summary>
-        /// EVALSHA : http://redis.io/commands/evalsha
+        /// EVALSHA : <a href="http://redis.io/commands/evalsha"></a>
         /// </summary>
         public async Task<RedisResult<T>> ScriptEvaluateAsync<T>(string script, RedisKey[]? keys = null, RedisValue[]? values = null, CommandFlags flags = CommandFlags.None)
         {

@@ -63,7 +63,7 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// DECRBY : http://redis.io/commands/decrby
+        /// DECRBY : <a href="http://redis.io/commands/decrby"></a>
         /// </summary>
         public Task<long> DecrementAsync(long value = 1, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
@@ -79,7 +79,7 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// INCRBYFLOAT : http://redis.io/commands/incrbyfloat
+        /// INCRBYFLOAT : <a href="http://redis.io/commands/incrbyfloat"></a>
         /// </summary>
         public Task<double> DecrementAsync(double value, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
@@ -93,9 +93,9 @@ namespace CloudStructures.Structures
             );
         }
 
-        
+
         /// <summary>
-        /// GET : http://redis.io/commands/get
+        /// GET : <a href="http://redis.io/commands/get"></a>
         /// </summary>
         public async Task<RedisResult<T>> GetAsync(CommandFlags flags = CommandFlags.None)
         {
@@ -105,7 +105,7 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// GETSET : http://redis.io/commands/getset
+        /// GETSET : <a href="http://redis.io/commands/getset"></a>
         /// </summary>
         public async Task<RedisResult<T>> GetSetAsync(T value, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
@@ -125,7 +125,7 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// GET : http://redis.io/commands/get
+        /// GET : <a href="http://redis.io/commands/get"></a>
         /// </summary>
         public async Task<RedisResultWithExpiry<T>> GetWithExpiryAsync(CommandFlags flags = CommandFlags.None)
         {
@@ -135,7 +135,7 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// INCRBY : http://redis.io/commands/incrby
+        /// INCRBY : <a href="http://redis.io/commands/incrby"></a>
         /// </summary>
         public Task<long> IncrementAsync(long value = 1, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
@@ -151,7 +151,7 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// INCRBYFLOAT : http://redis.io/commands/incrbyfloat
+        /// INCRBYFLOAT : <a href="http://redis.io/commands/incrbyfloat"></a>
         /// </summary>
         public Task<double> IncrementAsync(double value, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
@@ -167,14 +167,14 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// STRLEN : https://redis.io/commands/strlen
+        /// STRLEN : <a href="https://redis.io/commands/strlen"></a>
         /// </summary>
         public Task<long> LengthAsync(CommandFlags flags = CommandFlags.None)
             => this.Connection.Database.StringLengthAsync(this.Key, flags);
 
 
         /// <summary>
-        /// SET : http://redis.io/commands/set
+        /// SET : <a href="http://redis.io/commands/set"></a>
         /// </summary>
         public Task<bool> SetAsync(T value, TimeSpan? expiry = null, When when = When.Always, CommandFlags flags = CommandFlags.None)
         {
@@ -187,8 +187,8 @@ namespace CloudStructures.Structures
 
         #region Custom Commands
         /// <summary>
-        /// GET : http://redis.io/commands/get
-        /// SET : http://redis.io/commands/set
+        /// GET : <a href="http://redis.io/commands/get"></a><br/>
+        /// SET : <a href="http://redis.io/commands/set"></a>
         /// </summary>
         public async Task<T> GetOrSetAsync(Func<T> valueFactory, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
@@ -208,8 +208,8 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// GET : http://redis.io/commands/get
-        /// SET : http://redis.io/commands/set
+        /// GET : <a href="http://redis.io/commands/get"></a><br/>
+        /// SET : <a href="http://redis.io/commands/set"></a>
         /// </summary>
         public async Task<T> GetOrSetAsync(Func<Task<T>> valueFactory, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
@@ -229,8 +229,8 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// GET : http://redis.io/commands/get
-        /// DEL : http://redis.io/commands/del
+        /// GET : <a href="http://redis.io/commands/get"></a><br/>
+        /// DEL : <a href="http://redis.io/commands/del"></a>
         /// </summary>
         /// <param name="flags"></param>
         /// <returns></returns>

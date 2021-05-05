@@ -59,14 +59,14 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// BITCOUNT : http://redis.io/commands/bitcount
+        /// BITCOUNT : <a href="http://redis.io/commands/bitcount"></a>
         /// </summary>
         public Task<long> CountAsync(long start = 0, long end = -1, CommandFlags flags = CommandFlags.None)
             => this.Connection.Database.StringBitCountAsync(this.Key, start, end, flags);
 
 
         /// <summary>
-        /// BITOP : https://redis.io/commands/bitop
+        /// BITOP : <a href="https://redis.io/commands/bitop"></a>
         /// </summary>
         public Task<long> OperationAsync(Bitwise operation, RedisBit first, RedisBit? second = null, CommandFlags flags = CommandFlags.None)
         {
@@ -77,7 +77,7 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// BITOP : https://redis.io/commands/bitop
+        /// BITOP : <a href="https://redis.io/commands/bitop"></a>
         /// </summary>
         public Task<long> OperationAsync(Bitwise operation, IReadOnlyCollection<RedisBit> bits, CommandFlags flags = CommandFlags.None)
         {
@@ -90,21 +90,21 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// BITPOSITION : http://redis.io/commands/bitpos
+        /// BITPOSITION : <a href="http://redis.io/commands/bitpos"></a>
         /// </summary>
         public Task<long> PositionAsync(bool bit, long start = 0, long end = -1, CommandFlags flags = CommandFlags.None)
             => this.Connection.Database.StringBitPositionAsync(this.Key, bit, start, end, flags);
 
 
         /// <summary>
-        /// GETBIT : http://redis.io/commands/getbit
+        /// GETBIT : <a href="http://redis.io/commands/getbit"></a>
         /// </summary>
         public Task<bool> GetAsync(long offset, CommandFlags flags = CommandFlags.None)
             => this.Connection.Database.StringGetBitAsync(this.Key, offset, flags);
 
 
         /// <summary>
-        /// SETBIT : http://redis.io/commands/setbit
+        /// SETBIT : <a href="http://redis.io/commands/setbit"></a>
         /// </summary>
         public Task<bool> SetAsync(long offset, bool bit, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {

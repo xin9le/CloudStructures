@@ -75,7 +75,7 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// ZADD : http://redis.io/commands/zadd
+        /// ZADD : <a href="http://redis.io/commands/zadd"></a>
         /// </summary>
         public Task<bool> AddAsync(T value, double score, TimeSpan? expiry = null, When when = When.Always, CommandFlags flags = CommandFlags.None)
         {
@@ -92,7 +92,7 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// ZADD : http://redis.io/commands/zadd
+        /// ZADD : <a href="http://redis.io/commands/zadd"></a>
         /// </summary>
         public Task<long> AddAsync(IEnumerable<RedisSortedSetEntry<T>> entries, TimeSpan? expiry = null, When when = When.Always, CommandFlags flags = CommandFlags.None)
         {
@@ -112,16 +112,16 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// ZUNIONSTORE : https://redis.io/commands/zunionstore
-        /// ZINTERSTORE : https://redis.io/commands/zinterstore
+        /// ZUNIONSTORE : <a href="https://redis.io/commands/zunionstore"></a><br/>
+        /// ZINTERSTORE : <a href="https://redis.io/commands/zinterstore"></a>
         /// </summary>
         public Task<long> CombineAndStoreAsync(SetOperation operation, RedisSortedSet<T> destination, RedisSortedSet<T> other, Aggregate aggregate = Aggregate.Sum, CommandFlags flags = CommandFlags.None)
             => this.Connection.Database.SortedSetCombineAndStoreAsync(operation, destination.Key, this.Key, other.Key, aggregate, flags);
 
 
         /// <summary>
-        /// ZUNIONSTORE : https://redis.io/commands/zunionstore
-        /// ZINTERSTORE : https://redis.io/commands/zinterstore
+        /// ZUNIONSTORE : <a href="https://redis.io/commands/zunionstore"></a><br/>
+        /// ZINTERSTORE : <a href="https://redis.io/commands/zinterstore"></a>
         /// </summary>
         public Task<long> CombineAndStoreAsync(SetOperation operation, RedisSortedSet<T> destination, IReadOnlyCollection<RedisSortedSet<T>> others, double[]? weights = default, Aggregate aggregate = Aggregate.Sum, CommandFlags flags = CommandFlags.None)
         {
@@ -138,7 +138,7 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// ZINCRBY : http://redis.io/commands/zincrby
+        /// ZINCRBY : <a href="http://redis.io/commands/zincrby"></a>
         /// </summary>
         public Task<double> DecrementAsync(T member, double value, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
@@ -155,7 +155,7 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// ZINCRBY : http://redis.io/commands/zincrby
+        /// ZINCRBY : <a href="http://redis.io/commands/zincrby"></a>
         /// </summary>
         public Task<double> IncrementAsync(T member, double value, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
@@ -172,16 +172,16 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// ZCARD  : http://redis.io/commands/zcard
-        /// ZCOUNT : http://redis.io/commands/zcount
+        /// ZCARD  : <a href="http://redis.io/commands/zcard"></a><br/>
+        /// ZCOUNT : <a href="http://redis.io/commands/zcount"></a>
         /// </summary>
         public Task<long> LengthAsync(double min = double.NegativeInfinity, double max = double.PositiveInfinity, Exclude exclude = Exclude.None, CommandFlags flags = CommandFlags.None)
             => this.Connection.Database.SortedSetLengthAsync(this.Key, min, max, exclude, flags);
 
 
         /// <summary>
-        /// ZCARD  : http://redis.io/commands/zcard
-        /// ZCOUNT : http://redis.io/commands/zcount
+        /// ZCARD  : <a href="http://redis.io/commands/zcard"></a><br/>
+        /// ZCOUNT : <a href="http://redis.io/commands/zcount"></a>
         /// </summary>
         public Task<long> LengthByValueAsync(T min, T max, Exclude exclude = Exclude.None, CommandFlags flags = CommandFlags.None)
         {
@@ -192,8 +192,8 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// ZRANGE    : https://redis.io/commands/zrange
-        /// ZREVRANGE : https://redis.io/commands/zrevrange
+        /// ZRANGE    : <a href="https://redis.io/commands/zrange"></a><br/>
+        /// ZREVRANGE : <a href="https://redis.io/commands/zrevrange"></a>
         /// </summary>
         public async Task<T[]> RangeByRankAsync(long start = 0, long stop = -1, Order order = Order.Ascending, CommandFlags flags = CommandFlags.None)
         {
@@ -205,8 +205,8 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// ZRANGE    : https://redis.io/commands/zrange
-        /// ZREVRANGE : https://redis.io/commands/zrevrange
+        /// ZRANGE    : <a href="https://redis.io/commands/zrange"></a><br/>
+        /// ZREVRANGE : <a href="https://redis.io/commands/zrevrange"></a>
         /// </summary>
         public async Task<RedisSortedSetEntry<T>[]> RangeByRankWithScoresAsync(long start = 0, long stop = -1, Order order = Order.Ascending, CommandFlags flags = CommandFlags.None)
         {
@@ -218,8 +218,8 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// ZRANGEBYSCORE    : https://redis.io/commands/zrangebyscore
-        /// ZREVRANGEBYSCORE : https://redis.io/commands/zrevrangebyscore
+        /// ZRANGEBYSCORE    : <a href="https://redis.io/commands/zrangebyscore"></a><br/>
+        /// ZREVRANGEBYSCORE : <a href="https://redis.io/commands/zrevrangebyscore"></a>
         /// </summary>
         public async Task<T[]> RangeByScoreAsync(double start = double.NegativeInfinity, double stop = double.PositiveInfinity, Exclude exclude = Exclude.None, Order order = Order.Ascending, long skip = 0, long take = -1, CommandFlags flags = CommandFlags.None)
         {
@@ -231,8 +231,8 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// ZRANGEBYSCORE    : https://redis.io/commands/zrangebyscore
-        /// ZREVRANGEBYSCORE : https://redis.io/commands/zrevrangebyscore
+        /// ZRANGEBYSCORE    : <a href="https://redis.io/commands/zrangebyscore"></a><br/>
+        /// ZREVRANGEBYSCORE : <a href="https://redis.io/commands/zrevrangebyscore"></a>
         /// </summary>
         public async Task<RedisSortedSetEntry<T>[]> RangeByScoreWithScoresAsync(double start = double.NegativeInfinity, double stop = double.PositiveInfinity, Exclude exclude = Exclude.None, Order order = Order.Ascending, long skip = 0, long take = -1, CommandFlags flags = CommandFlags.None)
         {
@@ -244,8 +244,8 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// ZRANGEBYLEX    : https://redis.io/commands/zrangebylex
-        /// ZREVRANGEBYLEX : https://redis.io/commands/zrevrangebylex
+        /// ZRANGEBYLEX    : <a href="https://redis.io/commands/zrangebylex"></a><br/>
+        /// ZREVRANGEBYLEX : <a href="https://redis.io/commands/zrevrangebylex"></a>
         /// </summary>
         public async Task<T[]> RangeByValueAsync(T min, T max, Exclude exclude, long skip, long take = -1, CommandFlags flags = CommandFlags.None)
         {
@@ -259,8 +259,8 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// ZRANGEBYLEX    : https://redis.io/commands/zrangebylex
-        /// ZREVRANGEBYLEX : https://redis.io/commands/zrevrangebylex
+        /// ZRANGEBYLEX    : <a href="https://redis.io/commands/zrangebylex"></a><br/>
+        /// ZREVRANGEBYLEX : <a href="https://redis.io/commands/zrevrangebylex"></a>
         /// </summary>
         public async Task<T[]> RangeByValueAsync(T? min = default, T? max = default, Exclude exclude = Exclude.None, Order order = Order.Ascending, long skip = 0, long take = -1, CommandFlags flags = CommandFlags.None)
         {
@@ -274,7 +274,7 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// ZRANK : https://redis.io/commands/zrank
+        /// ZRANK : <a href="https://redis.io/commands/zrank"></a>
         /// </summary>
         public Task<long?> RankAsync(T member, Order order = Order.Ascending, CommandFlags flags = CommandFlags.None)
         {
@@ -284,7 +284,7 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// ZREM : https://redis.io/commands/zrem
+        /// ZREM : <a href="https://redis.io/commands/zrem"></a>
         /// </summary>
         public Task<bool> RemoveAsync(T member, CommandFlags flags = CommandFlags.None)
         {
@@ -294,7 +294,7 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// ZREM : https://redis.io/commands/zrem
+        /// ZREM : <a href="https://redis.io/commands/zrem"></a>
         /// </summary>
         public Task<long> RemoveAsync(IEnumerable<T> members, CommandFlags flags = CommandFlags.None)
         {
@@ -304,21 +304,21 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// ZREMRANGEBYRANK : http://redis.io/commands/zremrangebyrank
+        /// ZREMRANGEBYRANK : <a href="http://redis.io/commands/zremrangebyrank"></a>
         /// </summary>
         public Task<long> RemoveRangeByRankAsync(long start, long stop, CommandFlags flags = CommandFlags.None)
             => this.Connection.Database.SortedSetRemoveRangeByRankAsync(this.Key, start, stop, flags);
 
 
         /// <summary>
-        /// ZREMRANGEBYSCORE : https://redis.io/commands/zremrangebyscore
+        /// ZREMRANGEBYSCORE : <a href="https://redis.io/commands/zremrangebyscore"></a>
         /// </summary>
         public Task<long> RemoveRangeByScoreAsync(double start, double stop, Exclude exclude = Exclude.None, CommandFlags flags = CommandFlags.None)
             => this.Connection.Database.SortedSetRemoveRangeByScoreAsync(this.Key, start, stop, exclude, flags);
 
 
         /// <summary>
-        /// ZREMRANGEBYLEX : https://redis.io/commands/zremrangebylex
+        /// ZREMRANGEBYLEX : <a href="https://redis.io/commands/zremrangebylex"></a>
         /// </summary>
         public Task<long> RemoveRangeByValueAsync(T min, T max, Exclude exclude = Exclude.None, CommandFlags flags = CommandFlags.None)
         {
@@ -329,7 +329,7 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// ZSCORE : https://redis.io/commands/zscore
+        /// ZSCORE : <a href="https://redis.io/commands/zscore"></a>
         /// </summary>
         public Task<double?> ScoreAsync(T member, CommandFlags flags = CommandFlags.None)
         {
@@ -339,7 +339,7 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// SORT : https://redis.io/commands/sort
+        /// SORT : <a href="https://redis.io/commands/sort"></a>
         /// </summary>
         public Task<long> SortAndStoreAsync(RedisSortedSet<T> destination, long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, /*RedisValue by = default, RedisValue[] get = null,*/ CommandFlags flags = CommandFlags.None)
         {
@@ -351,7 +351,7 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// SORT : https://redis.io/commands/sort
+        /// SORT : <a href="https://redis.io/commands/sort"></a>
         /// </summary>
         public async Task<T[]> SortAsync(long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, /*RedisValue by = default, RedisValue[] get = null,*/ CommandFlags flags = CommandFlags.None)
         {

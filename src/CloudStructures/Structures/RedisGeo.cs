@@ -62,7 +62,7 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// GEOADD : https://redis.io/commands/geoadd
+        /// GEOADD : <a href="https://redis.io/commands/geoadd"></a>
         /// </summary>
         public Task<bool> AddAsync(RedisGeoEntry<T> value, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
@@ -79,7 +79,7 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// GEOADD : https://redis.io/commands/geoadd
+        /// GEOADD : <a href="https://redis.io/commands/geoadd"></a>
         /// </summary>
         public Task<long> AddAsync(IEnumerable<RedisGeoEntry<T>> values, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
@@ -96,7 +96,7 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// GEOADD : https://redis.io/commands/geoadd
+        /// GEOADD : <a href="https://redis.io/commands/geoadd"></a>
         /// </summary>
         public Task<bool> AddAsync(double longitude, double latitude, T member, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
@@ -107,7 +107,7 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// GEODIST : https://redis.io/commands/geodist
+        /// GEODIST : <a href="https://redis.io/commands/geodist"></a>
         /// </summary>
         public Task<double?> DistanceAsync(T member1, T member2, GeoUnit unit = GeoUnit.Meters, CommandFlags flags = CommandFlags.None)
         {
@@ -118,7 +118,7 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// GEOHASH : https://redis.io/commands/geohash
+        /// GEOHASH : <a href="https://redis.io/commands/geohash"></a>
         /// </summary>
         public Task<string> HashAsync(T member, CommandFlags flags = CommandFlags.None)
         {
@@ -128,7 +128,7 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// GEOHASH : https://redis.io/commands/geohash
+        /// GEOHASH : <a href="https://redis.io/commands/geohash"></a>
         /// </summary>
         public Task<string[]> HashAsync(IEnumerable<T> members, CommandFlags flags = CommandFlags.None)
         {
@@ -136,9 +136,9 @@ namespace CloudStructures.Structures
             return this.Connection.Database.GeoHashAsync(this.Key, values, flags);
         }
 
-        
+
         /// <summary>
-        /// GEOPOS : https://redis.io/commands/geopos
+        /// GEOPOS : <a href="https://redis.io/commands/geopos"></a>
         /// </summary>
         public Task<GeoPosition?> PositionAsync(T member, CommandFlags flags = CommandFlags.None)
         {
@@ -148,7 +148,7 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// GEOPOS  https://redis.io/commands/geopos
+        /// GEOPOS : <a href="https://redis.io/commands/geopos"></a>
         /// </summary>
         public Task<GeoPosition?[]> PositionAsync(IEnumerable<T> members, CommandFlags flags = CommandFlags.None)
         {
@@ -158,7 +158,7 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// GEORADIUS : https://redis.io/commands/georadius
+        /// GEORADIUS : <a href="https://redis.io/commands/georadius"></a>
         /// </summary>
         public async Task<RedisGeoRadiusResult<T>[]> RadiusAsync(double longitude, double latitude, double radius, GeoUnit unit = GeoUnit.Meters, int count = -1, Order? order = null, GeoRadiusOptions options = GeoRadiusOptions.Default, CommandFlags flags = CommandFlags.None)
         {
@@ -166,9 +166,9 @@ namespace CloudStructures.Structures
             return results.Select(this.Connection.Converter, (x, c) => x.ToGenerics<T>(c)).ToArray();
         }
 
-        
+
         /// <summary>
-        /// GEORADIUSBYMEMBER : https://redis.io/commands/georadiusbymember
+        /// GEORADIUSBYMEMBER : <a href="https://redis.io/commands/georadiusbymember"></a>
         /// </summary>
         public async Task<RedisGeoRadiusResult<T>[]> RadiusAsync(T member, double radius, GeoUnit unit = GeoUnit.Meters, int count = -1, Order? order = null, GeoRadiusOptions options = GeoRadiusOptions.Default, CommandFlags flags = CommandFlags.None)
         {
@@ -179,7 +179,7 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// ZREM : https://redis.io/commands/zrem
+        /// ZREM : <a href="https://redis.io/commands/zrem"></a>
         /// </summary>
         /// <remarks>There is no GEODEL command.</remarks>
         public Task<bool> RemoveAsync(T member, CommandFlags flags = CommandFlags.None)

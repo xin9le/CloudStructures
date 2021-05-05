@@ -58,7 +58,7 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// PFADD : http://redis.io/commands/pfadd
+        /// PFADD : <a href="http://redis.io/commands/pfadd"></a>
         /// </summary>
         public Task<bool> AddAsync(T value, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
@@ -75,7 +75,7 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// PFADD : http://redis.io/commands/pfadd
+        /// PFADD : <a href="http://redis.io/commands/pfadd"></a>
         /// </summary>
         public Task<bool> AddAsync(IEnumerable<T> values, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
@@ -92,21 +92,21 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// PFCOUNT : http://redis.io/commands/pfcount
+        /// PFCOUNT : <a href="http://redis.io/commands/pfcount"></a>
         /// </summary>
         public Task<long> LengthAsync(CommandFlags flags = CommandFlags.None)
             => this.Connection.Database.HyperLogLogLengthAsync(this.Key, flags);
 
 
         /// <summary>
-        /// PFMERGE : https://redis.io/commands/pfmerge
+        /// PFMERGE : <a href="https://redis.io/commands/pfmerge"></a>
         /// </summary>
         public Task MergeAsync(RedisKey first, RedisKey second, CommandFlags flags = CommandFlags.None)
             => this.Connection.Database.HyperLogLogMergeAsync(this.Key, first, second, flags);
 
 
         /// <summary>
-        /// PFMERGE : https://redis.io/commands/pfmerge
+        /// PFMERGE : <a href="https://redis.io/commands/pfmerge"></a>
         /// </summary>
         public Task MergeAsync(RedisKey[] sourceKeys, CommandFlags flags = CommandFlags.None)
             => this.Connection.Database.HyperLogLogMergeAsync(this.Key, sourceKeys, flags);

@@ -67,7 +67,7 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// HINCRBY : https://redis.io/commands/hincrby
+        /// HINCRBY : <a href="https://redis.io/commands/hincrby"></a>
         /// </summary>
         public Task<long> DecrementAsync(TKey field, long value = 1, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
@@ -84,7 +84,7 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// HINCRBYFLOAT : https://redis.io/commands/hincrbyfloat
+        /// HINCRBYFLOAT : <a href="https://redis.io/commands/hincrbyfloat"></a>
         /// </summary>
         public Task DecrementAsync(TKey field, double value, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
@@ -99,9 +99,9 @@ namespace CloudStructures.Structures
             );
         }
 
-        
+
         /// <summary>
-        /// HDEL : https://redis.io/commands/hdel
+        /// HDEL : <a href="https://redis.io/commands/hdel"></a>
         /// </summary>
         public Task<bool> DeleteAsync(TKey field, CommandFlags flags = CommandFlags.None)
         {

@@ -68,7 +68,7 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// SADD : http://redis.io/commands/sadd
+        /// SADD : <a href="http://redis.io/commands/sadd"></a>
         /// </summary>
         public Task<bool> AddAsync(T value, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
@@ -85,7 +85,7 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// SADD : http://redis.io/commands/sadd
+        /// SADD : <a href="http://redis.io/commands/sadd"></a>
         /// </summary>
         public Task<long> AddAsync(IEnumerable<T> values, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
@@ -102,9 +102,9 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// SDIFFSTORE  : https://redis.io/commands/sdiffstore
-        /// SINTERSTORE : https://redis.io/commands/sinterstore
-        /// SUNIONSTORE : https://redis.io/commands/sunionstore
+        /// SDIFFSTORE  : <a href="https://redis.io/commands/sdiffstore"></a><br/>
+        /// SINTERSTORE : <a href="https://redis.io/commands/sinterstore"></a><br/>
+        /// SUNIONSTORE : <a href="https://redis.io/commands/sunionstore"></a>
         /// </summary>
         /// <remarks>
         /// Combine self and other, then save it to the destination.
@@ -115,9 +115,9 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// SDIFFSTORE  : https://redis.io/commands/sdiffstore
-        /// SINTERSTORE : https://redis.io/commands/sinterstore
-        /// SUNIONSTORE : https://redis.io/commands/sunionstore
+        /// SDIFFSTORE  : <a href="https://redis.io/commands/sdiffstore"></a><br/>
+        /// SINTERSTORE : <a href="https://redis.io/commands/sinterstore"></a><br/>
+        /// SUNIONSTORE : <a href="https://redis.io/commands/sunionstore"></a>
         /// </summary>
         /// <remarks>
         /// Combine self and other, then save it to the destination.
@@ -138,9 +138,9 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// SDIFF  : https://redis.io/commands/sdiff
-        /// SINTER : https://redis.io/commands/sinter
-        /// SUNION : https://redis.io/commands/sunion
+        /// SDIFF  : <a href="https://redis.io/commands/sdiff"></a><br/>
+        /// SINTER : <a href="https://redis.io/commands/sinter"></a><br/>
+        /// SUNION : <a href="https://redis.io/commands/sunion"></a>
         /// </summary>
         /// <remarks>It does not work unless you pass keys located the same server.</remarks>
         public async Task<T[]> CombineAsync(SetOperation operation, RedisSet<T> other, CommandFlags flags = CommandFlags.None)
@@ -151,9 +151,9 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// SDIFF  : https://redis.io/commands/sdiff
-        /// SINTER : https://redis.io/commands/sinter
-        /// SUNION : https://redis.io/commands/sunion
+        /// SDIFF  : <a href="https://redis.io/commands/sdiff"></a><br/>
+        /// SINTER : <a href="https://redis.io/commands/sinter"></a><br/>
+        /// SUNION : <a href="https://redis.io/commands/sunion"></a>
         /// </summary>
         /// <remarks>It does not work unless you pass keys located the same server.</remarks>
         public async Task<T[]> CombineAsync(SetOperation operation, IReadOnlyCollection<RedisSet<T>> others, CommandFlags flags = CommandFlags.None)
@@ -172,7 +172,7 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// SISMEMBER : http://redis.io/commands/sismember
+        /// SISMEMBER : <a href="http://redis.io/commands/sismember"></a>
         /// </summary>
         public Task<bool> ContainsAsync(T value, CommandFlags flags = CommandFlags.None)
         {
@@ -182,14 +182,14 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// SCARD : http://redis.io/commands/scard
+        /// SCARD : <a href="http://redis.io/commands/scard"></a>
         /// </summary>
         public Task<long> LengthAsync(CommandFlags flags = CommandFlags.None)
             => this.Connection.Database.SetLengthAsync(this.Key, flags);
 
 
         /// <summary>
-        /// SMEMBERS : https://redis.io/commands/smembers
+        /// SMEMBERS : <a href="https://redis.io/commands/smembers"></a>
         /// </summary>
         public async Task<T[]> MembersAsync(CommandFlags flags = CommandFlags.None)
         {
@@ -201,7 +201,7 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// SMOVE : https://redis.io/commands/smove
+        /// SMOVE : <a href="https://redis.io/commands/smove"></a>
         /// </summary>
         public Task<bool> MoveAsync(RedisSet<T> destination, T value, CommandFlags flags = CommandFlags.None)
         {
@@ -211,7 +211,7 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// SPOP : http://redis.io/commands/spop
+        /// SPOP : <a href="http://redis.io/commands/spop"></a>
         /// </summary>
         public async Task<RedisResult<T>> PopAsync(CommandFlags flags = CommandFlags.None)
         {
@@ -221,7 +221,7 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// SRANDMEMBER : https://redis.io/commands/srandmember
+        /// SRANDMEMBER : <a href="https://redis.io/commands/srandmember"></a>
         /// </summary>
         public async Task<RedisResult<T>> RandomMemberAsync(CommandFlags flags = CommandFlags.None)
         {
@@ -231,7 +231,7 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// SRANDMEMBER : https://redis.io/commands/srandmember
+        /// SRANDMEMBER : <a href="https://redis.io/commands/srandmember"></a>
         /// </summary>
         public async Task<T[]> RandomMemberAsync(long count, CommandFlags flags = CommandFlags.None)
         {
@@ -243,7 +243,7 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// SREM : http://redis.io/commands/srem
+        /// SREM : <a href="http://redis.io/commands/srem"></a>
         /// </summary>
         public Task<bool> RemoveAsync(T value, CommandFlags flags = CommandFlags.None)
         {
@@ -253,7 +253,7 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// SORT : https://redis.io/commands/sort
+        /// SORT : <a href="https://redis.io/commands/sort"></a>
         /// </summary>
         public Task<long> SortAndStoreAsync(RedisSet<T> destination, long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, /*RedisValue by = default, RedisValue[] get = null,*/ CommandFlags flags = CommandFlags.None)
         {
@@ -265,7 +265,7 @@ namespace CloudStructures.Structures
 
 
         /// <summary>
-        /// SORT : https://redis.io/commands/sort
+        /// SORT : <a href="https://redis.io/commands/sort"></a>
         /// </summary>
         public async Task<T[]> SortAsync(long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, /*RedisValue by = default, RedisValue[] get = null,*/ CommandFlags flags = CommandFlags.None)
         {
