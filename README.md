@@ -17,7 +17,7 @@ StackExchange.Redis is very pure and low level library. It's Redis driver like A
 
 # Installation
 ```
-PM> Install-Package CloudStructures
+dotnet add package CloudStructures
 ```
 
 
