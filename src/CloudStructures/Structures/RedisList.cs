@@ -179,12 +179,15 @@ namespace CloudStructures.Structures
         /// <summary>
         /// LREM : http://redis.io/commands/lrem
         /// </summary>
-        /// <param name="value">削除する値</param>
-        /// <param name="count">削除する件数
-        /// <para>count &gt; 0 : 先頭から末尾に向かって検索しつつ削除</para>
-        /// <para>count &lt; 0 : 末尾から先頭に向かって検索しつつ削除</para>
-        /// <para>count = 0 : 一致するものを全件削除</para>
+        /// <param name="value">Value to be deleted</param>
+        /// <param name="count">Number of items to be deleted
+        /// <para>
+        /// - count &gt; 0 : Delete while searching from the beginning to the end.<br/>
+        /// - count &lt; 0 : Delete while searching from the end to the beginning.<br/>
+        /// - count = 0 : Delete all matches.
+        /// </para>
         /// </param>
+        /// <param name="flags"></param>
         public Task<long> RemoveAsync(T value, long count = 0, CommandFlags flags = CommandFlags.None)
         {
             var serialized = this.Connection.Converter.Serialize(value);

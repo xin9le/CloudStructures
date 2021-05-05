@@ -281,7 +281,7 @@ namespace CloudStructures.Converters
 
 
     /// <summary>
-    /// Provides <see cref="byte[]"/> conversion function.
+    /// Provides <see cref="byte"/>[] conversion function.
     /// </summary>
     internal sealed class ByteArrayConverter : IRedisValueConverter<byte[]>
     {
@@ -292,7 +292,7 @@ namespace CloudStructures.Converters
 
 
     /// <summary>
-    /// Provides <see cref="Memory{byte}"/> conversion function.
+    /// Provides <see cref="Memory{T}"/> (= T is <see cref="byte"/>) conversion function.
     /// </summary>
     internal sealed class MemoryByteConverter : IRedisValueConverter<Memory<byte>>
     {
@@ -303,7 +303,7 @@ namespace CloudStructures.Converters
 
 
     /// <summary>
-    /// Provides <see cref="ReadOnlyMemory{byte}"/> conversion function.
+    /// Provides <see cref="ReadOnlyMemory{T}"/> (= T is <see cref="byte"/>) conversion function.
     /// </summary>
     internal sealed class ReadOnlyMemoryByteConverter : IRedisValueConverter<ReadOnlyMemory<byte>>
     {

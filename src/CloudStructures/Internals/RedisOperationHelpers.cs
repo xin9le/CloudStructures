@@ -19,6 +19,7 @@ namespace CloudStructures.Internals
         /// <typeparam name="TArgs"></typeparam>
         /// <param name="structure"></param>
         /// <param name="command"></param>
+        /// <param name="args"></param>
         /// <param name="expiry"></param>
         /// <param name="flags"></param>
         /// <returns></returns>
@@ -51,6 +52,7 @@ namespace CloudStructures.Internals
         /// <typeparam name="TResult"></typeparam>
         /// <param name="structure"></param>
         /// <param name="command"></param>
+        /// <param name="args"></param>
         /// <param name="expiry"></param>
         /// <param name="flags"></param>
         /// <returns></returns>

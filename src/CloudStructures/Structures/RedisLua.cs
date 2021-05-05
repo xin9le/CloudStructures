@@ -8,7 +8,6 @@ namespace CloudStructures.Structures
     /// <summary>
     /// Provides Lua scripting related commands.
     /// </summary>
-    /// <typeparam name="T">Data type</typeparam>
     public readonly struct RedisLua : IRedisStructure
     {
         #region IRedisStructure implementations

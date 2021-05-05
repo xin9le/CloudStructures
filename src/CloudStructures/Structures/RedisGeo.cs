@@ -258,7 +258,7 @@ namespace CloudStructures.Structures
 
 
     /// <summary>
-    /// Represents <see cref="RedisGeo{T}.Radius"/> result.
+    /// Represents <see cref="RedisGeo{T}"/>.RadiusAsync result.
     /// </summary>
     /// <typeparam name="T">Data type</typeparam>
     public readonly struct RedisGeoRadiusResult<T>
