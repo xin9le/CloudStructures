@@ -62,7 +62,7 @@ public sealed class RedisConnection
     internal IServer[] Servers
         => this.Config.Options
         .EndPoints
-        .Select(this.GetConnection(), (x, c) => c.GetServer(x))
+        .Select(this.GetConnection(), static (x, c) => c.GetServer(x))
         .ToArray();
     #endregion
 

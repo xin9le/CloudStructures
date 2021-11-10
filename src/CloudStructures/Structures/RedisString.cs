@@ -70,8 +70,8 @@ public readonly struct RedisString<T> : IRedisStructureWithExpiry
         expiry ??= this.DefaultExpiry;
         return this.ExecuteWithExpiryAsync
         (
-            (db, a) => db.StringDecrementAsync(a.key, a.value, a.flags),
-            (key: this.Key, value, flags),
+            static (db, state) => db.StringDecrementAsync(state.key, state.value, state.flags),
+            state: (key: this.Key, value, flags),
             expiry,
             flags
         );
@@ -86,8 +86,8 @@ public readonly struct RedisString<T> : IRedisStructureWithExpiry
         expiry ??= this.DefaultExpiry;
         return this.ExecuteWithExpiryAsync
         (
-            (db, a) => db.StringDecrementAsync(a.key, a.value, a.flags),
-            (key: this.Key, value, flags),
+            static (db, state) => db.StringDecrementAsync(state.key, state.value, state.flags),
+            state: (key: this.Key, value, flags),
             expiry,
             flags
         );
@@ -114,8 +114,8 @@ public readonly struct RedisString<T> : IRedisStructureWithExpiry
         var result
             = await this.ExecuteWithExpiryAsync
             (
-                (db, a) => db.StringGetSetAsync(a.key, a.serialized, a.flags),
-                (key: this.Key, serialized, flags),
+                static (db, state) => db.StringGetSetAsync(state.key, state.serialized, state.flags),
+                state: (key: this.Key, serialized, flags),
                 expiry,
                 flags
             )
@@ -142,8 +142,8 @@ public readonly struct RedisString<T> : IRedisStructureWithExpiry
         expiry ??= this.DefaultExpiry;
         return this.ExecuteWithExpiryAsync
         (
-            (db, a) => db.StringIncrementAsync(a.key, a.value, a.flags),
-            (key: this.Key, value, flags),
+            static (db, state) => db.StringIncrementAsync(state.key, state.value, state.flags),
+            state: (key: this.Key, value, flags),
             expiry,
             flags
         );
@@ -158,8 +158,8 @@ public readonly struct RedisString<T> : IRedisStructureWithExpiry
         expiry ??= this.DefaultExpiry;
         return this.ExecuteWithExpiryAsync
         (
-            (db, a) => db.StringIncrementAsync(a.key, a.value, a.flags),
-            (key: this.Key, value, flags),
+            static (db, state) => db.StringIncrementAsync(state.key, state.value, state.flags),
+            state: (key: this.Key, value, flags),
             expiry,
             flags
         );
@@ -263,8 +263,8 @@ return x";
         var result
             = await this.ExecuteWithExpiryAsync
             (
-                (db, a) => db.ScriptEvaluateAsync(a.script, a.keys, a.values, a.flags),
-                (script, keys, values, flags),
+                static (db, state) => db.ScriptEvaluateAsync(state.script, state.keys, state.values, state.flags),
+                state: (script, keys, values, flags),
                 expiry,
                 flags
             )
@@ -293,8 +293,8 @@ return tostring(x)";
         var result
             = await this.ExecuteWithExpiryAsync
             (
-                (db, a) => db.ScriptEvaluateAsync(a.script, a.keys, a.values, a.flags),
-                (script, keys, values, flags),
+                static (db, state) => db.ScriptEvaluateAsync(state.script, state.keys, state.values, state.flags),
+                state: (script, keys, values, flags),
                 expiry,
                 flags
             )
@@ -323,8 +323,8 @@ return x";
         var result
             = await this.ExecuteWithExpiryAsync
             (
-                (db, a) => db.ScriptEvaluateAsync(a.script, a.keys, a.values, a.flags),
-                (script, keys, values, flags),
+                static (db, state) => db.ScriptEvaluateAsync(state.script, state.keys, state.values, state.flags),
+                state: (script, keys, values, flags),
                 expiry,
                 flags
             )
@@ -353,8 +353,8 @@ return tostring(x)";
         var result
             = await this.ExecuteWithExpiryAsync
             (
-                (db, a) => db.ScriptEvaluateAsync(a.script, a.keys, a.values, a.flags),
-                (script, keys, values, flags),
+                static (db, state) => db.ScriptEvaluateAsync(state.script, state.keys, state.values, state.flags),
+                state: (script, keys, values, flags),
                 expiry,
                 flags
             )

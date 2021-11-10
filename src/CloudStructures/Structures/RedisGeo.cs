@@ -70,8 +70,8 @@ public readonly struct RedisGeo<T> : IRedisStructureWithExpiry
         var entry = value.ToNonGenerics(this.Connection.Converter);
         return this.ExecuteWithExpiryAsync
         (
-            (db, a) => db.GeoAddAsync(a.key, a.entry, a.flags),
-            (key: this.Key, entry, flags),
+            static (db, state) => db.GeoAddAsync(state.key, state.entry, state.flags),
+            state: (key: this.Key, entry, flags),
             expiry,
             flags
         );
@@ -84,11 +84,11 @@ public readonly struct RedisGeo<T> : IRedisStructureWithExpiry
     public Task<long> AddAsync(IEnumerable<RedisGeoEntry<T>> values, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
     {
         expiry ??= this.DefaultExpiry;
-        var entries = values.Select(this.Connection.Converter, (x, c) => x.ToNonGenerics(c)).ToArray();
+        var entries = values.Select(this.Connection.Converter, static (x, c) => x.ToNonGenerics(c)).ToArray();
         return this.ExecuteWithExpiryAsync
         (
-            (db, a) => db.GeoAddAsync(a.key, a.entries, a.flags),
-            (key: this.Key, entries, flags),
+            static (db, state) => db.GeoAddAsync(state.key, state.entries, state.flags),
+            state: (key: this.Key, entries, flags),
             expiry,
             flags
         );
@@ -163,7 +163,7 @@ public readonly struct RedisGeo<T> : IRedisStructureWithExpiry
     public async Task<RedisGeoRadiusResult<T>[]> RadiusAsync(double longitude, double latitude, double radius, GeoUnit unit = GeoUnit.Meters, int count = -1, Order? order = null, GeoRadiusOptions options = GeoRadiusOptions.Default, CommandFlags flags = CommandFlags.None)
     {
         var results = await this.Connection.Database.GeoRadiusAsync(this.Key, longitude, latitude, radius, unit, count, order, options, flags).ConfigureAwait(false);
-        return results.Select(this.Connection.Converter, (x, c) => x.ToGenerics<T>(c)).ToArray();
+        return results.Select(this.Connection.Converter, static (x, c) => x.ToGenerics<T>(c)).ToArray();
     }
 
 
@@ -174,7 +174,7 @@ public readonly struct RedisGeo<T> : IRedisStructureWithExpiry
     {
         var value = this.Connection.Converter.Serialize(member);
         var results = await this.Connection.Database.GeoRadiusAsync(this.Key, value, radius, unit, count, order, options, flags).ConfigureAwait(false);
-        return results.Select(this.Connection.Converter, (x, c) => x.ToGenerics<T>(c)).ToArray();
+        return results.Select(this.Connection.Converter, static (x, c) => x.ToGenerics<T>(c)).ToArray();
     }
 
 

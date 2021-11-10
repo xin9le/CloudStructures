@@ -83,8 +83,8 @@ public readonly struct RedisSortedSet<T> : IRedisStructureWithExpiry
         var serialized = this.Connection.Converter.Serialize(value);
         return this.ExecuteWithExpiryAsync
         (
-            (db, a) => db.SortedSetAddAsync(a.key, a.serialized, a.score, a.when, a.flags),
-            (key: this.Key, serialized, score, when, flags),
+            static (db, state) => db.SortedSetAddAsync(state.key, state.serialized, state.score, state.when, state.flags),
+            state: (key: this.Key, serialized, score, when, flags),
             expiry,
             flags
         );
@@ -99,12 +99,12 @@ public readonly struct RedisSortedSet<T> : IRedisStructureWithExpiry
         expiry ??= this.DefaultExpiry;
         var values
             = entries
-            .Select(this.Connection.Converter, (x, c) => x.ToNonGenerics(c))
+            .Select(this.Connection.Converter, static (x, c) => x.ToNonGenerics(c))
             .ToArray();
         return this.ExecuteWithExpiryAsync
         (
-            (db, a) => db.SortedSetAddAsync(a.key, a.values, a.when, a.flags),
-            (key: this.Key, values, when, flags),
+            static (db, state) => db.SortedSetAddAsync(state.key, state.values, state.when, state.flags),
+            state: (key: this.Key, values, when, flags),
             expiry,
             flags
         );
@@ -129,9 +129,9 @@ public readonly struct RedisSortedSet<T> : IRedisStructureWithExpiry
             throw new ArgumentException("others length is 0.");
 
 #if NETSTANDARD2_1 || NET5_0_OR_GREATER
-            var keys = others.Select(x => x.Key).Append(this.Key).ToArray();
+        var keys = others.Select(static x => x.Key).Append(this.Key).ToArray();
 #else
-        var keys = others.Select(x => x.Key).Concat(new[] { this.Key }).ToArray();
+        var keys = others.Select(static x => x.Key).Concat(new[] { this.Key }).ToArray();
 #endif
         return this.Connection.Database.SortedSetCombineAndStoreAsync(operation, destination.Key, keys, weights, aggregate, flags);
     }
@@ -146,8 +146,8 @@ public readonly struct RedisSortedSet<T> : IRedisStructureWithExpiry
         var serialized = this.Connection.Converter.Serialize(member);
         return this.ExecuteWithExpiryAsync
         (
-            (db, a) => db.SortedSetDecrementAsync(a.key, a.serialized, a.value, a.flags),
-            (key: this.Key, serialized, value, flags),
+            static (db, state) => db.SortedSetDecrementAsync(state.key, state.serialized, state.value, state.flags),
+            state: (key: this.Key, serialized, value, flags),
             expiry,
             flags
         );
@@ -163,8 +163,8 @@ public readonly struct RedisSortedSet<T> : IRedisStructureWithExpiry
         var serialized = this.Connection.Converter.Serialize(member);
         return this.ExecuteWithExpiryAsync
         (
-            (db, a) => db.SortedSetIncrementAsync(a.key, a.serialized, a.value, a.flags),
-            (key: this.Key, serialized, value, flags),
+            static (db, state) => db.SortedSetIncrementAsync(state.key, state.serialized, state.value, state.flags),
+            state: (key: this.Key, serialized, value, flags),
             expiry,
             flags
         );
@@ -199,7 +199,7 @@ public readonly struct RedisSortedSet<T> : IRedisStructureWithExpiry
     {
         var values = await this.Connection.Database.SortedSetRangeByRankAsync(this.Key, start, stop, order, flags).ConfigureAwait(false);
         return values
-            .Select(this.Connection.Converter, (x, c) => c.Deserialize<T>(x))
+            .Select(this.Connection.Converter, static (x, c) => c.Deserialize<T>(x))
             .ToArray();
     }
 
@@ -212,7 +212,7 @@ public readonly struct RedisSortedSet<T> : IRedisStructureWithExpiry
     {
         var values = await this.Connection.Database.SortedSetRangeByRankWithScoresAsync(this.Key, start, stop, order, flags).ConfigureAwait(false);
         return values
-            .Select(this.Connection.Converter, (x, c) => x.ToGenerics<T>(c))
+            .Select(this.Connection.Converter, static (x, c) => x.ToGenerics<T>(c))
             .ToArray();
     }
 
@@ -225,7 +225,7 @@ public readonly struct RedisSortedSet<T> : IRedisStructureWithExpiry
     {
         var values = await this.Connection.Database.SortedSetRangeByScoreAsync(this.Key, start, stop, exclude, order, skip, take, flags).ConfigureAwait(false);
         return values
-            .Select(this.Connection.Converter, (x, c) => c.Deserialize<T>(x))
+            .Select(this.Connection.Converter, static (x, c) => c.Deserialize<T>(x))
             .ToArray();
     }
 
@@ -238,7 +238,7 @@ public readonly struct RedisSortedSet<T> : IRedisStructureWithExpiry
     {
         var values = await this.Connection.Database.SortedSetRangeByScoreWithScoresAsync(this.Key, start, stop, exclude, order, skip, take, flags).ConfigureAwait(false);
         return values
-            .Select(this.Connection.Converter, (x, c) => x.ToGenerics<T>(c))
+            .Select(this.Connection.Converter, static (x, c) => x.ToGenerics<T>(c))
             .ToArray();
     }
 
@@ -253,7 +253,7 @@ public readonly struct RedisSortedSet<T> : IRedisStructureWithExpiry
         var maxValue = this.Connection.Converter.Serialize(max);
         var values = await this.Connection.Database.SortedSetRangeByValueAsync(this.Key, minValue, maxValue, exclude, skip, take, flags).ConfigureAwait(false);
         return values
-            .Select(this.Connection.Converter, (x, c) => c.Deserialize<T>(x))
+            .Select(this.Connection.Converter, static (x, c) => c.Deserialize<T>(x))
             .ToArray();
     }
 
@@ -268,7 +268,7 @@ public readonly struct RedisSortedSet<T> : IRedisStructureWithExpiry
         var maxValue = this.Connection.Converter.Serialize(max);
         var values = await this.Connection.Database.SortedSetRangeByValueAsync(this.Key, minValue, maxValue, exclude, order, skip, take, flags).ConfigureAwait(false);
         return values
-            .Select(this.Connection.Converter, (x, c) => c.Deserialize<T>(x))
+            .Select(this.Connection.Converter, static (x, c) => c.Deserialize<T>(x))
             .ToArray();
     }
 
@@ -359,7 +359,7 @@ public readonly struct RedisSortedSet<T> : IRedisStructureWithExpiry
         RedisValue by = default;
         RedisValue[]? get = default;
         var values = await this.Connection.Database.SortAsync(this.Key, skip, take, order, sortType, by, get, flags).ConfigureAwait(false);
-        return values.Select(this.Connection.Converter, (x, c) => c.Deserialize<T>(x)).ToArray();
+        return values.Select(this.Connection.Converter, static (x, c) => c.Deserialize<T>(x)).ToArray();
     }
     #endregion
 
@@ -387,8 +387,8 @@ return tostring(x)";
         var result
             = await this.ExecuteWithExpiryAsync
             (
-                (db, a) => db.ScriptEvaluateAsync(a.script, a.keys, a.values, a.flags),
-                (script, keys, values, flags),
+                static (db, state) => db.ScriptEvaluateAsync(state.script, state.keys, state.values, state.flags),
+                state: (script, keys, values, flags),
                 expiry,
                 flags
             )
@@ -419,8 +419,8 @@ return tostring(x)";
         var result
             = await this.ExecuteWithExpiryAsync
             (
-                (db, a) => db.ScriptEvaluateAsync(a.script, a.keys, a.values, a.flags),
-                (script, keys, values, flags),
+                static (db, state) => db.ScriptEvaluateAsync(state.script, state.keys, state.values, state.flags),
+                state: (script, keys, values, flags),
                 expiry,
                 flags
             )

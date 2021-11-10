@@ -66,8 +66,8 @@ public readonly struct RedisHyperLogLog<T> : IRedisStructureWithExpiry
         var serialized = this.Connection.Converter.Serialize(value);
         return this.ExecuteWithExpiryAsync
         (
-            (db, a) => db.HyperLogLogAddAsync(a.key, a.serialized, a.flags),
-            (key: this.Key, serialized, flags),
+            static (db, state) => db.HyperLogLogAddAsync(state.key, state.serialized, state.flags),
+            state: (key: this.Key, serialized, flags),
             expiry,
             flags
         );
@@ -83,8 +83,8 @@ public readonly struct RedisHyperLogLog<T> : IRedisStructureWithExpiry
         var serialized = values.Select(this.Connection.Converter.Serialize).ToArray();
         return this.ExecuteWithExpiryAsync
         (
-            (db, a) => db.HyperLogLogAddAsync(a.key, a.serialized, a.flags),
-            (key: this.Key, serialized, flags),
+            static (db, state) => db.HyperLogLogAddAsync(state.key, state.serialized, state.flags),
+            state: (key: this.Key, serialized, flags),
             expiry,
             flags
         );
