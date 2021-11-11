@@ -53,6 +53,7 @@ public readonly struct RedisString<T> : IRedisStructureWithExpiry
     //- [] StringAppendAsync
     //- [x] StringDecrementAsync
     //- [x] StringGetAsync
+    //- [x] StringGetDeleteAsync
     //- [] StringGetRangeAsync
     //- [x] StringGetSetAsync
     //- [x] StringGetWithExpiryAsync
@@ -99,7 +100,17 @@ public readonly struct RedisString<T> : IRedisStructureWithExpiry
     /// </summary>
     public async Task<RedisResult<T>> GetAsync(CommandFlags flags = CommandFlags.None)
     {
-        var value = await this.Connection.Database.StringGetAsync(Key, flags).ConfigureAwait(false);
+        var value = await this.Connection.Database.StringGetAsync(this.Key, flags).ConfigureAwait(false);
+        return value.ToResult<T>(this.Connection.Converter);
+    }
+
+
+    /// <summary>
+    /// GETDEL : <a href="https://redis.io/commands/getdel"></a>
+    /// </summary>
+    public async Task<RedisResult<T>> GetDeleteAsync(CommandFlags flags = CommandFlags.None)
+    {
+        var value = await this.Connection.Database.StringGetDeleteAsync(this.Key, flags).ConfigureAwait(false);
         return value.ToResult<T>(this.Connection.Converter);
     }
 

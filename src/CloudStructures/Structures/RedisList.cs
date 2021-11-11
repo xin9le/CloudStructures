@@ -126,6 +126,16 @@ public readonly struct RedisList<T> : IRedisStructureWithExpiry
 
 
     /// <summary>
+    /// LPOP : <a href="https://redis.io/commands/lpop"></a>
+    /// </summary>
+    public async Task<T[]?> LeftPopAsync(long count, CommandFlags flags = CommandFlags.None)
+    {
+        var values = await this.Connection.Database.ListLeftPopAsync(this.Key, count, flags).ConfigureAwait(false);
+        return values?.Select(this.Connection.Converter, static (x, c) => c.Deserialize<T>(x)).ToArray();
+    }
+
+
+    /// <summary>
     /// LPUSH : <a href="https://redis.io/commands/lpush"></a>
     /// </summary>
     public Task<long> LeftPushAsync(T value, TimeSpan? expiry = null, When when = When.Always, CommandFlags flags = CommandFlags.None)
@@ -202,6 +212,16 @@ public readonly struct RedisList<T> : IRedisStructureWithExpiry
     {
         var value = await this.Connection.Database.ListRightPopAsync(this.Key, flags).ConfigureAwait(false);
         return value.ToResult<T>(this.Connection.Converter);
+    }
+
+
+    /// <summary>
+    /// RPOP : <a href="https://redis.io/commands/rpop"></a>
+    /// </summary>
+    public async Task<T[]?> RightPopAsync(long count, CommandFlags flags = CommandFlags.None)
+    {
+        var values = await this.Connection.Database.ListRightPopAsync(this.Key, count, flags).ConfigureAwait(false);
+        return values?.Select(this.Connection.Converter, static (x, c) => c.Deserialize<T>(x)).ToArray();
     }
 
 
