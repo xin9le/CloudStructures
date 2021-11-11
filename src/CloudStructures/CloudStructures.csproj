@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>netstandard2.0;netstandard2.1;net461;net5</TargetFrameworks>
-        <LangVersion>9.0</LangVersion>
+        <TargetFrameworks>netstandard2.0;netstandard2.1;net461;net5;net6</TargetFrameworks>
+        <LangVersion>10.0</LangVersion>
         <Nullable>enable</Nullable>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <!-- NuGet -->
@@ -24,11 +24,19 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="StackExchange.Redis" Version="2.2.4" />
+        <PackageReference Include="StackExchange.Redis" Version="2.2.79" />
     </ItemGroup>
 
-    <ItemGroup Condition="'$(TargetFramework)' != 'net5'">
-        <PackageReference Include="System.Text.Json" Version="5.0.2" />
+    <ItemGroup Condition="'$(TargetFramework)' == 'net461'">
+        <PackageReference Include="System.Text.Json" Version="6.0.0" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.1'">
+        <PackageReference Include="System.Text.Json" Version="6.0.0" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+        <PackageReference Include="System.Text.Json" Version="6.0.0" />
     </ItemGroup>
 
 </Project>
