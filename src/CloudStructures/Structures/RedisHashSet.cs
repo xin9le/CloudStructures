@@ -106,8 +106,8 @@ public readonly struct RedisHashSet<T> : IRedisStructureWithExpiry
         var hashFields = values.Select(this.Connection.Converter.Serialize).ToArray();
         var elements = await this.Connection.Database.HashGetAsync(this.Key, hashFields, flags).ConfigureAwait(false);
         return values
-            .Zip(elements, (k, v) => (key: k, value: v))
-            .ToDictionary(x => x.key, x => !x.value.IsNull);
+            .Zip(elements, static (k, v) => (key: k, value: v))
+            .ToDictionary(static x => x.key, static x => !x.value.IsNull);
     }
 
 
@@ -120,7 +120,7 @@ public readonly struct RedisHashSet<T> : IRedisStructureWithExpiry
         // https://redis.io/commands/hkeys
 
         var elements = await this.Connection.Database.HashKeysAsync(this.Key, flags).ConfigureAwait(false);
-        return elements.Select(this.Connection.Converter, (x, c) => c.Deserialize<T>(x)).ToArray();
+        return elements.Select(this.Connection.Converter, static (x, c) => c.Deserialize<T>(x)).ToArray();
     }
 
 
@@ -144,8 +144,8 @@ public readonly struct RedisHashSet<T> : IRedisStructureWithExpiry
         var v = this.Connection.Converter.Serialize(true);
         return this.ExecuteWithExpiryAsync
         (
-            (db, a) => db.HashSetAsync(a.key, a.f, a.v, a.when, a.flags),
-            (key: this.Key, f, v, when, flags),
+            static (db, state) => db.HashSetAsync(state.key, state.f, state.v, state.when, state.flags),
+            state: (key: this.Key, f, v, when, flags),
             expiry,
             flags
         );
@@ -163,7 +163,7 @@ public readonly struct RedisHashSet<T> : IRedisStructureWithExpiry
         expiry ??= this.DefaultExpiry;
         var hashEntries
             = values
-            .Select(this.Connection.Converter, (x, c) =>
+            .Select(this.Connection.Converter, static (x, c) =>
             {
                 var f = c.Serialize(x);
                 var v = c.Serialize(true);
@@ -172,8 +172,8 @@ public readonly struct RedisHashSet<T> : IRedisStructureWithExpiry
             .ToArray();
         return this.ExecuteWithExpiryAsync
         (
-            (db, a) => db.HashSetAsync(a.key, a.hashEntries, a.flags),
-            (key: this.Key, hashEntries, flags),
+            static (db, state) => db.HashSetAsync(state.key, state.hashEntries, state.flags),
+            state: (key: this.Key, hashEntries, flags),
             expiry,
             flags
         );

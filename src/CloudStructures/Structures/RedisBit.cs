@@ -84,7 +84,7 @@ public readonly struct RedisBit : IRedisStructureWithExpiry
         if (bits.Count == 0)
             throw new ArgumentException("bits length is 0.");
 
-        var keys = bits.Select(x => x.Key).ToArray();
+        var keys = bits.Select(static x => x.Key).ToArray();
         return this.Connection.Database.StringBitOperationAsync(operation, this.Key, keys, flags);
     }
 
@@ -111,8 +111,8 @@ public readonly struct RedisBit : IRedisStructureWithExpiry
         expiry ??= this.DefaultExpiry;
         return this.ExecuteWithExpiryAsync
         (
-            (db, a) => db.StringSetBitAsync(a.key, a.offset, a.bit, a.flags),
-            (key: this.Key, offset, bit, flags),
+            static (db, state) => db.StringSetBitAsync(state.key, state.offset, state.bit, state.flags),
+            state: (key: this.Key, offset, bit, flags),
             expiry,
             flags
         );

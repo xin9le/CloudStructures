@@ -7,7 +7,7 @@ namespace CloudStructures;
 /// <summary>
 /// Represents connection configuration.
 /// </summary>
-public class RedisConfig
+public sealed class RedisConfig
 {
     #region Properties
     /// <summary>

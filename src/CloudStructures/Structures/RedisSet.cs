@@ -76,8 +76,8 @@ public readonly struct RedisSet<T> : IRedisStructureWithExpiry
         var serialised = this.Connection.Converter.Serialize(value);
         return this.ExecuteWithExpiryAsync
         (
-            (db, a) => db.SetAddAsync(a.key, a.serialised, a.flags),
-            (key: this.Key, serialised, flags),
+            static (db, state) => db.SetAddAsync(state.key, state.serialised, state.flags),
+            state: (key: this.Key, serialised, flags),
             expiry,
             flags
         );
@@ -93,8 +93,8 @@ public readonly struct RedisSet<T> : IRedisStructureWithExpiry
         var serialised = values.Select(this.Connection.Converter.Serialize).ToArray();
         return this.ExecuteWithExpiryAsync
         (
-            (db, a) => db.SetAddAsync(a.key, a.serialised, a.flags),
-            (key: this.Key, serialised, flags),
+            static (db, state) => db.SetAddAsync(state.key, state.serialised, state.flags),
+            state: (key: this.Key, serialised, flags),
             expiry,
             flags
         );
@@ -129,9 +129,9 @@ public readonly struct RedisSet<T> : IRedisStructureWithExpiry
             throw new ArgumentException("others length is 0.");
 
 #if NETSTANDARD2_1 || NET5_0_OR_GREATER
-            var keys = others.Select(x => x.Key).Append(this.Key).ToArray();
+        var keys = others.Select(static x => x.Key).Append(this.Key).ToArray();
 #else
-        var keys = others.Select(x => x.Key).Concat(new[] { this.Key }).ToArray();
+        var keys = others.Select(static x => x.Key).Concat(new[] { this.Key }).ToArray();
 #endif
         return this.Connection.Database.SetCombineAndStoreAsync(operation, destination.Key, keys, flags);
     }
@@ -146,7 +146,7 @@ public readonly struct RedisSet<T> : IRedisStructureWithExpiry
     public async Task<T[]> CombineAsync(SetOperation operation, RedisSet<T> other, CommandFlags flags = CommandFlags.None)
     {
         var values = await this.Connection.Database.SetCombineAsync(operation, this.Key, other.Key, flags).ConfigureAwait(false);
-        return values.Select(this.Connection.Converter, (x, c) => c.Deserialize<T>(x)).ToArray();
+        return values.Select(this.Connection.Converter, static (x, c) => c.Deserialize<T>(x)).ToArray();
     }
 
 
@@ -162,12 +162,12 @@ public readonly struct RedisSet<T> : IRedisStructureWithExpiry
             throw new ArgumentException("others length is 0.");
 
 #if NETSTANDARD2_1 || NET5_0_OR_GREATER
-            var keys = others.Select(x => x.Key).Append(this.Key).ToArray();
+        var keys = others.Select(static x => x.Key).Append(this.Key).ToArray();
 #else
-        var keys = others.Select(x => x.Key).Concat(new[] { this.Key }).ToArray();
+        var keys = others.Select(static x => x.Key).Concat(new[] { this.Key }).ToArray();
 #endif
         var values = await this.Connection.Database.SetCombineAsync(operation, keys, flags).ConfigureAwait(false);
-        return values.Select(this.Connection.Converter, (x, c) => c.Deserialize<T>(x)).ToArray();
+        return values.Select(this.Connection.Converter, static (x, c) => c.Deserialize<T>(x)).ToArray();
     }
 
 
@@ -195,7 +195,7 @@ public readonly struct RedisSet<T> : IRedisStructureWithExpiry
     {
         var members = await this.Connection.Database.SetMembersAsync(this.Key, flags).ConfigureAwait(false);
         return members
-            .Select(this.Connection.Converter, (x, c) => c.Deserialize<T>(x))
+            .Select(this.Connection.Converter, static (x, c) => c.Deserialize<T>(x))
             .ToArray();
     }
 
@@ -237,7 +237,7 @@ public readonly struct RedisSet<T> : IRedisStructureWithExpiry
     {
         var values = await this.Connection.Database.SetRandomMembersAsync(this.Key, count, flags).ConfigureAwait(false);
         return values
-            .Select(this.Connection.Converter, (x, c) => c.Deserialize<T>(x))
+            .Select(this.Connection.Converter, static (x, c) => c.Deserialize<T>(x))
             .ToArray();
     }
 
@@ -273,7 +273,7 @@ public readonly struct RedisSet<T> : IRedisStructureWithExpiry
         RedisValue by = default;
         RedisValue[]? get = default;
         var values = await this.Connection.Database.SortAsync(this.Key, skip, take, order, sortType, by, get, flags).ConfigureAwait(false);
-        return values.Select(this.Connection.Converter, (x, c) => c.Deserialize<T>(x)).ToArray();
+        return values.Select(this.Connection.Converter, static (x, c) => c.Deserialize<T>(x)).ToArray();
     }
     #endregion
 }

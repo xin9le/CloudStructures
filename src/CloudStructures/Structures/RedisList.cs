@@ -89,8 +89,8 @@ public readonly struct RedisList<T> : IRedisStructureWithExpiry
         var v = this.Connection.Converter.Serialize(value);
         return this.ExecuteWithExpiryAsync
         (
-            (db, a) => db.ListInsertAfterAsync(a.key, a.p, a.v, a.flags),
-            (key: this.Key, p, v, flags),
+            static (db, state) => db.ListInsertAfterAsync(state.key, state.p, state.v, state.flags),
+            state: (key: this.Key, p, v, flags),
             expiry,
             flags
         );
@@ -107,8 +107,8 @@ public readonly struct RedisList<T> : IRedisStructureWithExpiry
         var v = this.Connection.Converter.Serialize(value);
         return this.ExecuteWithExpiryAsync
         (
-            (db, a) => db.ListInsertBeforeAsync(a.key, a.p, a.v, a.flags),
-            (key: this.Key, p, v, flags),
+            static (db, state) => db.ListInsertBeforeAsync(state.key, state.p, state.v, state.flags),
+            state: (key: this.Key, p, v, flags),
             expiry,
             flags
         );
@@ -134,8 +134,8 @@ public readonly struct RedisList<T> : IRedisStructureWithExpiry
         var serialized = this.Connection.Converter.Serialize(value);
         return this.ExecuteWithExpiryAsync
         (
-            (db, a) => db.ListLeftPushAsync(a.key, a.serialized, a.when, a.flags),
-            (key: this.Key, serialized, when, flags),
+            static (db, state) => db.ListLeftPushAsync(state.key, state.serialized, state.when, state.flags),
+            state: (key: this.Key, serialized, when, flags),
             expiry,
             flags
         );
@@ -151,8 +151,8 @@ public readonly struct RedisList<T> : IRedisStructureWithExpiry
         var serialized = values.Select(this.Connection.Converter.Serialize).ToArray();
         return this.ExecuteWithExpiryAsync
         (
-            (db, a) => db.ListLeftPushAsync(a.key, a.serialized, a.flags),
-            (key: this.Key, serialized, flags),
+            static (db, state) => db.ListLeftPushAsync(state.key, state.serialized, state.flags),
+            state: (key: this.Key, serialized, flags),
             expiry,
             flags
         );
@@ -172,7 +172,7 @@ public readonly struct RedisList<T> : IRedisStructureWithExpiry
     public async Task<T[]> RangeAsync(long start = 0, long stop = -1, CommandFlags flags = CommandFlags.None)
     {
         var values = await this.Connection.Database.ListRangeAsync(this.Key, start, stop, flags).ConfigureAwait(false);
-        return values.Select(this.Connection.Converter, (x, c) => c.Deserialize<T>(x)).ToArray();
+        return values.Select(this.Connection.Converter, static (x, c) => c.Deserialize<T>(x)).ToArray();
     }
 
 
@@ -224,8 +224,8 @@ public readonly struct RedisList<T> : IRedisStructureWithExpiry
         var serialized = this.Connection.Converter.Serialize(value);
         return this.ExecuteWithExpiryAsync
         (
-            (db, a) => db.ListRightPushAsync(a.key, a.serialized, a.when, a.flags),
-            (key: this.Key, serialized, when, flags),
+            static (db, state) => db.ListRightPushAsync(state.key, state.serialized, state.when, state.flags),
+            state: (key: this.Key, serialized, when, flags),
             expiry,
             flags
         );
@@ -241,8 +241,8 @@ public readonly struct RedisList<T> : IRedisStructureWithExpiry
         var serialized = values.Select(this.Connection.Converter.Serialize).ToArray();
         return this.ExecuteWithExpiryAsync
         (
-            (db, a) => db.ListRightPushAsync(a.key, a.serialized, a.flags),
-            (key: this.Key, serialized, flags),
+            static (db, state) => db.ListRightPushAsync(state.key, state.serialized, state.flags),
+            state: (key: this.Key, serialized, flags),
             expiry,
             flags
         );
@@ -258,8 +258,8 @@ public readonly struct RedisList<T> : IRedisStructureWithExpiry
         var serialized = this.Connection.Converter.Serialize(value);
         return this.ExecuteWithExpiryAsync
         (
-            (db, a) => db.ListSetByIndexAsync(a.key, a.index, a.serialized, a.flags),
-            (key: this.Key, index, serialized, flags),
+            static (db, state) => db.ListSetByIndexAsync(state.key, state.index, state.serialized, state.flags),
+            state: (key: this.Key, index, serialized, flags),
             expiry,
             flags
         );
@@ -294,7 +294,7 @@ public readonly struct RedisList<T> : IRedisStructureWithExpiry
         RedisValue by = default;
         RedisValue[]? get = default;
         var values = await this.Connection.Database.SortAsync(this.Key, skip, take, order, sortType, by, get, flags).ConfigureAwait(false);
-        return values.Select(this.Connection.Converter, (x, c) => c.Deserialize<T>(x)).ToArray();
+        return values.Select(this.Connection.Converter, static (x, c) => c.Deserialize<T>(x)).ToArray();
     }
     #endregion
 

@@ -16,21 +16,21 @@ internal static class RedisOperationHelpers
     /// Execute specified command with expiration time.
     /// </summary>
     /// <typeparam name="TRedis"></typeparam>
-    /// <typeparam name="TArgs"></typeparam>
+    /// <typeparam name="TState"></typeparam>
     /// <param name="structure"></param>
     /// <param name="command"></param>
-    /// <param name="args"></param>
+    /// <param name="state"></param>
     /// <param name="expiry"></param>
     /// <param name="flags"></param>
     /// <returns></returns>
-    public static async Task ExecuteWithExpiryAsync<TRedis, TArgs>(this TRedis structure, Func<IDatabaseAsync, TArgs, Task> command, TArgs args, TimeSpan? expiry, CommandFlags flags)
+    public static async Task ExecuteWithExpiryAsync<TRedis, TState>(this TRedis structure, Func<IDatabaseAsync, TState, Task> command, TState state, TimeSpan? expiry, CommandFlags flags)
         where TRedis : IRedisStructure
     {
         if (expiry.HasValue)
         {
             //--- Execute multiple commands in tracsaction
             var t = structure.Connection.Transaction;
-            _ = command(t, args);  // forget
+            _ = command(t, state);  // forget
             _ = t.KeyExpireAsync(structure.Key, expiry.Value, flags);  // forget
 
             //--- commit
@@ -39,7 +39,7 @@ internal static class RedisOperationHelpers
         else
         {
             var database = structure.Connection.Database;
-            await command(database, args).ConfigureAwait(false);
+            await command(database, state).ConfigureAwait(false);
         }
     }
 
@@ -48,22 +48,22 @@ internal static class RedisOperationHelpers
     /// Execute specified command with expiration time.
     /// </summary>
     /// <typeparam name="TRedis"></typeparam>
-    /// <typeparam name="TArgs"></typeparam>
+    /// <typeparam name="TState"></typeparam>
     /// <typeparam name="TResult"></typeparam>
     /// <param name="structure"></param>
     /// <param name="command"></param>
-    /// <param name="args"></param>
+    /// <param name="state"></param>
     /// <param name="expiry"></param>
     /// <param name="flags"></param>
     /// <returns></returns>
-    public static async Task<TResult> ExecuteWithExpiryAsync<TRedis, TArgs, TResult>(this TRedis structure, Func<IDatabaseAsync, TArgs, Task<TResult>> command, TArgs args, TimeSpan? expiry, CommandFlags flags)
+    public static async Task<TResult> ExecuteWithExpiryAsync<TRedis, TState, TResult>(this TRedis structure, Func<IDatabaseAsync, TState, Task<TResult>> command, TState state, TimeSpan? expiry, CommandFlags flags)
         where TRedis : IRedisStructure
     {
         if (expiry.HasValue)
         {
             //--- Execute multiple commands in tracsaction
             var t = structure.Connection.Transaction;
-            var result = command(t, args);
+            var result = command(t, state);
             _ = t.KeyExpireAsync(structure.Key, expiry.Value, flags);  // forget
 
             //--- commit
@@ -75,7 +75,7 @@ internal static class RedisOperationHelpers
         else
         {
             var database = structure.Connection.Database;
-            return await command(database, args).ConfigureAwait(false);
+            return await command(database, state).ConfigureAwait(false);
         }
     }
 }

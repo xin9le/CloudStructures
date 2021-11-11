@@ -75,8 +75,8 @@ public readonly struct RedisDictionary<TKey, TValue> : IRedisStructureWithExpiry
         var hashField = this.Connection.Converter.Serialize(field);
         return this.ExecuteWithExpiryAsync
         (
-            (db, a) => db.HashDecrementAsync(a.key, a.hashField, a.value, a.flags),
-            (key: this.Key, hashField, value, flags),
+            static (db, state) => db.HashDecrementAsync(state.key, state.hashField, state.value, state.flags),
+            state: (key: this.Key, hashField, value, flags),
             expiry,
             flags
         );
@@ -92,8 +92,8 @@ public readonly struct RedisDictionary<TKey, TValue> : IRedisStructureWithExpiry
         var hashField = this.Connection.Converter.Serialize(field);
         return this.ExecuteWithExpiryAsync
         (
-            (db, a) => db.HashDecrementAsync(a.key, a.hashField, a.value, a.flags),
-            (key: this.Key, hashField, value, flags),
+            static (db, state) => db.HashDecrementAsync(state.key, state.hashField, state.value, state.flags),
+            state: (key: this.Key, hashField, value, flags),
             expiry,
             flags
         );
@@ -138,13 +138,13 @@ public readonly struct RedisDictionary<TKey, TValue> : IRedisStructureWithExpiry
         var comparer = dictionaryEqualityComparer ?? EqualityComparer<TKey>.Default;
         var entries = await this.Connection.Database.HashGetAllAsync(this.Key, flags).ConfigureAwait(false);
         return entries
-            .Select(this.Connection.Converter, (x, c) =>
+            .Select(this.Connection.Converter, static (x, c) =>
             {
                 var field = c.Deserialize<TKey>(x.Name);
                 var value = c.Deserialize<TValue>(x.Value);
                 return (field, value);
             })
-            .ToDictionary(x => x.field, x => x.value, comparer);
+            .ToDictionary(static x => x.field, static x => x.value, comparer);
     }
 
 
@@ -169,14 +169,14 @@ public readonly struct RedisDictionary<TKey, TValue> : IRedisStructureWithExpiry
         var hashFields = fields.Select(this.Connection.Converter.Serialize).ToArray();
         var values = await this.Connection.Database.HashGetAsync(this.Key, hashFields, flags).ConfigureAwait(false);
         return fields
-            .Zip(values, (f, v) => (field: f, value: v))
-            .Select(this.Connection.Converter, (x, c) =>
+            .Zip(values, static (f, v) => (field: f, value: v))
+            .Select(this.Connection.Converter, static (x, c) =>
             {
                 var result = x.value.ToResult<TValue>(c);
                 return (x.field, result);
             })
-            .Where(x => x.result.HasValue)
-            .ToDictionary(x => x.field, x => x.result.Value, comparer);
+            .Where(static x => x.result.HasValue)
+            .ToDictionary(static x => x.field, static x => x.result.Value, comparer);
     }
 
 
@@ -189,8 +189,8 @@ public readonly struct RedisDictionary<TKey, TValue> : IRedisStructureWithExpiry
         var hashField = this.Connection.Converter.Serialize(field);
         return this.ExecuteWithExpiryAsync
         (
-            (db, a) => db.HashIncrementAsync(a.key, a.hashField, a.value, a.flags),
-            (key: this.Key, hashField, value, flags),
+            static (db, state) => db.HashIncrementAsync(state.key, state.hashField, state.value, state.flags),
+            state: (key: this.Key, hashField, value, flags),
             expiry,
             flags
         );
@@ -206,8 +206,8 @@ public readonly struct RedisDictionary<TKey, TValue> : IRedisStructureWithExpiry
         var hashField = this.Connection.Converter.Serialize(field);
         return this.ExecuteWithExpiryAsync
         (
-            (db, a) => db.HashIncrementAsync(a.key, a.hashField, a.value, a.flags),
-            (key: this.Key, hashField, value, flags),
+            static (db, state) => db.HashIncrementAsync(state.key, state.hashField, state.value, state.flags),
+            state: (key: this.Key, hashField, value, flags),
             expiry,
             flags
         );
@@ -220,7 +220,7 @@ public readonly struct RedisDictionary<TKey, TValue> : IRedisStructureWithExpiry
     public async Task<TKey[]> KeysAsync(CommandFlags flags = CommandFlags.None)
     {
         var keys = await this.Connection.Database.HashKeysAsync(this.Key, flags).ConfigureAwait(false);
-        return keys.Select(this.Connection.Converter, (x, c) => c.Deserialize<TKey>(x)).ToArray();
+        return keys.Select(this.Connection.Converter, static (x, c) => c.Deserialize<TKey>(x)).ToArray();
     }
 
 
@@ -241,8 +241,8 @@ public readonly struct RedisDictionary<TKey, TValue> : IRedisStructureWithExpiry
         var v = this.Connection.Converter.Serialize(value);
         return this.ExecuteWithExpiryAsync
         (
-            (db, a) => db.HashSetAsync(a.key, a.f, a.v, a.when, a.flags),
-            (key: this.Key, f, v, when, flags),
+            static (db, state) => db.HashSetAsync(state.key, state.f, state.v, state.when, state.flags),
+            state: (key: this.Key, f, v, when, flags),
             expiry,
             flags
         );
@@ -257,22 +257,24 @@ public readonly struct RedisDictionary<TKey, TValue> : IRedisStructureWithExpiry
         expiry ??= this.DefaultExpiry;
         var hashEntries
             = entries
-            .Select(this.Connection.Converter, (x, c) =>
+            .Select(this.Connection.Converter, static (x, c) =>
             {
                 var field = c.Serialize(x.Key);
                 var value = c.Serialize(x.Value);
                 return new HashEntry(field, value);
             })
             .ToArray();
-        return (hashEntries.Length == 0)
-            ? Task.CompletedTask
-            : this.ExecuteWithExpiryAsync
-            (
-                (db, a) => db.HashSetAsync(a.key, a.hashEntries, a.flags),
-                (key: this.Key, hashEntries, flags),
-                expiry,
-                flags
-            );
+
+        if (hashEntries.Length == 0)
+            return Task.CompletedTask;
+
+        return this.ExecuteWithExpiryAsync
+        (
+            static (db, state) => db.HashSetAsync(state.key, state.hashEntries, state.flags),
+            state: (key: this.Key, hashEntries, flags),
+            expiry,
+            flags
+        );
     }
 
 
@@ -282,7 +284,7 @@ public readonly struct RedisDictionary<TKey, TValue> : IRedisStructureWithExpiry
     public async Task<TValue[]> ValuesAsync(CommandFlags flags = CommandFlags.None)
     {
         var values = await this.Connection.Database.HashValuesAsync(this.Key, flags).ConfigureAwait(false);
-        return values.Select(this.Connection.Converter, (x, c) => c.Deserialize<TValue>(x)).ToArray();
+        return values.Select(this.Connection.Converter, static (x, c) => c.Deserialize<TValue>(x)).ToArray();
     }
     #endregion
 
@@ -346,7 +348,7 @@ public readonly struct RedisDictionary<TKey, TValue> : IRedisStructureWithExpiry
         //--- divides cached / non cached
         var cached = new Dictionary<TKey, TValue>(comparer);
         var notCached = new LinkedList<TKey>();
-        foreach (var x in fields.Zip(values, (f, v) => (f, v)))
+        foreach (var x in fields.Zip(values, static (f, v) => (f, v)))
         {
             var result = x.v.ToResult<TValue>(this.Connection.Converter);
             if (result.HasValue)
@@ -385,7 +387,7 @@ public readonly struct RedisDictionary<TKey, TValue> : IRedisStructureWithExpiry
         //--- divides cached / non cached
         var cached = new Dictionary<TKey, TValue>(comparer);
         var notCached = new LinkedList<TKey>();
-        foreach (var x in fields.Zip(values, (f, v) => (f, v)))
+        foreach (var x in fields.Zip(values, static (f, v) => (f, v)))
         {
             var result = x.v.ToResult<TValue>(this.Connection.Converter);
             if (result.HasValue)
@@ -438,14 +440,14 @@ public readonly struct RedisDictionary<TKey, TValue> : IRedisStructureWithExpiry
         var values = await this.Connection.Database.HashGetAsync(this.Key, hashFields, flags).ConfigureAwait(false);
         var result
             = fields
-            .Zip(values, (f, v) => (field: f, value: v))
-            .Select(this.Connection.Converter, (x, c) =>
+            .Zip(values, static (f, v) => (field: f, value: v))
+            .Select(this.Connection.Converter, static (x, c) =>
             {
                 var result = x.value.ToResult<TValue>(c);
                 return (x.field, result);
             })
-            .Where(x => x.result.HasValue)
-            .ToDictionary(x => x.field, x => x.result.Value, comparer);
+            .Where(static x => x.result.HasValue)
+            .ToDictionary(static x => x.field, static x => x.result.Value, comparer);
 
         //--- DeleteAsync
         if (0 < result.Count)

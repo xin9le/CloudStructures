@@ -62,7 +62,7 @@ public sealed class RedisConnection
     internal IServer[] Servers
         => this.Config.Options
         .EndPoints
-        .Select(this.GetConnection(), (x, c) => c.GetServer(x))
+        .Select(this.GetConnection(), static (x, c) => c.GetServer(x))
         .ToArray();
     #endregion
 
@@ -92,37 +92,37 @@ public sealed class RedisConnection
     /// <returns></returns>
     public ConnectionMultiplexer GetConnection()
     {
-        lock (this.gate)
+        lock (this._gate)
         {
-            if (this.connection is null || !this.connection.IsConnected)
+            if (this._connection is null || !this._connection.IsConnected)
             {
                 try
                 {
                     //--- create inner connection
                     var stopwatch = Stopwatch.StartNew();
-                    this.connection = ConnectionMultiplexer.Connect(this.Config.Options, this.Logger);
+                    this._connection = ConnectionMultiplexer.Connect(this.Config.Options, this.Logger);
                     stopwatch.Stop();
                     this.Handler?.OnConnectionOpened(this, new(stopwatch.Elapsed));
 
                     //--- attach events
-                    this.connection.ConfigurationChanged += (_, e) => this.Handler?.OnConfigurationChanged(this, e);
-                    this.connection.ConfigurationChangedBroadcast += (_, e) => this.Handler?.OnConfigurationChangedBroadcast(this, e);
-                    this.connection.ConnectionFailed += (_, e) => this.Handler?.OnConnectionFailed(this, e);
-                    this.connection.ConnectionRestored += (_, e) => this.Handler?.OnConnectionRestored(this, e);
-                    this.connection.ErrorMessage += (_, e) => this.Handler?.OnErrorMessage(this, e);
-                    this.connection.HashSlotMoved += (_, e) => this.Handler?.OnHashSlotMoved(this, e);
-                    this.connection.InternalError += (_, e) => this.Handler?.OnInternalError(this, e);
+                    this._connection.ConfigurationChanged += (_, e) => this.Handler?.OnConfigurationChanged(this, e);
+                    this._connection.ConfigurationChangedBroadcast += (_, e) => this.Handler?.OnConfigurationChangedBroadcast(this, e);
+                    this._connection.ConnectionFailed += (_, e) => this.Handler?.OnConnectionFailed(this, e);
+                    this._connection.ConnectionRestored += (_, e) => this.Handler?.OnConnectionRestored(this, e);
+                    this._connection.ErrorMessage += (_, e) => this.Handler?.OnErrorMessage(this, e);
+                    this._connection.HashSlotMoved += (_, e) => this.Handler?.OnHashSlotMoved(this, e);
+                    this._connection.InternalError += (_, e) => this.Handler?.OnInternalError(this, e);
                 }
                 catch
                 {
-                    this.connection = null;
+                    this._connection = null;
                     throw;
                 }
             }
-            return this.connection;
+            return this._connection;
         }
     }
-    private readonly object gate = new();
-    private ConnectionMultiplexer? connection = null;
+    private readonly object _gate = new();
+    private ConnectionMultiplexer? _connection = null;
     #endregion
 }
