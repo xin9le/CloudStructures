@@ -1,4 +1,5 @@
 ﻿using StackExchange.Redis;
+using StackExchange.Redis.Maintenance;
 
 namespace CloudStructures;
 
@@ -72,4 +73,12 @@ public interface IConnectionEventHandler
     /// <param name="sender"></param>
     /// <param name="e"></param>
     void OnInternalError(RedisConnection sender, InternalErrorEventArgs e);
+
+
+    /// <summary>
+    /// Raised when server indicates a maintenance event is going to happen.
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    void OnServerMaintenanceEvent(RedisConnection sender, ServerMaintenanceEvent e);
 }

@@ -112,6 +112,7 @@ public sealed class RedisConnection
                     this._connection.ErrorMessage += (_, e) => this.Handler?.OnErrorMessage(this, e);
                     this._connection.HashSlotMoved += (_, e) => this.Handler?.OnHashSlotMoved(this, e);
                     this._connection.InternalError += (_, e) => this.Handler?.OnInternalError(this, e);
+                    this._connection.ServerMaintenanceEvent += (_, e) => this.Handler?.OnServerMaintenanceEvent(this, e);
                 }
                 catch
                 {
