@@ -54,6 +54,17 @@ public readonly struct RedisHashSet<T> : IRedisStructureWithExpiry
 
 
     #region Commands
+
+    /// <summary>
+    /// HGET : <a href="https://redis.io/commands/hget"></a>
+    /// </summary>
+    public async Task<RedisResult<T>> GetAsync(T value, CommandFlags flags = CommandFlags.None)
+    {
+        var hashField = this.Connection.Converter.Serialize(value);
+        var element = await this.Connection.Database.HashGetAsync(this.Key, hashField, flags).ConfigureAwait(false);
+        return element.ToResult<T>(Connection.Converter);
+    }
+
     /// <summary>
     /// Deletes specified element.
     /// </summary>
