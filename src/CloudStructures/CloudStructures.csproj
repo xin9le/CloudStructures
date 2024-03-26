@@ -1,9 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <!-- XML Document -->
-        <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <!-- NuGet -->
+    <PropertyGroup>
         <IsPackable>true</IsPackable>
         <PackageId>CloudStructures</PackageId>
         <Version>3.2.0.0</Version>
@@ -19,10 +17,13 @@
         <Authors>neuecc, xin9le</Authors>
         <Copyright>Copyright© neuecc, xin9le</Copyright>
         <PackageReleaseNotes></PackageReleaseNotes>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="StackExchange.Redis" />
+        <None Include="../../README.md" Pack="true" PackagePath="\" />
     </ItemGroup>
 
     <ItemGroup Condition="'$(TargetFramework)' == 'net461'">
