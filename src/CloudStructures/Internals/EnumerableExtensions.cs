@@ -50,7 +50,7 @@ internal static class EnumerableExtensions
         if (source is null)
         {
             if (nullToEmpty)
-                return Enumerable.Empty<T>();
+                return [];
             throw new ArgumentNullException(nameof(source));
         }
         if (source is ICollection<T>) return source;
