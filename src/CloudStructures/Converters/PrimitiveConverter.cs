@@ -6,7 +6,7 @@ namespace CloudStructures.Converters;
 
 
 /// <summary>
-/// Provides <see cref="Boolean"/> conversion function.
+/// Provides <see cref="bool"/> conversion function.
 /// </summary>
 internal sealed class BooleanConverter : IRedisValueConverter<bool>
 {
@@ -28,7 +28,7 @@ internal sealed class NullableBooleanConverter : IRedisValueConverter<bool?>
 
 
 /// <summary>
-/// Provides <see cref="Char"/> conversion function.
+/// Provides <see cref="char"/> conversion function.
 /// </summary>
 internal sealed class CharConverter : IRedisValueConverter<char>
 {
@@ -50,7 +50,7 @@ internal sealed class NullableCharConverter : IRedisValueConverter<char?>
 
 
 /// <summary>
-/// Provides <see cref="SByte"/> conversion function.
+/// Provides <see cref="sbyte"/> conversion function.
 /// </summary>
 internal sealed class SByteConverter : IRedisValueConverter<sbyte>
 {
@@ -72,7 +72,7 @@ internal sealed class NullableSByteConverter : IRedisValueConverter<sbyte?>
 
 
 /// <summary>
-/// Provides <see cref="Byte"/> conversion function.
+/// Provides <see cref="byte"/> conversion function.
 /// </summary>
 internal sealed class ByteConverter : IRedisValueConverter<byte>
 {
@@ -94,7 +94,7 @@ internal sealed class NullableByteConverter : IRedisValueConverter<byte?>
 
 
 /// <summary>
-/// Provides <see cref="Int16"/> conversion function.
+/// Provides <see cref="short"/> conversion function.
 /// </summary>
 internal sealed class Int16Converter : IRedisValueConverter<short>
 {
@@ -116,7 +116,7 @@ internal sealed class NullableInt16Converter : IRedisValueConverter<short?>
 
 
 /// <summary>
-/// Provides <see cref="UInt16"/> conversion function.
+/// Provides <see cref="ushort"/> conversion function.
 /// </summary>
 internal sealed class UInt16Converter : IRedisValueConverter<ushort>
 {
@@ -138,7 +138,7 @@ internal sealed class NullableUInt16Converter : IRedisValueConverter<ushort?>
 
 
 /// <summary>
-/// Provides <see cref="Int32"/> conversion function.
+/// Provides <see cref="int"/> conversion function.
 /// </summary>
 internal sealed class Int32Converter : IRedisValueConverter<int>
 {
@@ -160,7 +160,7 @@ internal sealed class NullableInt32Converter : IRedisValueConverter<int?>
 
 
 /// <summary>
-/// Provides <see cref="UInt32"/> conversion function.
+/// Provides <see cref="uint"/> conversion function.
 /// </summary>
 internal sealed class UInt32Converter : IRedisValueConverter<uint>
 {
@@ -182,7 +182,7 @@ internal sealed class NullableUInt32Converter : IRedisValueConverter<uint?>
 
 
 /// <summary>
-/// Provides <see cref="Int64"/> conversion function.
+/// Provides <see cref="long"/> conversion function.
 /// </summary>
 internal sealed class Int64Converter : IRedisValueConverter<long>
 {
@@ -204,7 +204,7 @@ internal sealed class NullableInt64Converter : IRedisValueConverter<long?>
 
 
 /// <summary>
-/// Provides <see cref="UInt64"/> conversion function.
+/// Provides <see cref="ulong"/> conversion function.
 /// </summary>
 internal sealed class UInt64Converter : IRedisValueConverter<ulong>
 {
@@ -226,7 +226,7 @@ internal sealed class NullableUInt64Converter : IRedisValueConverter<ulong?>
 
 
 /// <summary>
-/// Provides <see cref="Single"/> conversion function.
+/// Provides <see cref="float"/> conversion function.
 /// </summary>
 internal sealed class SingleConverter : IRedisValueConverter<float>
 {
@@ -248,7 +248,7 @@ internal sealed class NullableSingleConverter : IRedisValueConverter<float?>
 
 
 /// <summary>
-/// Provides <see cref="Double"/> conversion function.
+/// Provides <see cref="double"/> conversion function.
 /// </summary>
 internal sealed class DoubleConverter : IRedisValueConverter<double>
 {
