@@ -1,9 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>netstandard2.0;netstandard2.1;net461;net6;net7;net8</TargetFrameworks>
-        <LangVersion>10.0</LangVersion>
-        <Nullable>enable</Nullable>
+        <!-- XML Document -->
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <!-- NuGet -->
         <IsPackable>true</IsPackable>
