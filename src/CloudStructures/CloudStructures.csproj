@@ -1,10 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-        <!-- NuGet -->
+    <!-- NuGet -->
     <PropertyGroup>
         <IsPackable>true</IsPackable>
         <PackageId>CloudStructures</PackageId>
-        <Version>3.2.0.0</Version>
+        <Version>3.3.0.0-preview1</Version>
         <Description>Redis Client based on StackExchange.Redis.</Description>
         <PackageProjectUrl>https://github.com/neuecc/CloudStructures</PackageProjectUrl>
         <PackageTags>Redis, Redis Client, O/R Mapping</PackageTags>
