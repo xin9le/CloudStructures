@@ -51,7 +51,12 @@ internal static class EnumerableExtensions
         {
             if (nullToEmpty)
                 return [];
+
+#if NET6_0_OR_GREATER
+            ArgumentNullException.ThrowIfNull(source);
+#else
             throw new ArgumentNullException(nameof(source));
+#endif
         }
         if (source is ICollection<T>) return source;
         if (source is IReadOnlyCollection<T>) return source;
