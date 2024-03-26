@@ -272,10 +272,10 @@ internal sealed class NullableDoubleConverter : IRedisValueConverter<double?>
 /// <summary>
 /// Provides <see cref="string"/> conversion function.
 /// </summary>
-internal sealed class StringConverter : IRedisValueConverter<string>
+internal sealed class StringConverter : IRedisValueConverter<string?>
 {
-    public RedisValue Serialize(string value) => value;
-    public string Deserialize(RedisValue value) => value;
+    public RedisValue Serialize(string? value) => value;
+    public string? Deserialize(RedisValue value) => value;
 }
 
 
@@ -283,10 +283,10 @@ internal sealed class StringConverter : IRedisValueConverter<string>
 /// <summary>
 /// Provides <see cref="byte"/>[] conversion function.
 /// </summary>
-internal sealed class ByteArrayConverter : IRedisValueConverter<byte[]>
+internal sealed class ByteArrayConverter : IRedisValueConverter<byte[]?>
 {
-    public RedisValue Serialize(byte[] value) => value;
-    public byte[] Deserialize(RedisValue value) => value;
+    public RedisValue Serialize(byte[]? value) => value;
+    public byte[]? Deserialize(RedisValue value) => value;
 }
 
 
@@ -297,7 +297,7 @@ internal sealed class ByteArrayConverter : IRedisValueConverter<byte[]>
 internal sealed class MemoryByteConverter : IRedisValueConverter<Memory<byte>>
 {
     public RedisValue Serialize(Memory<byte> value) => value;
-    public Memory<byte> Deserialize(RedisValue value) => (byte[])value;
+    public Memory<byte> Deserialize(RedisValue value) => (byte[]?)value;
 }
 
 

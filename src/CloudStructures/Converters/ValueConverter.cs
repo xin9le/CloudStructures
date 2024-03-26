@@ -55,7 +55,7 @@ internal sealed class ValueConverter
     {
         var converter = PrimitiveConverterCache<T>.Converter;
         return converter is null
-            ? this.CustomConverter.Deserialize<T>(value)
+            ? this.CustomConverter.Deserialize<T>(value!)  // forgive
             : converter.Deserialize(value);
     }
     #endregion
