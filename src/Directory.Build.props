@@ -1,0 +1,10 @@
+<Project>
+
+    <PropertyGroup>
+        <TargetFrameworks>netstandard2.0;netstandard2.1;net461;net6;net7;net8</TargetFrameworks>
+        <LangVersion>12.0</LangVersion>
+        <Nullable>enable</Nullable>
+        <AccelerateBuildsInVisualStudio>true</AccelerateBuildsInVisualStudio>
+    </PropertyGroup>
+    
+</Project>

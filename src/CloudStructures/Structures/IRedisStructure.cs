@@ -86,7 +86,7 @@ public static class RedisStructureExtensions
     /// <summary>
     /// DUMP : <a href="https://redis.io/commands/dump"></a>
     /// </summary>
-    public static Task<byte[]> DumpAsync<T>(this T redis, CommandFlags flags = CommandFlags.None)
+    public static Task<byte[]?> DumpAsync<T>(this T redis, CommandFlags flags = CommandFlags.None)
         where T : IRedisStructure
         => redis.Connection.Database.KeyDumpAsync(redis.Key, flags);
 

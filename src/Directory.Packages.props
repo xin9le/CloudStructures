@@ -1,0 +1,9 @@
+<Project>
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageVersion Include="StackExchange.Redis" Version="2.7.33" />
+    <PackageVersion Include="System.Text.Json" Version="6.0.0" />
+  </ItemGroup>
+</Project>

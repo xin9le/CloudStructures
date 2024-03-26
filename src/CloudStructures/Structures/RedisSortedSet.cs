@@ -131,7 +131,7 @@ public readonly struct RedisSortedSet<T> : IRedisStructureWithExpiry
 #if NETSTANDARD2_1 || NET5_0_OR_GREATER
         var keys = others.Select(static x => x.Key).Append(this.Key).ToArray();
 #else
-        var keys = others.Select(static x => x.Key).Concat(new[] { this.Key }).ToArray();
+        var keys = others.Select(static x => x.Key).Concat([this.Key]).ToArray();
 #endif
         return this.Connection.Database.SortedSetCombineAndStoreAsync(operation, destination.Key, keys, weights, aggregate, flags);
     }
@@ -393,7 +393,7 @@ return tostring(x)";
                 flags
             )
             .ConfigureAwait(false);
-        return double.Parse((string)result);
+        return (double)result;
     }
 
 
@@ -425,7 +425,7 @@ return tostring(x)";
                 flags
             )
             .ConfigureAwait(false);
-        return double.Parse((string)result);
+        return (double)result;
     }
     #endregion
 }

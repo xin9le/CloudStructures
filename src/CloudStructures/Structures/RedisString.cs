@@ -310,7 +310,7 @@ return tostring(x)";
                 flags
             )
             .ConfigureAwait(false);
-        return double.Parse((string)result);
+        return (double)result;
     }
 
 
@@ -370,7 +370,7 @@ return tostring(x)";
                 flags
             )
             .ConfigureAwait(false);
-        return double.Parse((string)result);
+        return (double)result;
     }
     #endregion
 }

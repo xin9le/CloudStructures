@@ -120,7 +120,7 @@ public readonly struct RedisGeo<T> : IRedisStructureWithExpiry
     /// <summary>
     /// GEOHASH : <a href="https://redis.io/commands/geohash"></a>
     /// </summary>
-    public Task<string> HashAsync(T member, CommandFlags flags = CommandFlags.None)
+    public Task<string?> HashAsync(T member, CommandFlags flags = CommandFlags.None)
     {
         var value = this.Connection.Converter.Serialize(member);
         return this.Connection.Database.GeoHashAsync(this.Key, value, flags);
@@ -130,7 +130,7 @@ public readonly struct RedisGeo<T> : IRedisStructureWithExpiry
     /// <summary>
     /// GEOHASH : <a href="https://redis.io/commands/geohash"></a>
     /// </summary>
-    public Task<string[]> HashAsync(IEnumerable<T> members, CommandFlags flags = CommandFlags.None)
+    public Task<string?[]> HashAsync(IEnumerable<T> members, CommandFlags flags = CommandFlags.None)
     {
         var values = members.Select(this.Connection.Converter.Serialize).ToArray();
         return this.Connection.Database.GeoHashAsync(this.Key, values, flags);

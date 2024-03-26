@@ -9,7 +9,7 @@ StackExchange.Redis is very pure and low level library. It's Redis driver like A
 
 
 # Support framework
-- .NET 5+
+- .NET 6+
 - .NET Standard 2.0+
 - .NET Framework 4.6.1+
 
