@@ -1,17 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+    <!-- NuGet -->
     <PropertyGroup>
-        <TargetFrameworks>netstandard2.0;netstandard2.1;net461;net5;net6</TargetFrameworks>
-        <LangVersion>10.0</LangVersion>
-        <Nullable>enable</Nullable>
-        <GenerateDocumentationFile>true</GenerateDocumentationFile>
-        <!-- NuGet -->
         <IsPackable>true</IsPackable>
         <PackageId>CloudStructures</PackageId>
-        <Version>3.2.0.0</Version>
+        <Version>3.3.0.0</Version>
         <Description>Redis Client based on StackExchange.Redis.</Description>
         <PackageProjectUrl>https://github.com/neuecc/CloudStructures</PackageProjectUrl>
-        <PackageIconUrl></PackageIconUrl>
         <PackageTags>Redis, Redis Client, O/R Mapping</PackageTags>
         <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -21,22 +16,25 @@
         <Authors>neuecc, xin9le</Authors>
         <Copyright>Copyright© neuecc, xin9le</Copyright>
         <PackageReleaseNotes></PackageReleaseNotes>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="StackExchange.Redis" Version="2.2.79" />
+        <PackageReference Include="StackExchange.Redis" />
+        <None Include="../../README.md" Pack="true" PackagePath="\" />
     </ItemGroup>
 
     <ItemGroup Condition="'$(TargetFramework)' == 'net461'">
-        <PackageReference Include="System.Text.Json" Version="6.0.0" />
+        <PackageReference Include="System.Text.Json" />
     </ItemGroup>
 
     <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.1'">
-        <PackageReference Include="System.Text.Json" Version="6.0.0" />
+        <PackageReference Include="System.Text.Json" />
     </ItemGroup>
 
     <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
-        <PackageReference Include="System.Text.Json" Version="6.0.0" />
+        <PackageReference Include="System.Text.Json" />
     </ItemGroup>
 
 </Project>
