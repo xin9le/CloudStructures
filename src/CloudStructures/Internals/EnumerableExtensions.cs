@@ -22,7 +22,7 @@ internal static class EnumerableExtensions
 
 
     /// <summary>
-    /// Projects each element of a sequance into new form with state. 
+    /// Projects each element of a sequance into new form with state.
     /// </summary>
     /// <typeparam name="T">Element type</typeparam>
     /// <typeparam name="TState">State type</typeparam>
@@ -50,7 +50,7 @@ internal static class EnumerableExtensions
         if (source is null)
         {
             if (nullToEmpty)
-                return [];
+                return new T[0];
 
 #if NET6_0_OR_GREATER
             ArgumentNullException.ThrowIfNull(source);
