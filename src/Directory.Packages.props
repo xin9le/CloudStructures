@@ -3,7 +3,7 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="StackExchange.Redis" Version="2.7.33" />
-    <PackageVersion Include="System.Text.Json" Version="6.0.0" />
+    <PackageVersion Include="StackExchange.Redis" Version="2.8.24" />
+    <PackageVersion Include="System.Text.Json" Version="6.0.11" />
   </ItemGroup>
 </Project>
