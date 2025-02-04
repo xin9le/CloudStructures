@@ -1,4 +1,6 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using CloudStructures.Converters;
@@ -13,7 +15,8 @@ namespace CloudStructures;
 /// Provides connection to the server.
 /// </summary>
 /// <remarks>This connection needs to be used w/o destroying. Please hold as static field or static property.</remarks>
-public sealed class RedisConnection
+public sealed class RedisConnection :
+    IDisposable
 {
     #region Properties
     /// <summary>
@@ -44,26 +47,48 @@ public sealed class RedisConnection
     /// Gets an interactive connection to a database inside redis.
     /// </summary>
     internal IDatabaseAsync Database
-        => this.Config.Database.HasValue
-        ? this.GetConnection().GetDatabase(this.Config.Database.Value)
-        : this.GetConnection().GetDatabase();
+    {
+        get
+        {
+            this.CheckDisposed();
+
+            return this.Config.Database.HasValue
+                ? this.GetConnection().GetDatabase(this.Config.Database.Value)
+                : this.GetConnection().GetDatabase();
+        }
+    }
 
 
     /// <summary>
     /// Gets a transaction.
     /// </summary>
     internal ITransaction Transaction
-        => ((IDatabase)this.Database).CreateTransaction();
+    {
+        get
+        {
+            this.CheckDisposed();
+
+            return ((IDatabase)this.Database).CreateTransaction();
+        }
+    }
 
 
     /// <summary>
     /// Gets target servers.
     /// </summary>
     internal IServer[] Servers
-        => this.Config.Options
-        .EndPoints
-        .Select(this.GetConnection(), static (x, c) => c.GetServer(x))
-        .ToArray();
+    {
+        get
+        {
+            this.CheckDisposed();
+
+            return this.Config.Options
+                .EndPoints
+                .Select(this.GetConnection(), static (x, c) => c.GetServer(x))
+                .ToArray();
+        }
+    }
+
     #endregion
 
 
@@ -94,36 +119,81 @@ public sealed class RedisConnection
     {
         lock (this._gate)
         {
-            if (this._connection is null || !this._connection.IsConnected)
+            this.CheckDisposed();
+
+            if (this._connection is { IsConnected: false } oldConnection)
             {
+                oldConnection.Dispose();
+                this._connection = null;
+            }
+
+            if (this._connection is null)
+            {
+                ConnectionMultiplexer? connection = null;
+
                 try
                 {
                     //--- create inner connection
                     var stopwatch = Stopwatch.StartNew();
-                    this._connection = ConnectionMultiplexer.Connect(this.Config.Options, this.Logger);
+                    connection = ConnectionMultiplexer.Connect(this.Config.Options, this.Logger);
                     stopwatch.Stop();
-                    this.Handler?.OnConnectionOpened(this, new(stopwatch.Elapsed));
 
-                    //--- attach events
-                    this._connection.ConfigurationChanged += (_, e) => this.Handler?.OnConfigurationChanged(this, e);
-                    this._connection.ConfigurationChangedBroadcast += (_, e) => this.Handler?.OnConfigurationChangedBroadcast(this, e);
-                    this._connection.ConnectionFailed += (_, e) => this.Handler?.OnConnectionFailed(this, e);
-                    this._connection.ConnectionRestored += (_, e) => this.Handler?.OnConnectionRestored(this, e);
-                    this._connection.ErrorMessage += (_, e) => this.Handler?.OnErrorMessage(this, e);
-                    this._connection.HashSlotMoved += (_, e) => this.Handler?.OnHashSlotMoved(this, e);
-                    this._connection.InternalError += (_, e) => this.Handler?.OnInternalError(this, e);
-                    this._connection.ServerMaintenanceEvent += (_, e) => this.Handler?.OnServerMaintenanceEvent(this, e);
+                    var handler = this.Handler;
+                    if (handler is not null)
+                    {
+                        handler.OnConnectionOpened(this, new(stopwatch.Elapsed));
+
+                        //--- attach events
+                        connection.ConfigurationChanged += (_, e) => handler.OnConfigurationChanged(this, e);
+                        connection.ConfigurationChangedBroadcast += (_, e) => handler.OnConfigurationChangedBroadcast(this, e);
+                        connection.ConnectionFailed += (_, e) => handler.OnConnectionFailed(this, e);
+                        connection.ConnectionRestored += (_, e) => handler.OnConnectionRestored(this, e);
+                        connection.ErrorMessage += (_, e) => handler.OnErrorMessage(this, e);
+                        connection.HashSlotMoved += (_, e) => handler.OnHashSlotMoved(this, e);
+                        connection.InternalError += (_, e) => handler.OnInternalError(this, e);
+                        connection.ServerMaintenanceEvent += (_, e) => handler.OnServerMaintenanceEvent(this, e);
+                    }
+
+                    this._connection = connection;
                 }
                 catch
                 {
-                    this._connection = null;
+                    connection?.Dispose();
                     throw;
                 }
             }
+
             return this._connection;
         }
     }
+
     private readonly object _gate = new();
     private ConnectionMultiplexer? _connection = null;
     #endregion
+
+    private bool _disposed;
+
+    /// <inheritdoc />
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
+    public void Dispose()
+    {
+        lock (this._gate)
+        {
+            if (this._connection is not null)
+            {
+                this._connection.Dispose();
+                this._connection = null;
+
+                this._disposed = true;
+            }
+        }
+    }
+
+    private void CheckDisposed()
+    {
+        if (this._disposed)
+        {
+            throw new ObjectDisposedException(this.GetType().FullName);
+        }
+    }
 }
