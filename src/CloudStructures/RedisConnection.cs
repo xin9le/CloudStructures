@@ -6,6 +6,7 @@ using System.Linq;
 using CloudStructures.Converters;
 using CloudStructures.Internals;
 using StackExchange.Redis;
+using StackExchange.Redis.Maintenance;
 
 namespace CloudStructures;
 
@@ -138,20 +139,19 @@ public sealed class RedisConnection :
                     connection = ConnectionMultiplexer.Connect(this.Config.Options, this.Logger);
                     stopwatch.Stop();
 
-                    var handler = this.Handler;
-                    if (handler is not null)
+                    if (this.Handler is { } handler)
                     {
                         handler.OnConnectionOpened(this, new(stopwatch.Elapsed));
 
                         //--- attach events
-                        connection.ConfigurationChanged += (_, e) => handler.OnConfigurationChanged(this, e);
-                        connection.ConfigurationChangedBroadcast += (_, e) => handler.OnConfigurationChangedBroadcast(this, e);
-                        connection.ConnectionFailed += (_, e) => handler.OnConnectionFailed(this, e);
-                        connection.ConnectionRestored += (_, e) => handler.OnConnectionRestored(this, e);
-                        connection.ErrorMessage += (_, e) => handler.OnErrorMessage(this, e);
-                        connection.HashSlotMoved += (_, e) => handler.OnHashSlotMoved(this, e);
-                        connection.InternalError += (_, e) => handler.OnInternalError(this, e);
-                        connection.ServerMaintenanceEvent += (_, e) => handler.OnServerMaintenanceEvent(this, e);
+                        connection.ConfigurationChanged += this.OnConfigurationChanged;
+                        connection.ConfigurationChangedBroadcast += this.OnConfigurationChangedBroadcast;
+                        connection.ConnectionFailed += this.OnConnectionFailed;
+                        connection.ConnectionRestored += this.OnConnectionRestored;
+                        connection.ErrorMessage += this.OnErrorMessage;
+                        connection.HashSlotMoved += this.OnHashSlotMoved;
+                        connection.InternalError += this.OnInternalError;
+                        connection.ServerMaintenanceEvent += this.OnServerMaintenanceEvent;
                     }
 
                     this._connection = connection;
@@ -196,4 +196,28 @@ public sealed class RedisConnection :
             throw new ObjectDisposedException(this.GetType().FullName);
         }
     }
+
+    private void OnConfigurationChanged(object? sender, EndPointEventArgs e)
+        => this.Handler?.OnConfigurationChanged(this, e);
+
+    private void OnConfigurationChangedBroadcast(object? sender, EndPointEventArgs e)
+        => this.Handler?.OnConfigurationChangedBroadcast(this, e);
+
+    private void OnConnectionFailed(object? sender, ConnectionFailedEventArgs e)
+        => this.Handler?.OnConnectionFailed(this, e);
+
+    private void OnConnectionRestored(object? sender, ConnectionFailedEventArgs e)
+        => this.Handler?.OnConnectionRestored(this, e);
+
+    private void OnErrorMessage(object? sender, RedisErrorEventArgs e)
+        => this.Handler?.OnErrorMessage(this, e);
+
+    private void OnHashSlotMoved(object? sender, HashSlotMovedEventArgs e)
+        => this.Handler?.OnHashSlotMoved(this, e);
+
+    private void OnInternalError(object? sender, InternalErrorEventArgs e)
+        => this.Handler?.OnInternalError(this, e);
+
+    private void OnServerMaintenanceEvent(object? sender, ServerMaintenanceEvent e)
+        => this.Handler?.OnServerMaintenanceEvent(this, e);
 }
