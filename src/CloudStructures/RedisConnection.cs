@@ -163,8 +163,32 @@ public sealed class RedisConnection :
     }
 
     private readonly object _gate = new();
-    private ConnectionMultiplexer? _connection = null;
+    private ConnectionMultiplexer? _connection;
     #endregion
+
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
+    public void ReleaseConnection()
+    {
+        lock (this._gate)
+        {
+            if (this._connection is not { } connection)
+            {
+                return;
+            }
+
+            connection.ConfigurationChanged -= this.OnConfigurationChanged;
+            connection.ConfigurationChangedBroadcast -= this.OnConfigurationChangedBroadcast;
+            connection.ConnectionFailed -= this.OnConnectionFailed;
+            connection.ConnectionRestored -= this.OnConnectionRestored;
+            connection.ErrorMessage -= this.OnErrorMessage;
+            connection.HashSlotMoved -= this.OnHashSlotMoved;
+            connection.InternalError -= this.OnInternalError;
+            connection.ServerMaintenanceEvent -= this.OnServerMaintenanceEvent;
+
+            connection.Dispose();
+            this._connection = null;
+        }
+    }
 
     private bool _disposed;
 
@@ -172,16 +196,8 @@ public sealed class RedisConnection :
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public void Dispose()
     {
-        lock (this._gate)
-        {
-            if (this._connection is not null)
-            {
-                this._connection.Dispose();
-                this._connection = null;
-
-                this._disposed = true;
-            }
-        }
+        this._disposed = true;
+        this.ReleaseConnection();
     }
 
     private void CheckDisposed()
