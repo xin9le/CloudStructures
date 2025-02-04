@@ -118,52 +118,47 @@ public sealed class RedisConnection :
     /// <returns></returns>
     public ConnectionMultiplexer GetConnection()
     {
+        this.CheckDisposed();
+
         lock (this._gate)
         {
-            this.CheckDisposed();
-
-            if (this._connection is { IsConnected: false } oldConnection)
-            {
-                oldConnection.Dispose();
-                this._connection = null;
-            }
-
-            if (this._connection is null)
-            {
-                ConnectionMultiplexer? connection = null;
-
-                try
-                {
-                    //--- create inner connection
-                    var stopwatch = Stopwatch.StartNew();
-                    connection = ConnectionMultiplexer.Connect(this.Config.Options, this.Logger);
-                    stopwatch.Stop();
-
-                    if (this.Handler is { } handler)
-                    {
-                        handler.OnConnectionOpened(this, new(stopwatch.Elapsed));
-
-                        //--- attach events
-                        connection.ConfigurationChanged += this.OnConfigurationChanged;
-                        connection.ConfigurationChangedBroadcast += this.OnConfigurationChangedBroadcast;
-                        connection.ConnectionFailed += this.OnConnectionFailed;
-                        connection.ConnectionRestored += this.OnConnectionRestored;
-                        connection.ErrorMessage += this.OnErrorMessage;
-                        connection.HashSlotMoved += this.OnHashSlotMoved;
-                        connection.InternalError += this.OnInternalError;
-                        connection.ServerMaintenanceEvent += this.OnServerMaintenanceEvent;
-                    }
-
-                    this._connection = connection;
-                }
-                catch
-                {
-                    connection?.Dispose();
-                    throw;
-                }
-            }
-
+            this._connection = CreateConnectionCore();
             return this._connection;
+        }
+
+        ConnectionMultiplexer CreateConnectionCore()
+        {
+            ConnectionMultiplexer? connection = null;
+
+            try
+            {
+                //--- create inner connection
+                var stopwatch = Stopwatch.StartNew();
+                connection = ConnectionMultiplexer.Connect(this.Config.Options, this.Logger);
+                stopwatch.Stop();
+
+                if (this.Handler is { } handler)
+                {
+                    handler.OnConnectionOpened(this, new(stopwatch.Elapsed));
+
+                    //--- attach events
+                    connection.ConfigurationChanged += this.OnConfigurationChanged;
+                    connection.ConfigurationChangedBroadcast += this.OnConfigurationChangedBroadcast;
+                    connection.ConnectionFailed += this.OnConnectionFailed;
+                    connection.ConnectionRestored += this.OnConnectionRestored;
+                    connection.ErrorMessage += this.OnErrorMessage;
+                    connection.HashSlotMoved += this.OnHashSlotMoved;
+                    connection.InternalError += this.OnInternalError;
+                    connection.ServerMaintenanceEvent += this.OnServerMaintenanceEvent;
+                }
+
+                return connection;
+            }
+            catch
+            {
+                connection?.Dispose();
+                throw;
+            }
         }
     }
 
