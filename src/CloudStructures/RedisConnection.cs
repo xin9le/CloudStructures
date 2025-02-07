@@ -134,12 +134,6 @@ public sealed class RedisConnection :
 
         lock (this._gate)
         {
-            this._connection = CreateConnectionCore();
-            return this._connection;
-        }
-
-        ConnectionMultiplexer CreateConnectionCore()
-        {
             ConnectionMultiplexer? connection = null;
 
             try
@@ -164,13 +158,15 @@ public sealed class RedisConnection :
                     connection.ServerMaintenanceEvent += this.OnServerMaintenanceEvent;
                 }
 
-                return connection;
+                this._connection = connection;
             }
             catch
             {
                 connection?.Dispose();
                 throw;
             }
+
+            return this._connection;
         }
     }
 
