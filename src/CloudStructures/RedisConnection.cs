@@ -206,10 +206,14 @@ public sealed class RedisConnection :
 
     private void CheckDisposed()
     {
+#if NET7_0_OR_GREATER
+        ObjectDisposedException.ThrowIf(this._disposed, this);
+#else
         if (this._disposed)
         {
             throw new ObjectDisposedException(this.GetType().FullName);
         }
+#endif
     }
 
     private void OnConfigurationChanged(object? sender, EndPointEventArgs e)
