@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
@@ -172,6 +172,8 @@ public sealed class RedisConnection :
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public void ReleaseConnection()
     {
+        this.CheckDisposed();
+
         lock (this._gate)
         {
             if (this._connection is not { } connection)
