@@ -166,6 +166,9 @@ public sealed class RedisConnection :
     private ConnectionMultiplexer? _connection;
     #endregion
 
+    /// <summary>
+    /// 
+    /// </summary>
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public void ReleaseConnection()
     {
@@ -193,8 +196,7 @@ public sealed class RedisConnection :
     private bool _disposed;
 
     /// <inheritdoc />
-    [EditorBrowsable(EditorBrowsableState.Advanced)]
-    public void Dispose()
+    void IDisposable.Dispose()
     {
         this._disposed = true;
         this.ReleaseConnection();
