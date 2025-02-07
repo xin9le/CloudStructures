@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
@@ -47,6 +47,9 @@ public sealed class RedisConnection :
     /// <summary>
     /// Gets an interactive connection to a database inside redis.
     /// </summary>
+    /// <exception cref="ObjectDisposedException">
+    /// This object has already been disposed.
+    /// </exception>
     internal IDatabaseAsync Database
     {
         get
@@ -63,6 +66,9 @@ public sealed class RedisConnection :
     /// <summary>
     /// Gets a transaction.
     /// </summary>
+    /// <exception cref="ObjectDisposedException">
+    /// This object has already been disposed.
+    /// </exception>
     internal ITransaction Transaction
     {
         get
@@ -77,6 +83,9 @@ public sealed class RedisConnection :
     /// <summary>
     /// Gets target servers.
     /// </summary>
+    /// <exception cref="ObjectDisposedException">
+    /// This object has already been disposed.
+    /// </exception>
     internal IServer[] Servers
     {
         get
@@ -116,6 +125,9 @@ public sealed class RedisConnection :
     /// Gets underlying connection.
     /// </summary>
     /// <returns></returns>
+    /// <exception cref="ObjectDisposedException">
+    /// This object has already been disposed.
+    /// </exception>
     public ConnectionMultiplexer GetConnection()
     {
         this.CheckDisposed();
@@ -167,8 +179,14 @@ public sealed class RedisConnection :
     #endregion
 
     /// <summary>
-    /// 
+    /// The internal connection is destroyed without destroying this object.
     /// </summary>
+    /// <exception cref="ObjectDisposedException">
+    /// This object has already been disposed.
+    /// </exception>
+    /// <remarks>
+    /// The internal connection will be recreated the next time the <see cref="GetConnection"/> method is called.
+    /// </remarks>
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public void ReleaseConnection()
     {
