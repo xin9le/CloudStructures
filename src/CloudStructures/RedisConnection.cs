@@ -158,6 +158,7 @@ public sealed class RedisConnection(
     private ConnectionMultiplexer? _connection;
     #endregion
 
+
     /// <summary>
     /// The internal connection is destroyed without destroying this object.
     /// </summary>
@@ -219,27 +220,37 @@ public sealed class RedisConnection(
     private bool _disposed;
     #endregion
 
+
+    #region Event handlers
     private void OnConfigurationChanged(object? sender, EndPointEventArgs e)
         => this.Handler?.OnConfigurationChanged(this, e);
+
 
     private void OnConfigurationChangedBroadcast(object? sender, EndPointEventArgs e)
         => this.Handler?.OnConfigurationChangedBroadcast(this, e);
 
+
     private void OnConnectionFailed(object? sender, ConnectionFailedEventArgs e)
         => this.Handler?.OnConnectionFailed(this, e);
+
 
     private void OnConnectionRestored(object? sender, ConnectionFailedEventArgs e)
         => this.Handler?.OnConnectionRestored(this, e);
 
+
     private void OnErrorMessage(object? sender, RedisErrorEventArgs e)
         => this.Handler?.OnErrorMessage(this, e);
+
 
     private void OnHashSlotMoved(object? sender, HashSlotMovedEventArgs e)
         => this.Handler?.OnHashSlotMoved(this, e);
 
+
     private void OnInternalError(object? sender, InternalErrorEventArgs e)
         => this.Handler?.OnInternalError(this, e);
 
+
     private void OnServerMaintenanceEvent(object? sender, ServerMaintenanceEvent e)
         => this.Handler?.OnServerMaintenanceEvent(this, e);
+    #endregion
 }
