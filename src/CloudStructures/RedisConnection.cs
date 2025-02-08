@@ -16,32 +16,35 @@ namespace CloudStructures;
 /// Provides connection to the server.
 /// </summary>
 /// <remarks>This connection needs to be used w/o destroying. Please hold as static field or static property.</remarks>
-public sealed class RedisConnection :
-    IDisposable
+public sealed class RedisConnection(
+    RedisConfig config,
+    IValueConverter? converter = null,
+    IConnectionEventHandler? handler = null,
+    TextWriter? logger = null) : IDisposable
 {
     #region Properties
     /// <summary>
     /// Gets configuration.
     /// </summary>
-    public RedisConfig Config { get; }
+    public RedisConfig Config { get; } = config;
 
 
     /// <summary>
     /// Gets value converter.
     /// </summary>
-    internal ValueConverter Converter { get; }
+    internal ValueConverter Converter { get; } = new(converter);
 
 
     /// <summary>
     /// Gets connection event handler.
     /// </summary>
-    private IConnectionEventHandler? Handler { get; }
+    private IConnectionEventHandler? Handler { get; } = handler;
 
 
     /// <summary>
     /// Gets logger.
     /// </summary>
-    private TextWriter? Logger { get; }
+    private TextWriter? Logger { get; } = logger;
 
 
     /// <summary>
@@ -97,25 +100,6 @@ public sealed class RedisConnection :
                 .Select(this.GetConnection(), static (x, c) => c.GetServer(x))
                 .ToArray();
         }
-    }
-
-    #endregion
-
-
-    #region Constructors
-    /// <summary>
-    /// Creates instance.
-    /// </summary>
-    /// <param name="config"></param>
-    /// <param name="converter">If null, use <see cref="SystemTextJsonConverter"/> as default.</param>
-    /// <param name="handler"></param>
-    /// <param name="logger"></param>
-    public RedisConnection(RedisConfig config, IValueConverter? converter = null, IConnectionEventHandler? handler = null, TextWriter? logger = null)
-    {
-        this.Config = config;
-        this.Converter = new(converter);
-        this.Handler = handler;
-        this.Logger = logger;
     }
     #endregion
 
