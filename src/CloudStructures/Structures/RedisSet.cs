@@ -115,7 +115,7 @@ public readonly struct RedisSet<T>(RedisConnection connection, RedisKey key, Tim
 #if NETSTANDARD2_1 || NET5_0_OR_GREATER
         var keys = others.Select(static x => x.Key).Append(this.Key).ToArray();
 #else
-        var keys = others.Select(static x => x.Key).Concat(new[] { this.Key }).ToArray();
+        var keys = others.Select(static x => x.Key).Concat([this.Key]).ToArray();
 #endif
         return this.Connection.Database.SetCombineAndStoreAsync(operation, destination.Key, keys, flags);
     }
@@ -148,7 +148,7 @@ public readonly struct RedisSet<T>(RedisConnection connection, RedisKey key, Tim
 #if NETSTANDARD2_1 || NET5_0_OR_GREATER
         var keys = others.Select(static x => x.Key).Append(this.Key).ToArray();
 #else
-        var keys = others.Select(static x => x.Key).Concat(new[] { this.Key }).ToArray();
+        var keys = others.Select(static x => x.Key).Concat([this.Key]).ToArray();
 #endif
         var values = await this.Connection.Database.SetCombineAsync(operation, keys, flags).ConfigureAwait(false);
         return values.Select(this.Connection.Converter, static (x, c) => c.Deserialize<T>(x)).ToArray();
