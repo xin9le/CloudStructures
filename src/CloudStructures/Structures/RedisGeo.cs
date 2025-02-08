@@ -14,41 +14,25 @@ namespace CloudStructures.Structures;
 /// Provides geometry related commands.
 /// </summary>
 /// <typeparam name="T">Data type</typeparam>
-public readonly struct RedisGeo<T> : IRedisStructureWithExpiry
+public readonly struct RedisGeo<T>(RedisConnection connection, RedisKey key, TimeSpan? defaultExpiry) : IRedisStructureWithExpiry
 {
     #region IRedisStructureWithExpiry implementations
     /// <summary>
     /// Gets connection.
     /// </summary>
-    public RedisConnection Connection { get; }
+    public RedisConnection Connection { get; } = connection;
 
 
     /// <summary>
     /// Gets key.
     /// </summary>
-    public RedisKey Key { get; }
+    public RedisKey Key { get; } = key;
 
 
     /// <summary>
     /// Gets default expiration time.
     /// </summary>
-    public TimeSpan? DefaultExpiry { get; }
-    #endregion
-
-
-    #region Constructors
-    /// <summary>
-    /// Creates instance.
-    /// </summary>
-    /// <param name="connection"></param>
-    /// <param name="key"></param>
-    /// <param name="defaultExpiry"></param>
-    public RedisGeo(RedisConnection connection, RedisKey key, TimeSpan? defaultExpiry)
-    {
-        this.Connection = connection;
-        this.Key = key;
-        this.DefaultExpiry = defaultExpiry;
-    }
+    public TimeSpan? DefaultExpiry { get; } = defaultExpiry;
     #endregion
 
 
@@ -196,41 +180,25 @@ public readonly struct RedisGeo<T> : IRedisStructureWithExpiry
 /// Represents <see cref="RedisGeo{T}"/> element.
 /// </summary>
 /// <typeparam name="T">Data type</typeparam>
-public readonly struct RedisGeoEntry<T>
+public readonly struct RedisGeoEntry<T>(double longitude, double latitude, T member)
 {
     #region Properties
     /// <summary>
     /// Gets longitude.
     /// </summary>
-    public double Longitude { get; }
+    public double Longitude { get; } = longitude;
 
 
     /// <summary>
     /// Gets latitude.
     /// </summary>
-    public double Latitude { get; }
+    public double Latitude { get; } = latitude;
 
 
     /// <summary>
     /// Gets member.
     /// </summary>
-    public T Member { get; }
-    #endregion
-
-
-    #region Constructors
-    /// <summary>
-    /// Creates instance.
-    /// </summary>
-    /// <param name="longitude"></param>
-    /// <param name="latitude"></param>
-    /// <param name="member"></param>
-    public RedisGeoEntry(double longitude, double latitude, T member)
-    {
-        this.Longitude = longitude;
-        this.Latitude = latitude;
-        this.Member = member;
-    }
+    public T Member { get; } = member;
     #endregion
 }
 
@@ -261,49 +229,31 @@ internal static class RedisGeoEntryExtensions
 /// Represents <see cref="RedisGeo{T}"/>.RadiusAsync result.
 /// </summary>
 /// <typeparam name="T">Data type</typeparam>
-public readonly struct RedisGeoRadiusResult<T>
+public readonly struct RedisGeoRadiusResult<T>(in RedisResult<T> member, double? distance, long? hash, GeoPosition? position)
 {
     #region Properties
     /// <summary>
     /// Gets member.
     /// </summary>
-    public RedisResult<T> Member { get; }
+    public RedisResult<T> Member { get; } = member;
 
 
     /// <summary>
     /// Gets distance.
     /// </summary>
-    public double? Distance { get; }
+    public double? Distance { get; } = distance;
 
 
     /// <summary>
     /// Gets hash.
     /// </summary>
-    public long? Hash { get; }
+    public long? Hash { get; } = hash;
 
 
     /// <summary>
     /// Gets position.
     /// </summary>
-    public GeoPosition? Position { get; }
-    #endregion
-
-
-    #region Constructors
-    /// <summary>
-    /// Creates instance.
-    /// </summary>
-    /// <param name="member"></param>
-    /// <param name="distance"></param>
-    /// <param name="hash"></param>
-    /// <param name="position"></param>
-    internal RedisGeoRadiusResult(in RedisResult<T> member, double? distance, long? hash, GeoPosition? position)
-    {
-        this.Member = member;
-        this.Distance = distance;
-        this.Hash = hash;
-        this.Position = position;
-    }
+    public GeoPosition? Position { get; } = position;
     #endregion
 }
 
