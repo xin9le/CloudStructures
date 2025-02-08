@@ -154,9 +154,13 @@ public sealed class RedisConnection(
         }
     }
 
+#if NET9_0_OR_GREATER
+    private readonly System.Threading.Lock _gate = new();
+#else
     private readonly object _gate = new();
+#endif
     private ConnectionMultiplexer? _connection;
-    #endregion
+#endregion
 
 
     /// <summary>
