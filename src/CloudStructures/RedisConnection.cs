@@ -193,14 +193,15 @@ public sealed class RedisConnection(
         }
     }
 
-    private bool _disposed;
 
+    #region IDisposable
     /// <inheritdoc />
     void IDisposable.Dispose()
     {
         this._disposed = true;
         this.ReleaseConnection();
     }
+
 
     private void CheckDisposed()
     {
@@ -213,6 +214,10 @@ public sealed class RedisConnection(
         }
 #endif
     }
+
+
+    private bool _disposed;
+    #endregion
 
     private void OnConfigurationChanged(object? sender, EndPointEventArgs e)
         => this.Handler?.OnConfigurationChanged(this, e);
