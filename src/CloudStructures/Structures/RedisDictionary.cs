@@ -14,42 +14,26 @@ namespace CloudStructures.Structures;
 /// </summary>
 /// <typeparam name="TKey">Key type</typeparam>
 /// <typeparam name="TValue">Value type</typeparam>
-public readonly struct RedisDictionary<TKey, TValue> : IRedisStructureWithExpiry
+public readonly struct RedisDictionary<TKey, TValue>(RedisConnection connection, RedisKey key, TimeSpan? defaultExpiry) : IRedisStructureWithExpiry
     where TKey : notnull
 {
     #region IRedisStructureWithExpiry implementations
     /// <summary>
     /// Gets connection.
     /// </summary>
-    public RedisConnection Connection { get; }
+    public RedisConnection Connection { get; } = connection;
 
 
     /// <summary>
     /// Gets key.
     /// </summary>
-    public RedisKey Key { get; }
+    public RedisKey Key { get; } = key;
 
 
     /// <summary>
     /// Gets default expiration time.
     /// </summary>
-    public TimeSpan? DefaultExpiry { get; }
-    #endregion
-
-
-    #region Constructors
-    /// <summary>
-    /// Creates instance.
-    /// </summary>
-    /// <param name="connection"></param>
-    /// <param name="key"></param>
-    /// <param name="defaultExpiry"></param>
-    public RedisDictionary(RedisConnection connection, RedisKey key, TimeSpan? defaultExpiry)
-    {
-        this.Connection = connection;
-        this.Key = key;
-        this.DefaultExpiry = defaultExpiry;
-    }
+    public TimeSpan? DefaultExpiry { get; } = defaultExpiry;
     #endregion
 
 

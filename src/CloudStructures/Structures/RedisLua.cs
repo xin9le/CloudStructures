@@ -8,33 +8,19 @@ namespace CloudStructures.Structures;
 /// <summary>
 /// Provides Lua scripting related commands.
 /// </summary>
-public readonly struct RedisLua : IRedisStructure
+public readonly struct RedisLua(RedisConnection connection, RedisKey key) : IRedisStructure
 {
     #region IRedisStructure implementations
     /// <summary>
     /// Gets connection.
     /// </summary>
-    public RedisConnection Connection { get; }
+    public RedisConnection Connection { get; } = connection;
 
 
     /// <summary>
     /// Gets key.
     /// </summary>
-    public RedisKey Key { get; }
-    #endregion
-
-
-    #region Constructors
-    /// <summary>
-    /// Creates instance.
-    /// </summary>
-    /// <param name="connection"></param>
-    /// <param name="key"></param>
-    public RedisLua(RedisConnection connection, RedisKey key)
-    {
-        this.Connection = connection;
-        this.Key = key;
-    }
+    public RedisKey Key { get; } = key;
     #endregion
 
 

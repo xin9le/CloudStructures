@@ -10,33 +10,19 @@ namespace CloudStructures.Structures;
 /// Provides lock related commands.
 /// </summary>
 /// <typeparam name="T">Data type</typeparam>
-public readonly struct RedisLock<T> : IRedisStructure
+public readonly struct RedisLock<T>(RedisConnection connection, RedisKey key) : IRedisStructure
 {
     #region IRedisStructure implementations
     /// <summary>
     /// Gets connection.
     /// </summary>
-    public RedisConnection Connection { get; }
+    public RedisConnection Connection { get; } = connection;
 
 
     /// <summary>
     /// Gets key.
     /// </summary>
-    public RedisKey Key { get; }
-    #endregion
-
-
-    #region Constructors
-    /// <summary>
-    /// Creates instance.
-    /// </summary>
-    /// <param name="connection"></param>
-    /// <param name="key"></param>
-    public RedisLock(RedisConnection connection, RedisKey key)
-    {
-        this.Connection = connection;
-        this.Key = key;
-    }
+    public RedisKey Key { get; } = key;
     #endregion
 
 

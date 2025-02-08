@@ -16,32 +16,35 @@ namespace CloudStructures;
 /// Provides connection to the server.
 /// </summary>
 /// <remarks>This connection needs to be used w/o destroying. Please hold as static field or static property.</remarks>
-public sealed class RedisConnection :
-    IDisposable
+public sealed class RedisConnection(
+    RedisConfig config,
+    IValueConverter? converter = null,
+    IConnectionEventHandler? handler = null,
+    TextWriter? logger = null) : IDisposable
 {
     #region Properties
     /// <summary>
     /// Gets configuration.
     /// </summary>
-    public RedisConfig Config { get; }
+    public RedisConfig Config { get; } = config;
 
 
     /// <summary>
     /// Gets value converter.
     /// </summary>
-    internal ValueConverter Converter { get; }
+    internal ValueConverter Converter { get; } = new(converter);
 
 
     /// <summary>
     /// Gets connection event handler.
     /// </summary>
-    private IConnectionEventHandler? Handler { get; }
+    private IConnectionEventHandler? Handler { get; } = handler;
 
 
     /// <summary>
     /// Gets logger.
     /// </summary>
-    private TextWriter? Logger { get; }
+    private TextWriter? Logger { get; } = logger;
 
 
     /// <summary>
@@ -98,25 +101,6 @@ public sealed class RedisConnection :
                 .ToArray();
         }
     }
-
-    #endregion
-
-
-    #region Constructors
-    /// <summary>
-    /// Creates instance.
-    /// </summary>
-    /// <param name="config"></param>
-    /// <param name="converter">If null, use <see cref="SystemTextJsonConverter"/> as default.</param>
-    /// <param name="handler"></param>
-    /// <param name="logger"></param>
-    public RedisConnection(RedisConfig config, IValueConverter? converter = null, IConnectionEventHandler? handler = null, TextWriter? logger = null)
-    {
-        this.Config = config;
-        this.Converter = new(converter);
-        this.Handler = handler;
-        this.Logger = logger;
-    }
     #endregion
 
 
@@ -170,9 +154,6 @@ public sealed class RedisConnection :
         }
     }
 
-    private readonly object _gate = new();
-    private ConnectionMultiplexer? _connection;
-    #endregion
 
     /// <summary>
     /// The internal connection is destroyed without destroying this object.
@@ -209,14 +190,24 @@ public sealed class RedisConnection :
         }
     }
 
-    private bool _disposed;
 
+#if NET9_0_OR_GREATER
+    private readonly System.Threading.Lock _gate = new();
+#else
+    private readonly object _gate = new();
+#endif
+    private ConnectionMultiplexer? _connection;
+#endregion
+
+
+    #region IDisposable
     /// <inheritdoc />
     void IDisposable.Dispose()
     {
         this._disposed = true;
         this.ReleaseConnection();
     }
+
 
     private void CheckDisposed()
     {
@@ -230,27 +221,41 @@ public sealed class RedisConnection :
 #endif
     }
 
+
+    private bool _disposed;
+    #endregion
+
+
+    #region Event handlers
     private void OnConfigurationChanged(object? sender, EndPointEventArgs e)
         => this.Handler?.OnConfigurationChanged(this, e);
+
 
     private void OnConfigurationChangedBroadcast(object? sender, EndPointEventArgs e)
         => this.Handler?.OnConfigurationChangedBroadcast(this, e);
 
+
     private void OnConnectionFailed(object? sender, ConnectionFailedEventArgs e)
         => this.Handler?.OnConnectionFailed(this, e);
+
 
     private void OnConnectionRestored(object? sender, ConnectionFailedEventArgs e)
         => this.Handler?.OnConnectionRestored(this, e);
 
+
     private void OnErrorMessage(object? sender, RedisErrorEventArgs e)
         => this.Handler?.OnErrorMessage(this, e);
+
 
     private void OnHashSlotMoved(object? sender, HashSlotMovedEventArgs e)
         => this.Handler?.OnHashSlotMoved(this, e);
 
+
     private void OnInternalError(object? sender, InternalErrorEventArgs e)
         => this.Handler?.OnInternalError(this, e);
 
+
     private void OnServerMaintenanceEvent(object? sender, ServerMaintenanceEvent e)
         => this.Handler?.OnServerMaintenanceEvent(this, e);
+    #endregion
 }

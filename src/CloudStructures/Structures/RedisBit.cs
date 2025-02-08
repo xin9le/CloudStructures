@@ -12,41 +12,25 @@ namespace CloudStructures.Structures;
 /// <summary>
 /// Provides bit related commands.
 /// </summary>
-public readonly struct RedisBit : IRedisStructureWithExpiry
+public readonly struct RedisBit(RedisConnection connection, RedisKey key, TimeSpan? defaultExpiry) : IRedisStructureWithExpiry
 {
     #region IRedisStructureWithExpiry implementations
     /// <summary>
     /// Gets connection.
     /// </summary>
-    public RedisConnection Connection { get; }
+    public RedisConnection Connection { get; } = connection;
 
 
     /// <summary>
     /// Gets key.
     /// </summary>
-    public RedisKey Key { get; }
+    public RedisKey Key { get; } = key;
 
 
     /// <summary>
     /// Gets default expiration time.
     /// </summary>
-    public TimeSpan? DefaultExpiry { get; }
-    #endregion
-
-
-    #region Constructors
-    /// <summary>
-    /// Creates instance.
-    /// </summary>
-    /// <param name="connection"></param>
-    /// <param name="key"></param>
-    /// <param name="defaultExpiry"></param>
-    public RedisBit(RedisConnection connection, RedisKey key, TimeSpan? defaultExpiry)
-    {
-        this.Connection = connection;
-        this.Key = key;
-        this.DefaultExpiry = defaultExpiry;
-    }
+    public TimeSpan? DefaultExpiry { get; } = defaultExpiry;
     #endregion
 
 

@@ -9,23 +9,13 @@ namespace CloudStructures.Converters;
 /// <summary>
 /// Provides data conversion function.
 /// </summary>
-internal sealed class ValueConverter
+internal sealed class ValueConverter(IValueConverter? customConverter)
 {
     #region Properties
     /// <summary>
     /// Gets custom conversion function.
     /// </summary>
-    private IValueConverter CustomConverter { get; }
-    #endregion
-
-
-    #region Constructors
-    /// <summary>
-    /// Creates instance.
-    /// </summary>
-    /// <param name="customConverter"></param>
-    public ValueConverter(IValueConverter? customConverter)
-        => this.CustomConverter = customConverter ?? new SystemTextJsonConverter();  // fallback
+    private IValueConverter CustomConverter { get; } = customConverter ?? new SystemTextJsonConverter();
     #endregion
 
 
