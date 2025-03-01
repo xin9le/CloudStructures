@@ -204,8 +204,8 @@ public sealed class RedisConnection(
     /// <inheritdoc />
     void IDisposable.Dispose()
     {
-        this._disposed = true;
         this.ReleaseConnection();
+        this._disposed = true;
     }
 
 
