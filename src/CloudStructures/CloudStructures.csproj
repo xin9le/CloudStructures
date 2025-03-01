@@ -4,7 +4,7 @@
     <PropertyGroup>
         <IsPackable>true</IsPackable>
         <PackageId>CloudStructures</PackageId>
-        <Version>3.4.0.0</Version>
+        <Version>3.4.1.0</Version>
         <Description>Redis Client based on StackExchange.Redis.</Description>
         <PackageProjectUrl>https://github.com/neuecc/CloudStructures</PackageProjectUrl>
         <PackageTags>Redis, Redis Client, O/R Mapping</PackageTags>
