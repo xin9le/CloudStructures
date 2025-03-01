@@ -118,8 +118,10 @@ public sealed class RedisConnection(
 
         lock (this._gate)
         {
-            ConnectionMultiplexer? connection = null;
+            if (this._connection is not null)
+                return this._connection;
 
+            ConnectionMultiplexer? connection = null;
             try
             {
                 //--- create inner connection
@@ -127,9 +129,9 @@ public sealed class RedisConnection(
                 connection = ConnectionMultiplexer.Connect(this.Config.Options, this.Logger);
                 stopwatch.Stop();
 
-                if (this.Handler is { } handler)
+                if (this.Handler is not null)
                 {
-                    handler.OnConnectionOpened(this, new(stopwatch.Elapsed));
+                    this.Handler.OnConnectionOpened(this, new(stopwatch.Elapsed));
 
                     //--- attach events
                     connection.ConfigurationChanged += this.OnConfigurationChanged;
@@ -141,8 +143,6 @@ public sealed class RedisConnection(
                     connection.InternalError += this.OnInternalError;
                     connection.ServerMaintenanceEvent += this.OnServerMaintenanceEvent;
                 }
-
-                this._connection = connection;
             }
             catch
             {
@@ -150,6 +150,7 @@ public sealed class RedisConnection(
                 throw;
             }
 
+            this._connection = connection;
             return this._connection;
         }
     }
@@ -171,10 +172,9 @@ public sealed class RedisConnection(
 
         lock (this._gate)
         {
-            if (this._connection is not { } connection)
-            {
+            var connection = this._connection;
+            if (connection is null)
                 return;
-            }
 
             connection.ConfigurationChanged -= this.OnConfigurationChanged;
             connection.ConfigurationChangedBroadcast -= this.OnConfigurationChangedBroadcast;
