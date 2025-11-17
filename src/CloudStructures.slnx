@@ -1,4 +1,10 @@
 <Solution>
+  <Folder Name="/assets/">
+    <File Path=".editorconfig" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+    <File Path="NuGet.config" />
+  </Folder>
   <Folder Name="/libs/">
     <Project Path="libs/CloudStructures/CloudStructures.csproj" />
   </Folder>
