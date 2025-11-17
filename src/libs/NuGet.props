@@ -3,7 +3,7 @@
     <PropertyGroup>
         <IsPackable>true</IsPackable>
         <Version>3.4.1.0</Version>
-        <PackageProjectUrl>https://github.com/neuecc/CloudStructures</PackageProjectUrl>
+        <PackageProjectUrl>https://github.com/xin9le/CloudStructures</PackageProjectUrl>
         <PackageTags>Redis, Redis Client, O/R Mapping</PackageTags>
         <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
