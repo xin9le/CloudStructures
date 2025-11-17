@@ -2,7 +2,7 @@
     
     <PropertyGroup>
         <IsPackable>true</IsPackable>
-        <Version>3.4.1.0</Version>
+        <Version>3.4.2.0</Version>
         <PackageProjectUrl>https://github.com/xin9le/CloudStructures</PackageProjectUrl>
         <PackageTags>Redis, O/R Mapping</PackageTags>
         <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
