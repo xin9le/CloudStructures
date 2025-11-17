@@ -1,1 +1,1 @@
-dotnet pack ../src/CloudStructures/CloudStructures.csproj -c Release -o ./packages
+dotnet pack ../src/libs/CloudStructures/CloudStructures.csproj -c Release -o ./packages
