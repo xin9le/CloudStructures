@@ -11,7 +11,7 @@
         <RepositoryType>Git</RepositoryType>
         <Company />
         <Authors>neuecc, xin9le</Authors>
-        <Copyright>Copyright© neuecc, xin9le</Copyright>
+        <Copyright>Copyright© $(Authors)</Copyright>
         <PackageReleaseNotes></PackageReleaseNotes>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
