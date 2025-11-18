@@ -3,8 +3,9 @@ CloudStructures is the [Redis](https://redis.io/) client based on [StackExchange
 
 StackExchange.Redis is very pure and low level library. It's Redis driver like ADO.NET. It's difficult to use it as raw. CloudStructures provides simple O/R (Object / Redis) mapper like [Dapper](https://github.com/StackExchange/Dapper) for ADO.NET.
 
-
-[![Releases](https://img.shields.io/github/release/neuecc/CloudStructures.svg)](https://github.com/neuecc/CloudStructures/releases)
+[![Releases](https://img.shields.io/github/release/xin9le/CloudStructures.svg)](https://github.com/xin9le/CloudStructures/releases)
+[![Nuget packages](https://img.shields.io/nuget/v/CloudStructures.svg)](https://www.nuget.org/packages/CloudStructures/)
+[![GitHub license](https://img.shields.io/github/license/xin9le/CloudStructures)](https://github.com/xin9le/CloudStructures/blob/main/LICENSE)
 
 
 
