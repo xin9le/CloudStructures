@@ -209,17 +209,18 @@ public readonly struct RedisGeoEntry<T>(double longitude, double latitude, T mem
 /// </summary>
 internal static class RedisGeoEntryExtensions
 {
-    /// <summary>
-    /// Converts to <see cref="GeoEntry"/>.
-    /// </summary>
-    /// <typeparam name="T">Data type</typeparam>
-    /// <param name="entry"></param>
-    /// <param name="converter"></param>
-    /// <returns></returns>
-    public static GeoEntry ToNonGenerics<T>(this in RedisGeoEntry<T> entry, ValueConverter converter)
+    extension<T>(in RedisGeoEntry<T> @this)
     {
-        var member = converter.Serialize(entry.Member);
-        return new GeoEntry(entry.Longitude, entry.Latitude, member);
+        /// <summary>
+        /// Converts to <see cref="GeoEntry"/>.
+        /// </summary>
+        /// <param name="converter"></param>
+        /// <returns></returns>
+        public GeoEntry ToNonGenerics(ValueConverter converter)
+        {
+            var member = converter.Serialize(@this.Member);
+            return new(@this.Longitude, @this.Latitude, member);
+        }
     }
 }
 
@@ -264,16 +265,18 @@ public readonly struct RedisGeoRadiusResult<T>(in RedisResult<T> member, double?
 /// </summary>
 internal static class RedisGeoRadiusResultExtensions
 {
-    /// <summary>
-    /// Converts to <see cref="RedisGeoRadiusResult{T}"/>.
-    /// </summary>
-    /// <typeparam name="T">Data type</typeparam>
-    /// <param name="result"></param>
-    /// <param name="converter"></param>
-    /// <returns></returns>
-    public static RedisGeoRadiusResult<T> ToGenerics<T>(this in GeoRadiusResult result, ValueConverter converter)
+    extension(in GeoRadiusResult @this)
     {
-        var member = result.Member.ToResult<T>(converter);
-        return new RedisGeoRadiusResult<T>(member, result.Distance, result.Hash, result.Position);
+        /// <summary>
+        /// Converts to <see cref="RedisGeoRadiusResult{T}"/>.
+        /// </summary>
+        /// <typeparam name="T">Data type</typeparam>
+        /// <param name="converter"></param>
+        /// <returns></returns>
+        public RedisGeoRadiusResult<T> ToGenerics<T>(ValueConverter converter)
+        {
+            var member = @this.Member.ToResult<T>(converter);
+            return new(member, @this.Distance, @this.Hash, @this.Position);
+        }
     }
 }

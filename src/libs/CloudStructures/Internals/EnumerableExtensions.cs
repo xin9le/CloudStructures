@@ -11,55 +11,55 @@ namespace CloudStructures.Internals;
 /// </summary>
 internal static class EnumerableExtensions
 {
-    /// <summary>
-    /// Returns if collection is empty.
-    /// </summary>
-    /// <typeparam name="T">Element type</typeparam>
-    /// <param name="source"></param>
-    /// <returns></returns>
-    public static bool IsEmpty<T>(this IEnumerable<T> source)
-        => !source.Any();
-
-
-    /// <summary>
-    /// Projects each element of a sequance into new form with state. 
-    /// </summary>
-    /// <typeparam name="T">Element type</typeparam>
-    /// <typeparam name="TState">State type</typeparam>
-    /// <typeparam name="TResult">Result type</typeparam>
-    /// <param name="source"></param>
-    /// <param name="state"></param>
-    /// <param name="selector"></param>
-    /// <returns></returns>
-    public static IEnumerable<TResult> Select<T, TState, TResult>(this IEnumerable<T> source, TState state, Func<T, TState, TResult> selector)
+    extension<T>(IEnumerable<T> @this)
     {
-        foreach (var x in source)
-            yield return selector(x, state);
+        /// <summary>
+        /// Returns if collection is empty.
+        /// </summary>
+        /// <returns></returns>
+        public bool IsEmpty()
+            => !@this.Any();
+
+
+        /// <summary>
+        /// Projects each element of a sequance into new form with state. 
+        /// </summary>
+        /// <typeparam name="TState">State type</typeparam>
+        /// <typeparam name="TResult">Result type</typeparam>
+        /// <param name="state"></param>
+        /// <param name="selector"></param>
+        /// <returns></returns>
+        public IEnumerable<TResult> Select<TState, TResult>(TState state, Func<T, TState, TResult> selector)
+        {
+            foreach (var x in @this)
+                yield return selector(x, state);
+        }
     }
 
 
-    /// <summary>
-    /// If state of source is lazy, returns materialized collection. if materialized already, it does nothing and returns itself.
-    /// </summary>
-    /// <typeparam name="T">Element type</typeparam>
-    /// <param name="source"></param>
-    /// <param name="nullToEmpty">If true, returns empty sequence when source collection is null. If false, throws <see cref="ArgumentNullException"/></param>
-    /// <returns></returns>
-    public static IEnumerable<T> Materialize<T>(this IEnumerable<T>? source, bool nullToEmpty = true)
+    extension<T>(IEnumerable<T>? @this)
     {
-        if (source is null)
+        /// <summary>
+        /// If state of source is lazy, returns materialized collection. if materialized already, it does nothing and returns itself.
+        /// </summary>
+        /// <param name="nullToEmpty">If true, returns empty sequence when source collection is null. If false, throws <see cref="ArgumentNullException"/></param>
+        /// <returns></returns>
+        public IEnumerable<T> Materialize(bool nullToEmpty = true)
         {
-            if (nullToEmpty)
-                return [];
+            if (@this is null)
+            {
+                if (nullToEmpty)
+                    return [];
 
 #if NET6_0_OR_GREATER
-            ArgumentNullException.ThrowIfNull(source);
+                ArgumentNullException.ThrowIfNull(@this);
 #else
-            throw new ArgumentNullException(nameof(source));
+                throw new ArgumentNullException(nameof(@this));
 #endif
+            }
+            if (@this is ICollection<T>) return @this;
+            if (@this is IReadOnlyCollection<T>) return @this;
+            return [.. @this];
         }
-        if (source is ICollection<T>) return source;
-        if (source is IReadOnlyCollection<T>) return source;
-        return source.ToArray();
     }
 }

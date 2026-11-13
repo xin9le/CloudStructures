@@ -126,12 +126,12 @@ namespace HowToImplement_CustomValueConverter
 
 
 # Authors
-- Yoshifumi Kawai (a.k.a [@neuecc](https://twitter.com/neuecc))
-- Takaaki Suzuki (a.k.a [@xin9le](https://twitter.com/xin9le))
+- Yoshifumi Kawai (a.k.a [@neuecc](https://github.com/neuecc))
+- Takaaki Suzuki (a.k.a [@xin9le](https://about.xin9le.net/))
 
 Yoshifumi Kawai is software developer in Tokyo, Japan. Awarded Microsoft MVP (C#) since April, 2011. He's the original owner of this project.
 
-Takaaki Suzuki is software developer in Fukui, Japan. Awarded Microsoft MVP (C#) since July, 2012. He's a contributer who led the .NET Standard support.
+Takaaki Suzuki is software developer in Fukui, Japan. Awarded Microsoft MVP (C#) since July, 2012. He's a contributer who led the .NET Standard/Core support.
 
 
 
