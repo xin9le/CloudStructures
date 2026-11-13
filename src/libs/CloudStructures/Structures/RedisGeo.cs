@@ -219,7 +219,7 @@ internal static class RedisGeoEntryExtensions
         public GeoEntry ToNonGenerics(ValueConverter converter)
         {
             var member = converter.Serialize(@this.Member);
-            return new GeoEntry(@this.Longitude, @this.Latitude, member);
+            return new(@this.Longitude, @this.Latitude, member);
         }
     }
 }
@@ -276,7 +276,7 @@ internal static class RedisGeoRadiusResultExtensions
         public RedisGeoRadiusResult<T> ToGenerics<T>(ValueConverter converter)
         {
             var member = @this.Member.ToResult<T>(converter);
-            return new RedisGeoRadiusResult<T>(member, @this.Distance, @this.Hash, @this.Position);
+            return new(member, @this.Distance, @this.Hash, @this.Position);
         }
     }
 }
