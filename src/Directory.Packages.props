@@ -4,6 +4,5 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="StackExchange.Redis" Version="3.4.35" />
-    <PackageVersion Include="System.Text.Json" Version="10.0.0" />
   </ItemGroup>
 </Project>
