@@ -185,36 +185,40 @@ public readonly struct RedisResultWithExpiry<T>
 /// </summary>
 internal static class RedisResultExtensions
 {
-    /// <summary>
-    /// Converts to <see cref="RedisResult{T}"/>.
-    /// </summary>
-    /// <typeparam name="T">Data type</typeparam>
-    /// <param name="value"></param>
-    /// <param name="converter"></param>
-    /// <returns></returns>
-    public static RedisResult<T> ToResult<T>(this in RedisValue value, ValueConverter converter)
+    extension(in RedisValue @this)
     {
-        if (value.IsNull)
-            return RedisResult<T>.Default;
+        /// <summary>
+        /// Converts to <see cref="RedisResult{T}"/>.
+        /// </summary>
+        /// <typeparam name="T">Data type</typeparam>
+        /// <param name="converter"></param>
+        /// <returns></returns>
+        public RedisResult<T> ToResult<T>(ValueConverter converter)
+        {
+            if (@this.IsNull)
+                return RedisResult<T>.Default;
 
-        var converted = converter.Deserialize<T>(value);
-        return new(converted);
+            var converted = converter.Deserialize<T>(@this);
+            return new(converted);
+        }
     }
 
 
-    /// <summary>
-    /// Converts to <see cref="RedisResultWithExpiry{T}"/>.
-    /// </summary>
-    /// <typeparam name="T">Data type</typeparam>
-    /// <param name="value"></param>
-    /// <param name="converter"></param>
-    /// <returns></returns>
-    public static RedisResultWithExpiry<T> ToResult<T>(this in RedisValueWithExpiry value, ValueConverter converter)
+    extension(in RedisValueWithExpiry @this)
     {
-        if (value.Value.IsNull)
-            return RedisResultWithExpiry<T>.Default;
+        /// <summary>
+        /// Converts to <see cref="RedisResultWithExpiry{T}"/>.
+        /// </summary>
+        /// <typeparam name="T">Data type</typeparam>
+        /// <param name="converter"></param>
+        /// <returns></returns>
+        public RedisResultWithExpiry<T> ToResult<T>(ValueConverter converter)
+        {
+            if (@this.Value.IsNull)
+                return RedisResultWithExpiry<T>.Default;
 
-        var converted = converter.Deserialize<T>(value.Value);
-        return new(converted, value.Expiry);
+            var converted = converter.Deserialize<T>(@this.Value);
+            return new(converted, @this.Expiry);
+        }
     }
 }

@@ -443,30 +443,33 @@ public readonly struct RedisSortedSetEntry<T>(T value, double score)
 /// </summary>
 internal static class RedisSortedSetEntryExtensions
 {
-    /// <summary>
-    /// Converts to <see cref="SortedSetEntry"/>.
-    /// </summary>
-    /// <typeparam name="T">Data type</typeparam>
-    /// <param name="entry"></param>
-    /// <param name="converter"></param>
-    /// <returns></returns>
-    public static SortedSetEntry ToNonGenerics<T>(this in RedisSortedSetEntry<T> entry, ValueConverter converter)
+    extension<T>(in RedisSortedSetEntry<T> @this)
     {
-        var value = converter.Serialize(entry.Value);
-        return new(value, entry.Score);
+        /// <summary>
+        /// Converts to <see cref="SortedSetEntry"/>.
+        /// </summary>
+        /// <param name="converter"></param>
+        /// <returns></returns>
+        public SortedSetEntry ToNonGenerics(ValueConverter converter)
+        {
+            var value = converter.Serialize(@this.Value);
+            return new(value, @this.Score);
+        }
     }
 
 
-    /// <summary>
-    /// Converts to <see cref="RedisSortedSetEntry{T}"/>.
-    /// </summary>
-    /// <typeparam name="T">Data type</typeparam>
-    /// <param name="entry"></param>
-    /// <param name="converter"></param>
-    /// <returns></returns>
-    public static RedisSortedSetEntry<T> ToGenerics<T>(this in SortedSetEntry entry, ValueConverter converter)
+    extension(in SortedSetEntry @this)
     {
-        var value = converter.Deserialize<T>(entry.Element);
-        return new(value, entry.Score);
+        /// <summary>
+        /// Converts to <see cref="RedisSortedSetEntry{T}"/>.
+        /// </summary>
+        /// <typeparam name="T">Data type</typeparam>
+        /// <param name="converter"></param>
+        /// <returns></returns>
+        public RedisSortedSetEntry<T> ToGenerics<T>(ValueConverter converter)
+        {
+            var value = converter.Deserialize<T>(@this.Element);
+            return new(value, @this.Score);
+        }
     }
 }
